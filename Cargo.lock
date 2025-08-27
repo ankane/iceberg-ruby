@@ -2759,26 +2759,6 @@ dependencies = [
 
 [[package]]
 name = "iceberg"
-version = "0.2.0"
-dependencies = [
- "arrow-array",
- "arrow-schema",
- "datafusion",
- "futures",
- "iceberg 0.6.0",
- "iceberg-catalog-glue",
- "iceberg-catalog-rest",
- "iceberg-catalog-sql",
- "iceberg-datafusion",
- "magnus",
- "parquet",
- "sqlx",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "iceberg"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "306fd4bf70d30687dc765110ecd19fc2bb21f16c3d5c188bc53a0d573bb6e675"
@@ -2830,6 +2810,26 @@ dependencies = [
  "url",
  "uuid",
  "zstd",
+]
+
+[[package]]
+name = "iceberg"
+version = "0.10.0"
+dependencies = [
+ "arrow-array",
+ "arrow-schema",
+ "datafusion",
+ "futures",
+ "iceberg 0.6.0",
+ "iceberg-catalog-glue",
+ "iceberg-catalog-rest",
+ "iceberg-catalog-sql",
+ "iceberg-datafusion",
+ "magnus",
+ "parquet",
+ "sqlx",
+ "tokio",
+ "uuid",
 ]
 
 [[package]]

@@ -9,7 +9,7 @@
 Add this line to your application’s Gemfile:
 
 ```ruby
-gem "iceberg", github: "ankane/iceberg-ruby"
+gem "iceberg"
 ```
 
 ## Getting Started
