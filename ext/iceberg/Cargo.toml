@@ -1,0 +1,34 @@
+[package]
+name = "iceberg"
+version = "0.2.0"
+license = "Apache-2.0"
+authors = ["Andrew Kane <andrew@ankane.org>"]
+edition = "2024"
+rust-version = "1.86"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+arrow-array = { version = "55", features = ["ffi"] }
+arrow-schema = "55"
+datafusion = { version = "47", optional = true }
+futures = "0.3"
+iceberg = "0.6"
+iceberg-catalog-glue = { version = "0.6", optional = true }
+iceberg-catalog-rest = { version = "0.6", optional = true }
+iceberg-catalog-sql = { version = "0.6", optional = true }
+iceberg-datafusion = { version = "0.6", optional = true }
+magnus = "0.8"
+parquet = "55"
+sqlx = { version = "0.8", features = ["postgres", "runtime-tokio", "sqlite"], default-features = false, optional = true }
+tokio = { version = "1", features = ["rt-multi-thread"] }
+uuid = { version = "1", features = ["v4"] }
+
+[features]
+default = ["rest", "sql"]
+datafusion = ["dep:datafusion", "dep:iceberg-datafusion"]
+glue = ["dep:iceberg-catalog-glue"]
+rest = ["dep:iceberg-catalog-rest"]
+sql = ["dep:iceberg-catalog-sql", "dep:sqlx"]

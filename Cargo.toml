@@ -1,0 +1,6 @@
+[workspace]
+members = ["ext/iceberg"]
+resolver = "3"
+
+[profile.release]
+strip = true

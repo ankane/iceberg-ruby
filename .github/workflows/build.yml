@@ -1,0 +1,30 @@
+name: build
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      iceberg-rest:
+        image: apache/iceberg-rest-fixture
+        ports:
+          - 8181:8181
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tmp
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4
+          bundler-cache: true
+      - uses: ankane/setup-postgres@v1
+        with:
+          database: iceberg_ruby_test
+      - run: bundle exec rake compile
+      - run: bundle exec rake test:memory
+      - run: bundle exec rake test:rest
+      - run: bundle exec rake test:sql
