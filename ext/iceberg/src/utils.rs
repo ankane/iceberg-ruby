@@ -205,8 +205,15 @@ pub fn rb_schema(schema: &Schema) -> RbResult<Value> {
         .funcall("new", (fields, kwargs!("schema_id" => schema_id)))
 }
 
-pub fn rb_snapshot(_snapshot: &Snapshot) -> RbResult<Value> {
-    todo!();
+pub fn rb_snapshot(snapshot: &Snapshot) -> RbResult<Value> {
+    let ruby = Ruby::get().unwrap();
+    let rb_snapshot = ruby.hash_new();
+    rb_snapshot.aset(ruby.to_symbol("snapshot_id"), snapshot.snapshot_id())?;
+    rb_snapshot.aset(ruby.to_symbol("parent_snapshot_id"), snapshot.parent_snapshot_id())?;
+    rb_snapshot.aset(ruby.to_symbol("sequence_number"), snapshot.sequence_number())?;
+    rb_snapshot.aset(ruby.to_symbol("manifest_list"), snapshot.manifest_list())?;
+    rb_snapshot.aset(ruby.to_symbol("schema_id"), snapshot.schema_id())?;
+    Ok(rb_snapshot.as_value())
 }
 
 pub fn rb_partition_spec(_partition_spec: &PartitionSpec) -> RbResult<Value> {

@@ -16,6 +16,24 @@ class TableTest < Minitest::Test
     assert_kind_of Hash, table.properties
   end
 
+  def test_snapshots
+    skip unless supports_updates?
+
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
+    table = catalog.create_table("iceberg_ruby_test.events", schema: df.schema)
+    table.append(df)
+
+    snapshots = table.snapshots
+    assert_equal 1, snapshots.size
+
+    snapshot = snapshots.last
+    assert_kind_of Integer, snapshot[:snapshot_id]
+    assert_nil snapshot.fetch(:parent_snapshot_id)
+    assert_equal 1, snapshot[:sequence_number]
+    assert_match "iceberg_ruby_test/events/metadata", snapshot[:manifest_list]
+    assert_equal 0, snapshot[:schema_id]
+  end
+
   def test_to_polars
     skip unless supports_updates?
 
