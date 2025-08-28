@@ -123,8 +123,11 @@ module Iceberg
         Polars.scan_parquet(
           sources,
           storage_options: storage_options,
-          # TODO cast_options: Polars::ScanCastOptions._default_iceberg,
-          # TODO allow_missing_columns, extra_columns, _column_mapping
+          # TODO
+          # cast_options: Polars::ScanCastOptions._default_iceberg,
+          # allow_missing_columns: true,
+          # extra_columns: "ignore",
+          # _column_mapping: column_mapping,
           _deletion_files: deletion_files
         )
       end
