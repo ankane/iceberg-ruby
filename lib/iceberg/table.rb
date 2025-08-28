@@ -83,7 +83,7 @@ module Iceberg
       @table.properties
     end
 
-    def to_polars(snapshot_id: nil)
+    def to_polars(snapshot_id: nil, storage_options: nil)
       require "polars-df"
 
       files = @table.scan(snapshot_id).plan_files
@@ -122,7 +122,7 @@ module Iceberg
 
         Polars.scan_parquet(
           sources,
-          # TODO storage options
+          storage_options: storage_options,
           # TODO cast_options
           # TODO allow_missing_columns, extra_columns, _column_mapping
           _deletion_files: deletion_files
