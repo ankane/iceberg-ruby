@@ -134,6 +134,7 @@ module Iceberg
       check_catalog
 
       @table = @table.append(df.arrow_c_stream, @catalog)
+      nil
     end
 
     # hide internal state

@@ -43,7 +43,7 @@ class TableTest < Minitest::Test
     table = catalog.create_table("iceberg_ruby_test.events", schema: df.schema)
 
     if supports_updates?
-      table.append(df)
+      assert_nil table.append(df)
       assert_equal df, table.to_polars.collect
     else
       assert_raises(Iceberg::UnsupportedFeatureError) do
