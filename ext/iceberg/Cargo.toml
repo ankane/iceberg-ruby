@@ -1,6 +1,6 @@
 [package]
 name = "iceberg"
-version = "0.10.0"
+version = "0.10.1"
 license = "Apache-2.0"
 authors = ["Andrew Kane <andrew@ankane.org>"]
 edition = "2024"
