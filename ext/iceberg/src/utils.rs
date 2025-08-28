@@ -241,11 +241,11 @@ pub fn rb_partition_statistics_file(
 pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> Value {
     match literal {
         Literal::Primitive(pl) => match pl {
-            PrimitiveLiteral::Boolean(v) => v.into_value_with(&ruby),
-            PrimitiveLiteral::Int(v) => v.into_value_with(&ruby),
-            PrimitiveLiteral::Long(v) => v.into_value_with(&ruby),
-            PrimitiveLiteral::Float(v) => v.into_value_with(&ruby),
-            PrimitiveLiteral::Double(v) => v.into_value_with(&ruby),
+            PrimitiveLiteral::Boolean(v) => v.into_value_with(ruby),
+            PrimitiveLiteral::Int(v) => v.into_value_with(ruby),
+            PrimitiveLiteral::Long(v) => v.into_value_with(ruby),
+            PrimitiveLiteral::Float(v) => v.into_value_with(ruby),
+            PrimitiveLiteral::Double(v) => v.into_value_with(ruby),
             PrimitiveLiteral::String(v) => ruby.str_new(v).as_value(),
             PrimitiveLiteral::Binary(v) => ruby.str_from_slice(v).as_value(),
             _ => todo!(),
