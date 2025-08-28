@@ -1,11 +1,12 @@
 use futures::TryStreamExt;
 use iceberg::scan::TableScan;
-use magnus::{RArray, Ruby};
+use magnus::{RArray, Ruby, Value};
 use std::cell::RefCell;
 
 use crate::RbResult;
 use crate::error::to_rb_err;
 use crate::runtime::runtime;
+use crate::utils::rb_snapshot;
 
 #[magnus::wrap(class = "Iceberg::RbTableScan")]
 pub struct RbTableScan {
@@ -43,5 +44,12 @@ impl RbTableScan {
             files.push(file)?;
         }
         Ok(files)
+    }
+
+    pub fn snapshot(&self) -> RbResult<Option<Value>> {
+        match self.scan.borrow().snapshot() {
+            Some(s) => Ok(Some(rb_snapshot(s)?)),
+            None => Ok(None),
+        }
     }
 }

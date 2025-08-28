@@ -122,6 +122,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("RbTableScan", ruby.class_object())?;
     class.define_method("plan_files", method!(RbTableScan::plan_files, 0))?;
+    class.define_method("snapshot", method!(RbTableScan::snapshot, 0))?;
 
     Ok(())
 }
