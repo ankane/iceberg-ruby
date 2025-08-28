@@ -56,6 +56,10 @@ class NamespaceTest < Minitest::Test
     assert_equal "Unsupported namespace", error.message
   end
 
+  def test_create_namespace_if_not_exists
+    catalog.create_namespace("iceberg_ruby_test", if_not_exists: true)
+  end
+
   def test_create_namespace_already_exists
     error = assert_raises(Iceberg::Error) do
       catalog.create_namespace("iceberg_ruby_test")

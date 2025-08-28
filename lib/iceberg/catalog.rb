@@ -4,8 +4,13 @@ module Iceberg
       @catalog.list_namespaces(parent)
     end
 
-    def create_namespace(namespace, properties: {})
+    def create_namespace(namespace, properties: {}, if_not_exists: nil)
       @catalog.create_namespace(namespace, properties)
+    rescue Error => e
+      if !if_not_exists || (e.message != "Cannot create namespace" && !e.message.include?("already exists"))
+        raise e
+      end
+      nil
     end
 
     def namespace_exists?(namespace)
