@@ -88,6 +88,7 @@ module Iceberg
 
       files = @table.scan(snapshot_id).plan_files
       if files.empty?
+        # TODO improve
         schema =
           current_schema.fields.to_h do |field|
             dtype =
