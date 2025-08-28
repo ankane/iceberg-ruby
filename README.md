@@ -12,8 +12,6 @@ Add this line to your application’s Gemfile:
 gem "iceberg"
 ```
 
-It can take around 5 minutes to compile the gem.
-
 ## Getting Started
 
 Create a client for an Iceberg catalog

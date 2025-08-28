@@ -1,4 +1,4 @@
-## 0.10.2 (unreleased)
+## 0.10.2 (2025-08-28)
 
 - Added precompiled gems
 
