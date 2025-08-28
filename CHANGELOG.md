@@ -1,3 +1,7 @@
+## 0.10.2 (unreleased)
+
+- Added precompiled gems
+
 ## 0.10.1 (2025-08-27)
 
 - Added `if_not_exists` option to `create_namespace` method
