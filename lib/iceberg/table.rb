@@ -83,10 +83,10 @@ module Iceberg
       @table.properties
     end
 
-    def to_polars
+    def to_polars(snapshot_id: nil)
       require "polars-df"
 
-      files = @table.scan.plan_files
+      files = @table.scan(snapshot_id).plan_files
       if files.empty?
         schema =
           current_schema.fields.to_h do |field|

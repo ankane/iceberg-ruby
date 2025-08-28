@@ -31,8 +31,13 @@ pub struct RbTable {
 }
 
 impl RbTable {
-    pub fn scan(&self) -> RbResult<RbTableScan> {
-        let scan = self.table.borrow().scan().build().map_err(to_rb_err)?;
+    pub fn scan(&self, snapshot_id: Option<i64>) -> RbResult<RbTableScan> {
+        let table = self.table.borrow();
+        let mut builder = table.scan();
+        if let Some(si) = snapshot_id {
+            builder = builder.snapshot_id(si);
+        }
+        let scan = builder.build().map_err(to_rb_err)?;
         Ok(RbTableScan { scan: scan.into() })
     }
 

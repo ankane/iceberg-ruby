@@ -25,6 +25,17 @@ class TableTest < Minitest::Test
     assert_equal df, table.to_polars.collect
   end
 
+  def test_to_polars_snapshot_id
+    skip unless supports_updates?
+
+    df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
+    table = catalog.create_table("iceberg_ruby_test.events", schema: df.schema)
+    table.append(df)
+    snapshot_id = table.current_snapshot_id
+    table.append(df)
+    assert_equal df, table.to_polars(snapshot_id:).collect
+  end
+
   def test_to_polars_empty
     table = catalog.create_table("iceberg_ruby_test.events") { |t| t.bigint "a" }
     df = table.to_polars.collect

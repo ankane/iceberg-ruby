@@ -46,7 +46,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("query", method!(RbCatalog::query, 1))?;
 
     let class = module.define_class("RbTable", ruby.class_object())?;
-    class.define_method("scan", method!(RbTable::scan, 0))?;
+    class.define_method("scan", method!(RbTable::scan, 1))?;
     class.define_method("append", method!(RbTable::append, 2))?;
     class.define_method("format_version", method!(RbTable::format_version, 0))?;
     class.define_method("uuid", method!(RbTable::uuid, 0))?;
