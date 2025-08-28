@@ -86,7 +86,7 @@ module Iceberg
     def to_polars
       require "polars-df"
 
-      files = @table.plan_files
+      files = @table.scan.plan_files
       if files.empty?
         schema =
           current_schema.fields.to_h do |field|

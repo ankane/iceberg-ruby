@@ -1,5 +1,4 @@
 use arrow_array::ffi_stream::ArrowArrayStreamReader;
-use futures::TryStreamExt;
 use iceberg::TableIdent;
 use iceberg::io::FileIO;
 use iceberg::spec::FormatVersion;
@@ -23,6 +22,7 @@ use crate::arrow::RbArrowType;
 use crate::catalog::RbCatalog;
 use crate::error::to_rb_err;
 use crate::runtime::runtime;
+use crate::scan::RbTableScan;
 use crate::utils::*;
 
 #[magnus::wrap(class = "Iceberg::RbTable")]
@@ -31,36 +31,9 @@ pub struct RbTable {
 }
 
 impl RbTable {
-    pub fn plan_files(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let scan = rb_self.table.borrow().scan().build().map_err(to_rb_err)?;
-
-        let runtime = runtime();
-        let plan_files = runtime.block_on(scan.plan_files()).map_err(to_rb_err)?;
-        let plan_files: Vec<_> = runtime
-            .block_on(plan_files.try_collect())
-            .map_err(to_rb_err)?;
-        let files = ruby.ary_new();
-        for v in plan_files {
-            let file = ruby.hash_new();
-            file.aset(ruby.to_symbol("start"), v.start)?;
-            file.aset(ruby.to_symbol("length"), v.length)?;
-            file.aset(ruby.to_symbol("record_count"), v.record_count)?;
-            file.aset(ruby.to_symbol("data_file_path"), v.data_file_path)?;
-            file.aset(ruby.to_symbol("project_field_ids"), v.project_field_ids)?;
-
-            let deletes = ruby.ary_new();
-            for d in v.deletes {
-                let delete = ruby.hash_new();
-                delete.aset(ruby.to_symbol("file_path"), d.file_path)?;
-                delete.aset(ruby.to_symbol("partition_spec_id"), d.partition_spec_id)?;
-                delete.aset(ruby.to_symbol("equality_ids"), d.equality_ids)?;
-                deletes.push(delete)?;
-            }
-            file.aset(ruby.to_symbol("deletes"), deletes)?;
-
-            files.push(file)?;
-        }
-        Ok(files)
+    pub fn scan(&self) -> RbResult<RbTableScan> {
+        let scan = self.table.borrow().scan().build().map_err(to_rb_err)?;
+        Ok(RbTableScan { scan: scan.into() })
     }
 
     pub fn append(

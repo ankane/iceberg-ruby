@@ -2,12 +2,14 @@ mod arrow;
 mod catalog;
 mod error;
 mod runtime;
+mod scan;
 mod table;
 mod utils;
 
 use magnus::{Error as RbErr, Ruby, function, method, prelude::*};
 
 use crate::catalog::RbCatalog;
+use crate::scan::RbTableScan;
 use crate::table::RbTable;
 
 type RbResult<T> = Result<T, RbErr>;
@@ -44,7 +46,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("query", method!(RbCatalog::query, 1))?;
 
     let class = module.define_class("RbTable", ruby.class_object())?;
-    class.define_method("plan_files", method!(RbTable::plan_files, 0))?;
+    class.define_method("scan", method!(RbTable::scan, 0))?;
     class.define_method("append", method!(RbTable::append, 2))?;
     class.define_method("format_version", method!(RbTable::format_version, 0))?;
     class.define_method("uuid", method!(RbTable::uuid, 0))?;
@@ -117,6 +119,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "from_metadata_file",
         function!(RbTable::from_metadata_file, 1),
     )?;
+
+    let class = module.define_class("RbTableScan", ruby.class_object())?;
+    class.define_method("plan_files", method!(RbTableScan::plan_files, 0))?;
 
     Ok(())
 }
