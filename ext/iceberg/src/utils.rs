@@ -146,8 +146,7 @@ fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> {
     Ok(Some(lit))
 }
 
-pub fn rb_schema(schema: &Schema) -> RbResult<Value> {
-    let ruby = Ruby::get().unwrap();
+pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
     let fields = ruby.ary_new();
     for f in schema.as_struct().fields() {
         let field = ruby.hash_new();
@@ -182,10 +181,10 @@ pub fn rb_schema(schema: &Schema) -> RbResult<Value> {
 
         field.aset(ruby.to_symbol("required"), f.required)?;
 
-        let initial_default = f.initial_default.as_ref().map(rb_literal);
+        let initial_default = f.initial_default.as_ref().map(|v| rb_literal(ruby, v));
         field.aset(ruby.to_symbol("initial_default"), initial_default)?;
 
-        let write_default = f.write_default.as_ref().map(rb_literal);
+        let write_default = f.write_default.as_ref().map(|v| rb_literal(ruby, v));
         field.aset(ruby.to_symbol("write_default"), write_default)?;
 
         field.aset(
@@ -205,12 +204,17 @@ pub fn rb_schema(schema: &Schema) -> RbResult<Value> {
         .funcall("new", (fields, kwargs!("schema_id" => schema_id)))
 }
 
-pub fn rb_snapshot(snapshot: &Snapshot) -> RbResult<Value> {
-    let ruby = Ruby::get().unwrap();
+pub fn rb_snapshot(ruby: &Ruby, snapshot: &Snapshot) -> RbResult<Value> {
     let rb_snapshot = ruby.hash_new();
     rb_snapshot.aset(ruby.to_symbol("snapshot_id"), snapshot.snapshot_id())?;
-    rb_snapshot.aset(ruby.to_symbol("parent_snapshot_id"), snapshot.parent_snapshot_id())?;
-    rb_snapshot.aset(ruby.to_symbol("sequence_number"), snapshot.sequence_number())?;
+    rb_snapshot.aset(
+        ruby.to_symbol("parent_snapshot_id"),
+        snapshot.parent_snapshot_id(),
+    )?;
+    rb_snapshot.aset(
+        ruby.to_symbol("sequence_number"),
+        snapshot.sequence_number(),
+    )?;
     rb_snapshot.aset(ruby.to_symbol("manifest_list"), snapshot.manifest_list())?;
     rb_snapshot.aset(ruby.to_symbol("schema_id"), snapshot.schema_id())?;
     Ok(rb_snapshot.as_value())
@@ -234,8 +238,7 @@ pub fn rb_partition_statistics_file(
     todo!();
 }
 
-pub fn rb_literal(literal: &Literal) -> Value {
-    let ruby = Ruby::get().unwrap();
+pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> Value {
     match literal {
         Literal::Primitive(pl) => match pl {
             PrimitiveLiteral::Boolean(v) => v.into_value_with(&ruby),

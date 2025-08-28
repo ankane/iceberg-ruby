@@ -46,9 +46,9 @@ impl RbTableScan {
         Ok(files)
     }
 
-    pub fn snapshot(&self) -> RbResult<Option<Value>> {
-        match self.scan.borrow().snapshot() {
-            Some(s) => Ok(Some(rb_snapshot(s)?)),
+    pub fn snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<Value>> {
+        match rb_self.scan.borrow().snapshot() {
+            Some(s) => Ok(Some(rb_snapshot(ruby, s)?)),
             None => Ok(None),
         }
     }

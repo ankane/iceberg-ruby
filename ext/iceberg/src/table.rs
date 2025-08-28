@@ -145,21 +145,21 @@ impl RbTable {
     pub fn schemas(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let schemas = ruby.ary_new();
         for s in rb_self.table.borrow().metadata().schemas_iter() {
-            schemas.push(rb_schema(s)?)?;
+            schemas.push(rb_schema(ruby, s)?)?;
         }
         Ok(schemas)
     }
 
-    pub fn schema_by_id(&self, schema_id: i32) -> RbResult<Option<Value>> {
-        let schema = match self.table.borrow().metadata().schema_by_id(schema_id) {
-            Some(s) => Some(rb_schema(s)?),
+    pub fn schema_by_id(ruby: &Ruby, rb_self: &Self, schema_id: i32) -> RbResult<Option<Value>> {
+        let schema = match rb_self.table.borrow().metadata().schema_by_id(schema_id) {
+            Some(s) => Some(rb_schema(ruby, s)?),
             None => None,
         };
         Ok(schema)
     }
 
-    pub fn current_schema(&self) -> RbResult<Value> {
-        rb_schema(self.table.borrow().metadata().current_schema())
+    pub fn current_schema(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+        rb_schema(ruby, rb_self.table.borrow().metadata().current_schema())
     }
 
     pub fn current_schema_id(&self) -> i32 {
@@ -198,14 +198,23 @@ impl RbTable {
     pub fn snapshots(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let snapshots = ruby.ary_new();
         for s in rb_self.table.borrow().metadata().snapshots() {
-            snapshots.push(rb_snapshot(s)?)?;
+            snapshots.push(rb_snapshot(ruby, s)?)?;
         }
         Ok(snapshots)
     }
 
-    pub fn snapshot_by_id(&self, snapshot_id: i64) -> RbResult<Option<Value>> {
-        let snapshot = match self.table.borrow().metadata().snapshot_by_id(snapshot_id) {
-            Some(s) => Some(rb_snapshot(s)?),
+    pub fn snapshot_by_id(
+        ruby: &Ruby,
+        rb_self: &Self,
+        snapshot_id: i64,
+    ) -> RbResult<Option<Value>> {
+        let snapshot = match rb_self
+            .table
+            .borrow()
+            .metadata()
+            .snapshot_by_id(snapshot_id)
+        {
+            Some(s) => Some(rb_snapshot(ruby, s)?),
             None => None,
         };
         Ok(snapshot)
@@ -236,9 +245,9 @@ impl RbTable {
         Ok(metadata_logs)
     }
 
-    pub fn current_snapshot(&self) -> RbResult<Option<Value>> {
-        let snapshot = match self.table.borrow().metadata().current_snapshot() {
-            Some(s) => Some(rb_snapshot(s)?),
+    pub fn current_snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<Value>> {
+        let snapshot = match rb_self.table.borrow().metadata().current_snapshot() {
+            Some(s) => Some(rb_snapshot(ruby, s)?),
             None => None,
         };
         Ok(snapshot)
@@ -248,9 +257,18 @@ impl RbTable {
         self.table.borrow().metadata().current_snapshot_id()
     }
 
-    pub fn snapshot_for_ref(&self, ref_name: String) -> RbResult<Option<Value>> {
-        let snapshot = match self.table.borrow().metadata().snapshot_for_ref(&ref_name) {
-            Some(s) => Some(rb_snapshot(s)?),
+    pub fn snapshot_for_ref(
+        ruby: &Ruby,
+        rb_self: &Self,
+        ref_name: String,
+    ) -> RbResult<Option<Value>> {
+        let snapshot = match rb_self
+            .table
+            .borrow()
+            .metadata()
+            .snapshot_for_ref(&ref_name)
+        {
+            Some(s) => Some(rb_snapshot(ruby, s)?),
             None => None,
         };
         Ok(snapshot)
