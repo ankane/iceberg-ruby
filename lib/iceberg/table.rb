@@ -90,6 +90,7 @@ module Iceberg
       if files.empty?
         # TODO improve
         schema =
+          # TODO use schema from snapshot_id
           current_schema.fields.to_h do |field|
             dtype =
               case field[:type]
