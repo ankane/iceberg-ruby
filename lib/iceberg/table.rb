@@ -132,7 +132,6 @@ module Iceberg
 
     def append(df)
       check_catalog
-
       @table = @table.append(df.arrow_c_stream, @catalog)
       nil
     end
