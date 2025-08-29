@@ -40,7 +40,7 @@ class TableTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
     table = catalog.create_table("iceberg_ruby_test.events", schema: df.schema)
     table.append(df)
-    assert_equal df, table.to_polars.collect
+    assert_frame_equal df, table.to_polars.collect
   end
 
   def test_to_polars_snapshot_id
@@ -51,7 +51,7 @@ class TableTest < Minitest::Test
     table.append(df)
     snapshot_id = table.current_snapshot_id
     table.append(df)
-    assert_equal df, table.to_polars(snapshot_id:).collect
+    assert_frame_equal df, table.to_polars(snapshot_id:).collect
   end
 
   def test_to_polars_empty
@@ -73,7 +73,7 @@ class TableTest < Minitest::Test
 
     if supports_updates?
       assert_nil table.append(df)
-      assert_equal df, table.to_polars.collect
+      assert_frame_equal df, table.to_polars.collect
     else
       assert_raises(Iceberg::UnsupportedFeatureError) do
         table.append(df)
@@ -87,7 +87,7 @@ class TableTest < Minitest::Test
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
     table = catalog.create_table("iceberg_ruby_test.events", schema: df.schema)
     table.append(df.with_columns("b", "a"))
-    assert_equal df, table.to_polars.collect
+    assert_frame_equal df, table.to_polars.collect
   end
 
   def test_append_type_mismatch

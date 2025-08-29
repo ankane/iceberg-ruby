@@ -6,6 +6,8 @@ $catalog = ENV["CATALOG"] || "rest"
 puts "Using #{$catalog}"
 
 class Minitest::Test
+  include Polars::Testing
+
   def setup
     drop_namespace("iceberg_ruby_test")
     catalog.create_namespace("iceberg_ruby_test")
