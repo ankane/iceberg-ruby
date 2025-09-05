@@ -11,6 +11,15 @@ class Minitest::Test
   def setup
     drop_namespace("iceberg_ruby_test")
     catalog.create_namespace("iceberg_ruby_test")
+    GC.stress = true if stress?
+  end
+
+  def teardown
+    GC.stress = false if stress?
+  end
+
+  def stress?
+    ENV["STRESS"]
   end
 
   def catalog
