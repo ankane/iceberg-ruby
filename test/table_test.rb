@@ -61,6 +61,16 @@ class TableTest < Minitest::Test
     assert_equal [Polars::Int64], df.dtypes
   end
 
+  def test_to_polars_schema_changes
+    skip unless ENV["TEST_PYTHON"] && rest?
+
+    system "python3", "test/support/schema_changes.py", exception: true
+
+    table = catalog.load_table("iceberg_ruby_test.events")
+    expected = Polars::DataFrame.new({"c" => [1, 2, 3]})
+    assert_frame_equal expected, table.to_polars(_schema_changes: true).sort("c").collect
+  end
+
   def test_append
     df = Polars::DataFrame.new([
       Polars::Series.new("i32", [1, 2, 3], dtype: Polars::Int32),

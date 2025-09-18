@@ -83,15 +83,16 @@ module Iceberg
       @table.properties
     end
 
-    def to_polars(snapshot_id: nil, storage_options: nil)
+    def to_polars(snapshot_id: nil, storage_options: nil, _schema_changes: false)
       require "polars-df"
 
-      files = @table.scan(snapshot_id).plan_files
+      scan = @table.scan(snapshot_id)
+      files = scan.plan_files
+
       if files.empty?
         # TODO improve
         schema =
-          # TODO use schema from snapshot_id
-          current_schema.fields.to_h do |field|
+          scan_schema(scan).fields.to_h do |field|
             dtype =
               case field[:type]
               when "int"
@@ -122,16 +123,26 @@ module Iceberg
             .to_h { |v, i| [i, v[:deletes].map { |d| d[:file_path] }] }
         ]
 
-        Polars.scan_parquet(
-          sources,
+        scan_options = {
           storage_options: storage_options,
-          # TODO
-          # cast_options: Polars::ScanCastOptions._default_iceberg,
-          # allow_missing_columns: true,
-          # extra_columns: "ignore",
-          # _column_mapping: column_mapping,
-          _deletion_files: deletion_files
-        )
+          _deletion_files: deletion_files,
+        }
+
+        if _schema_changes
+          column_mapping = [
+            "iceberg-column-mapping",
+            arrow_schema(scan_schema(scan))
+          ]
+
+          scan_options.merge!(
+            cast_options: Polars::ScanCastOptions._default_iceberg,
+            allow_missing_columns: true,
+            extra_columns: "ignore",
+            _column_mapping: column_mapping,
+          )
+        end
+
+        Polars.scan_parquet(sources, **scan_options)
       end
     end
 
@@ -150,6 +161,43 @@ module Iceberg
 
     def check_catalog
       raise Error, "Read-only table" if @catalog.nil?
+    end
+
+    def scan_schema(scan)
+      snapshot = scan.snapshot
+      snapshot ? schema_by_id(snapshot[:schema_id]) : current_schema
+    end
+
+    def arrow_schema(schema)
+      fields =
+        schema.fields.map do |field|
+          type =
+            case field[:type]
+            when "boolean"
+              "boolean"
+            when "int"
+              "int32"
+            when "long"
+              "int64"
+            when "float"
+              "float32"
+            when "double"
+              "float64"
+            else
+              raise Todo
+            end
+
+          {
+            name: field[:name],
+            type: type,
+            nullable: !field[:required],
+            metadata: {
+              "PARQUET:field_id" => field[:id].to_s
+            }
+          }
+        end
+
+      {fields: fields}
     end
   end
 end
