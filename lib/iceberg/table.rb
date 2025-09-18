@@ -138,7 +138,7 @@ module Iceberg
             cast_options: Polars::ScanCastOptions._default_iceberg,
             allow_missing_columns: true,
             extra_columns: "ignore",
-            _column_mapping: column_mapping,
+            _column_mapping: column_mapping
           )
         end
 
