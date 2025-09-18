@@ -82,9 +82,7 @@ Iceberg::MemoryCatalog.new(
 )
 ```
 
-## Reference
-
-### Namespaces
+## Namespaces
 
 List namespaces
 
@@ -122,7 +120,7 @@ Drop a namespace
 catalog.drop_namespace("main")
 ```
 
-### Tables
+## Tables
 
 List tables
 
@@ -169,7 +167,7 @@ Drop a table
 catalog.drop_table("main.events")
 ```
 
-### Static Tables
+## Static Tables
 
 Load a static table
 
