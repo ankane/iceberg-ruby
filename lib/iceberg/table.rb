@@ -83,10 +83,14 @@ module Iceberg
       @table.properties
     end
 
+    def scan(snapshot_id: nil)
+      TableScan.new(@table.scan(snapshot_id), self)
+    end
+
     def to_polars(snapshot_id: nil, storage_options: nil, _schema_changes: false)
       require "polars-df"
 
-      scan = @table.scan(snapshot_id)
+      scan = scan(snapshot_id:)
       files = scan.plan_files
 
       if files.empty?

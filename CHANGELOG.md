@@ -1,3 +1,7 @@
+## 0.10.3 (unreleased)
+
+- Added `TableScan` class
+
 ## 0.10.2 (2025-08-28)
 
 - Added precompiled gems

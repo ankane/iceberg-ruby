@@ -9,6 +9,7 @@ end
 require_relative "iceberg/catalog"
 require_relative "iceberg/schema"
 require_relative "iceberg/table"
+require_relative "iceberg/table_scan"
 require_relative "iceberg/static_table"
 require_relative "iceberg/table_definition"
 require_relative "iceberg/version"
