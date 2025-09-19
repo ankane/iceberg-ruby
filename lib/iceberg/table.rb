@@ -99,9 +99,12 @@ module Iceberg
       files = scan.plan_files
 
       if files.empty?
+        snapshot = scan.snapshot
+        scan_schema = snapshot ? schema_by_id(snapshot[:schema_id]) : current_schema
+
         # TODO improve
         schema =
-          scan_schema(scan).fields.to_h do |field|
+          scan_schema.fields.to_h do |field|
             dtype =
               case field[:type]
               when "int"
@@ -156,11 +159,6 @@ module Iceberg
 
     def check_catalog
       raise Error, "Read-only table" if @catalog.nil?
-    end
-
-    def scan_schema(scan)
-      snapshot = scan.snapshot
-      snapshot ? schema_by_id(snapshot[:schema_id]) : current_schema
     end
   end
 end
