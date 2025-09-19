@@ -90,6 +90,11 @@ module Iceberg
     def to_polars(snapshot_id: nil, storage_options: nil, _schema_changes: false)
       require "polars-df"
 
+      # TODO always take this path in 0.2.0
+      if _schema_changes
+        return Polars.scan_iceberg(self, snapshot_id:, storage_options:)
+      end
+
       scan = scan(snapshot_id:)
       files = scan.plan_files
 
@@ -132,20 +137,6 @@ module Iceberg
           _deletion_files: deletion_files,
         }
 
-        if _schema_changes
-          column_mapping = [
-            "iceberg-column-mapping",
-            arrow_schema(scan_schema(scan))
-          ]
-
-          scan_options.merge!(
-            cast_options: Polars::ScanCastOptions._default_iceberg,
-            allow_missing_columns: true,
-            extra_columns: "ignore",
-            _column_mapping: column_mapping
-          )
-        end
-
         Polars.scan_parquet(sources, **scan_options)
       end
     end
@@ -170,38 +161,6 @@ module Iceberg
     def scan_schema(scan)
       snapshot = scan.snapshot
       snapshot ? schema_by_id(snapshot[:schema_id]) : current_schema
-    end
-
-    def arrow_schema(schema)
-      fields =
-        schema.fields.map do |field|
-          type =
-            case field[:type]
-            when "boolean"
-              "boolean"
-            when "int"
-              "int32"
-            when "long"
-              "int64"
-            when "float"
-              "float32"
-            when "double"
-              "float64"
-            else
-              raise Todo
-            end
-
-          {
-            name: field[:name],
-            type: type,
-            nullable: !field[:required],
-            metadata: {
-              "PARQUET:field_id" => field[:id].to_s
-            }
-          }
-        end
-
-      {fields: fields}
     end
   end
 end
