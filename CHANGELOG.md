@@ -1,3 +1,7 @@
+## 0.10.4 (unreleased)
+
+- Updated Iceberg Rust to 0.7.0
+
 ## 0.10.3 (unreleased)
 
 - Added `TableScan` class

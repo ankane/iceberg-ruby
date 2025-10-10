@@ -70,7 +70,7 @@ class Minitest::Test
   end
 
   def supports_updates?
-    !memory? && !sql?
+    !sql?
   end
 
   def drop_namespace(namespace)

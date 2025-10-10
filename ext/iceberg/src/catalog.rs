@@ -1,12 +1,15 @@
 #[cfg(feature = "datafusion")]
 use datafusion::execution::context::SessionContext;
-use iceberg::io::{FileIO, FileIOBuilder};
+use iceberg::io::FileIO;
+use iceberg::memory::{MEMORY_CATALOG_WAREHOUSE, MemoryCatalogBuilder};
 use iceberg::spec::Schema;
-use iceberg::{Catalog, MemoryCatalog, NamespaceIdent, TableCreation, TableIdent};
+use iceberg::{Catalog, CatalogBuilder, MemoryCatalog, NamespaceIdent, TableCreation, TableIdent};
 #[cfg(feature = "glue")]
-use iceberg_catalog_glue::{GlueCatalog, GlueCatalogConfig};
+use iceberg_catalog_glue::{GLUE_CATALOG_PROP_WAREHOUSE, GlueCatalog, GlueCatalogBuilder};
 #[cfg(feature = "rest")]
-use iceberg_catalog_rest::{RestCatalog, RestCatalogConfig};
+use iceberg_catalog_rest::{
+    REST_CATALOG_PROP_URI, REST_CATALOG_PROP_WAREHOUSE, RestCatalog, RestCatalogBuilder,
+};
 #[cfg(feature = "sql")]
 use iceberg_catalog_sql::{SqlBindStyle, SqlCatalog, SqlCatalogConfig};
 #[cfg(feature = "datafusion")]
@@ -65,9 +68,9 @@ pub struct RbCatalog {
 impl RbCatalog {
     #[cfg(feature = "glue")]
     pub fn new_glue(warehouse: String) -> RbResult<Self> {
-        let config = GlueCatalogConfig::builder().warehouse(warehouse).build();
+        let props = HashMap::from([(GLUE_CATALOG_PROP_WAREHOUSE.to_string(), warehouse)]);
         let catalog = runtime()
-            .block_on(GlueCatalog::new(config))
+            .block_on(GlueCatalogBuilder::default().load("glue", props))
             .map_err(to_rb_err)?;
         Ok(Self {
             catalog: RbCatalogType::Glue(catalog.into()).into(),
@@ -75,14 +78,13 @@ impl RbCatalog {
     }
 
     pub fn new_memory(warehouse: Option<String>) -> RbResult<Self> {
-        let file_io = match warehouse {
-            Some(ref v) => FileIO::from_path(v)
-                .map_err(to_rb_err)?
-                .build()
-                .map_err(to_rb_err)?,
-            None => FileIOBuilder::new_fs_io().build().map_err(to_rb_err)?,
-        };
-        let catalog = MemoryCatalog::new(file_io, warehouse);
+        let mut props = HashMap::new();
+        if let Some(v) = warehouse {
+            props.insert(MEMORY_CATALOG_WAREHOUSE.to_string(), v);
+        }
+        let catalog = runtime()
+            .block_on(MemoryCatalogBuilder::default().load("memory", props))
+            .map_err(to_rb_err)?;
         Ok(Self {
             catalog: RbCatalogType::Memory(catalog.into()).into(),
         })
@@ -93,16 +95,18 @@ impl RbCatalog {
         uri: String,
         warehouse: Option<String>,
         props: HashMap<String, String>,
-    ) -> Self {
-        let config = RestCatalogConfig::builder()
-            .uri(uri)
-            .warehouse_opt(warehouse)
-            .props(props)
-            .build();
-        let catalog = RestCatalog::new(config);
-        Self {
-            catalog: RbCatalogType::Rest(catalog.into()).into(),
+    ) -> RbResult<Self> {
+        let mut props = props;
+        props.insert(REST_CATALOG_PROP_URI.to_string(), uri);
+        if let Some(v) = warehouse {
+            props.insert(REST_CATALOG_PROP_WAREHOUSE.to_string(), v);
         }
+        let catalog = runtime()
+            .block_on(RestCatalogBuilder::default().load("rest", props))
+            .map_err(to_rb_err)?;
+        Ok(Self {
+            catalog: RbCatalogType::Rest(catalog.into()).into(),
+        })
     }
 
     #[cfg(feature = "sql")]

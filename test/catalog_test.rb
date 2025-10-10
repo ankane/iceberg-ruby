@@ -85,7 +85,9 @@ class CatalogTest < Minitest::Test
     error = assert_raises(Iceberg::Error) do
       catalog.register_table("iceberg_ruby_test.events", "metadata.json")
     end
-    if rest? || sql?
+    if rest?
+      assert_match "metadata.json is not a valid metadata file", error.message
+    elsif sql?
       assert_match "Registering a table is not supported yet", error.message
     else
       assert_match "No such file or directory", error.message

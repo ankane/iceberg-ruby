@@ -4,7 +4,7 @@ version = "0.10.2"
 license = "Apache-2.0"
 authors = ["Andrew Kane <andrew@ankane.org>"]
 edition = "2024"
-rust-version = "1.86"
+rust-version = "1.87"
 publish = false
 
 [lib]
@@ -13,13 +13,13 @@ crate-type = ["cdylib"]
 [dependencies]
 arrow-array = { version = "55", features = ["ffi"] }
 arrow-schema = "55"
-datafusion = { version = "47", optional = true }
+datafusion = { version = "48", optional = true }
 futures = "0.3"
-iceberg = "0.6"
-iceberg-catalog-glue = { version = "0.6", optional = true }
-iceberg-catalog-rest = { version = "0.6", optional = true }
-iceberg-catalog-sql = { version = "0.6", optional = true }
-iceberg-datafusion = { version = "0.6", optional = true }
+iceberg = "0.7"
+iceberg-catalog-glue = { version = "0.7", optional = true }
+iceberg-catalog-rest = { version = "0.7", optional = true }
+iceberg-catalog-sql = { version = "0.7", optional = true }
+iceberg-datafusion = { version = "0.7", optional = true }
 magnus = "0.8"
 parquet = "55"
 sqlx = { version = "0.8", features = ["postgres", "runtime-tokio", "sqlite"], default-features = false, optional = true }
