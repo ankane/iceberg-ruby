@@ -2857,7 +2857,7 @@ dependencies = [
 
 [[package]]
 name = "iceberg"
-version = "0.10.2"
+version = "0.10.3"
 dependencies = [
  "arrow-array",
  "arrow-schema",
