@@ -47,9 +47,9 @@ module Iceberg
         table_definition = TableDefinition.new
         yield table_definition
         schema = Schema.new(table_definition.fields)
-      elsif schema.is_a?(Hash)
+      elsif schema.is_a?(Hash) || (defined?(Polars::Schema) && schema.is_a?(Polars::Schema))
         fields =
-          schema.map.with_index do |(k, v), i|
+          schema.to_h.map.with_index do |(k, v), i|
             {
               id: i + 1,
               name: k.is_a?(Symbol) ? k.to_s : k,
