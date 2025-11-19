@@ -2,7 +2,15 @@ name: build
 on: [push, pull_request]
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # - ruby: 3.4
+          #   os: ubuntu-latest
+          - ruby: 3.4
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
@@ -14,7 +22,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.4
+          ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - uses: ankane/setup-postgres@v1
         with:
