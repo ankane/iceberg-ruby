@@ -19,6 +19,9 @@ jobs:
       - uses: ankane/setup-postgres@v1
         with:
           database: iceberg_ruby_test
+      # https://github.com/oxidize-rb/rb-sys/issues/268
+      - if: ${{ startsWith(matrix.os, 'windows') }}
+        run: echo "RUST_TARGET=x86_64-pc-windows-gnu" >> "$env:GITHUB_ENV"
       - run: bundle exec rake compile
       - run: docker run -d -p 8181:8181 apache/iceberg-rest-fixture
       - run: bundle exec rake test:memory
