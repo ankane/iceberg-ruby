@@ -2,12 +2,7 @@ name: build
 on: [push, pull_request]
 jobs:
   build:
-    runs-on: ubuntu-latest
-    services:
-      iceberg-rest:
-        image: apache/iceberg-rest-fixture
-        ports:
-          - 8181:8181
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
@@ -25,6 +20,7 @@ jobs:
         with:
           database: iceberg_ruby_test
       - run: bundle exec rake compile
+      - run: docker run -d -p 8181:8181 apache/iceberg-rest-fixture
       - run: bundle exec rake test:memory
       - run: bundle exec rake test:rest
       - run: bundle exec rake test:sql
