@@ -1,5 +1,5 @@
 [package]
-name = "iceberg"
+name = "iceberg-ruby"
 version = "0.10.3"
 license = "Apache-2.0"
 authors = ["Andrew Kane <andrew@ankane.org>"]
@@ -8,6 +8,7 @@ rust-version = "1.87"
 publish = false
 
 [lib]
+name = "iceberg"
 crate-type = ["cdylib"]
 
 [dependencies]

@@ -14,7 +14,7 @@ use crate::table::RbTable;
 
 type RbResult<T> = Result<T, RbErr>;
 
-#[magnus::init]
+#[magnus::init(name = "iceberg")]
 fn init(ruby: &Ruby) -> RbResult<()> {
     let module = ruby.define_module("Iceberg")?;
 
