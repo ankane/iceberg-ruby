@@ -2167,7 +2167,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "778e2ac28f6c47af28e4907f13ffd1e1ddbd400980a9abd7c8df189bf578a5ad"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3253,7 +3253,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -4012,7 +4012,7 @@ dependencies = [
  "once_cell",
  "socket2 0.5.10",
  "tracing",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4097,18 +4097,18 @@ dependencies = [
 
 [[package]]
 name = "rb-sys"
-version = "0.9.119"
+version = "0.9.123"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4519fc8de033923105f512c504a8f27714ef38648ccc30969362194c50b2ed08"
+checksum = "45fb1a185af97ee456f1c9e56dbe6e2e662bec4fdeaf83c4c28e0e6adfb18816"
 dependencies = [
  "rb-sys-build",
 ]
 
 [[package]]
 name = "rb-sys-build"
-version = "0.9.119"
+version = "0.9.123"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e0109499e06c85f56df4abad7d9c642ea8a2dd821d1d7132b4d1b69534677f3"
+checksum = "a58ebd02d7a6033e6a5f6f8d150c1e9f16506039092b84a73e6bedce6d3adf41"
 dependencies = [
  "bindgen",
  "lazy_static",
@@ -4425,7 +4425,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4438,7 +4438,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.9.4",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5117,7 +5117,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "psm",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5234,7 +5234,7 @@ dependencies = [
  "getrandom 0.3.3",
  "once_cell",
  "rustix 1.0.8",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
