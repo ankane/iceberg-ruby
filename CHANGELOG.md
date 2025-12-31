@@ -1,3 +1,7 @@
+## 0.10.4 (unreleased)
+
+- Added support for Ruby 4.0
+
 ## 0.10.3 (2025-10-15)
 
 - Updated Iceberg Rust to 0.7.0
