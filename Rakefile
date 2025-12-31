@@ -48,8 +48,9 @@ Rake::ExtensionTask.new("iceberg", gemspec) do |ext|
 end
 
 task :remove_ext do
-  path = "lib/iceberg/iceberg.bundle"
-  File.unlink(path) if File.exist?(path)
+  Dir["lib/iceberg/iceberg.{bundle,so}"].each do |path|
+    File.unlink(path)
+  end
 end
 
 Rake::Task["build"].enhance [:remove_ext]
