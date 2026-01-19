@@ -28,7 +28,7 @@ module Iceberg
     def drop_namespace(namespace, if_exists: nil)
       @catalog.drop_namespace(namespace)
     rescue Error => e
-      if !if_exists || (e.message != "Tried to drop a namespace that does not exist" && !e.message.include?("No such namespace"))
+      if !if_exists || (e.message != "Tried to drop a namespace that does not exist" && !e.message.include?("No such namespace") && !e.message.include?("The specified namespace does not exist"))
         raise e
       end
       nil
@@ -72,7 +72,7 @@ module Iceberg
     def drop_table(table_name, if_exists: nil)
       @catalog.drop_table(table_name)
     rescue Error => e
-      if !if_exists || (e.message != "Tried to drop a table that does not exist" && !e.message.include?("No such table"))
+      if !if_exists || (e.message != "Tried to drop a table that does not exist" && !e.message.include?("No such table") && !e.message.include?("The specified table does not exist"))
         raise e
       end
       nil

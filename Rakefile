@@ -2,7 +2,7 @@ require "bundler/gem_tasks"
 require "rake/testtask"
 require "rake/extensiontask"
 
-CATALOGS = %w(glue memory rest sql)
+CATALOGS = %w(glue memory rest s3tables sql)
 
 CATALOGS.each do |catalog|
   namespace :test do
@@ -18,7 +18,7 @@ end
 desc "Run all catalog tests"
 task :test do
   CATALOGS.each do |catalog|
-    next if catalog == "glue"
+    next if ["glue", "s3tables"].include?(catalog)
 
     Rake::Task["test:#{catalog}"].invoke
   end

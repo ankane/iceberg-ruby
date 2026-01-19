@@ -18,6 +18,7 @@ require_relative "iceberg/version"
 require_relative "iceberg/glue_catalog"
 require_relative "iceberg/memory_catalog"
 require_relative "iceberg/rest_catalog"
+require_relative "iceberg/s3_tables_catalog"
 require_relative "iceberg/sql_catalog"
 
 module Iceberg

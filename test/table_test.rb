@@ -5,7 +5,11 @@ class TableTest < Minitest::Test
     table = catalog.create_table("iceberg_ruby_test.events")
     assert_equal 2, table.format_version
     assert_kind_of String, table.uuid
-    assert_match "iceberg_ruby_test/events", table.location
+    if s3tables?
+      assert_match "table-s3/metadata", table.location
+    else
+      assert_match "iceberg_ruby_test/events", table.location
+    end
     assert_equal 0, table.last_sequence_number
     assert_equal 1, table.next_sequence_number
     assert_equal 0, table.last_column_id
@@ -28,7 +32,11 @@ class TableTest < Minitest::Test
     assert_kind_of Integer, snapshot[:snapshot_id]
     assert_nil snapshot.fetch(:parent_snapshot_id)
     assert_equal 1, snapshot[:sequence_number]
-    assert_match "iceberg_ruby_test/events/metadata", snapshot[:manifest_list]
+    if s3tables?
+      assert_match "table-s3/metadata", snapshot[:manifest_list]
+    else
+      assert_match "iceberg_ruby_test/events/metadata", snapshot[:manifest_list]
+    end
     assert_equal 0, snapshot[:schema_id]
   end
 

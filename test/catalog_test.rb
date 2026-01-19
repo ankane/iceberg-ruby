@@ -40,12 +40,16 @@ class CatalogTest < Minitest::Test
   end
 
   def test_tables_dot
-    catalog.create_table(["iceberg_ruby_test", "events.dot"])
-    assert_equal [["iceberg_ruby_test", "events.dot"]], catalog.list_tables("iceberg_ruby_test")
-    assert_equal true, catalog.table_exists?(["iceberg_ruby_test", "events.dot"])
-    assert_equal false, catalog.table_exists?("iceberg_ruby_test.events.dot")
-  ensure
-    catalog.drop_table(["iceberg_ruby_test", "events.dot"])
+    skip if s3tables?
+
+    begin
+      catalog.create_table(["iceberg_ruby_test", "events.dot"])
+      assert_equal [["iceberg_ruby_test", "events.dot"]], catalog.list_tables("iceberg_ruby_test")
+      assert_equal true, catalog.table_exists?(["iceberg_ruby_test", "events.dot"])
+      assert_equal false, catalog.table_exists?("iceberg_ruby_test.events.dot")
+    ensure
+      catalog.drop_table(["iceberg_ruby_test", "events.dot"])
+    end
   end
 
   def test_drop_table_if_exists
@@ -58,6 +62,8 @@ class CatalogTest < Minitest::Test
     end
     if memory? || sql?
       assert_match "No such table", error.message
+    elsif s3tables?
+      assert_match "The specified table does not exist", error.message
     else
       assert_equal "Tried to drop a table that does not exist", error.message
     end
@@ -69,6 +75,8 @@ class CatalogTest < Minitest::Test
     end
     if memory? || sql?
       assert_match "No such table", error.message
+    elsif s3tables?
+      assert_match "The specified table does not exist", error.message
     else
       assert_equal "Tried to load a table that does not exist", error.message
     end
@@ -87,6 +95,8 @@ class CatalogTest < Minitest::Test
     end
     if rest?
       assert_match "metadata.json is not a valid metadata file", error.message
+    elsif s3tables?
+      assert_match "Registering a table is not supported yet", error.message
     else
       assert_match "No such file or directory", error.message
     end

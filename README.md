@@ -65,6 +65,16 @@ Iceberg::RestCatalog.new(
 )
 ```
 
+### S3 Tables
+
+[unreleased]
+
+```ruby
+Iceberg::S3TablesCatalog.new(
+  arn: "arn:aws:s3tables:..."
+)
+```
+
 ### SQL
 
 ```ruby

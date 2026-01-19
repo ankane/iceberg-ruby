@@ -9,6 +9,10 @@ use iceberg_catalog_glue::{GLUE_CATALOG_PROP_WAREHOUSE, GlueCatalog, GlueCatalog
 use iceberg_catalog_rest::{
     REST_CATALOG_PROP_URI, REST_CATALOG_PROP_WAREHOUSE, RestCatalog, RestCatalogBuilder,
 };
+#[cfg(feature = "s3tables")]
+use iceberg_catalog_s3tables::{
+    S3TABLES_CATALOG_PROP_TABLE_BUCKET_ARN, S3TablesCatalog, S3TablesCatalogBuilder,
+};
 #[cfg(feature = "sql")]
 use iceberg_catalog_sql::{
     SQL_CATALOG_PROP_BIND_STYLE, SQL_CATALOG_PROP_URI, SQL_CATALOG_PROP_WAREHOUSE, SqlBindStyle,
@@ -31,6 +35,8 @@ pub enum RbCatalogType {
     Memory(Arc<MemoryCatalog>),
     #[cfg(feature = "rest")]
     Rest(Arc<RestCatalog>),
+    #[cfg(feature = "s3tables")]
+    S3Tables(Arc<S3TablesCatalog>),
     #[cfg(feature = "sql")]
     Sql(Arc<SqlCatalog>),
 }
@@ -43,6 +49,8 @@ impl RbCatalogType {
             RbCatalogType::Memory(v) => v.as_ref(),
             #[cfg(feature = "rest")]
             RbCatalogType::Rest(v) => v.as_ref(),
+            #[cfg(feature = "s3tables")]
+            RbCatalogType::S3Tables(v) => v.as_ref(),
             #[cfg(feature = "sql")]
             RbCatalogType::Sql(v) => v.as_ref(),
         }
@@ -56,6 +64,8 @@ impl RbCatalogType {
             RbCatalogType::Memory(v) => v.clone(),
             #[cfg(feature = "rest")]
             RbCatalogType::Rest(v) => v.clone(),
+            #[cfg(feature = "s3tables")]
+            RbCatalogType::S3Tables(v) => v.clone(),
             #[cfg(feature = "sql")]
             RbCatalogType::Sql(v) => v.clone(),
         }
@@ -108,6 +118,18 @@ impl RbCatalog {
             .map_err(to_rb_err)?;
         Ok(Self {
             catalog: RbCatalogType::Rest(catalog.into()).into(),
+        })
+    }
+
+    #[cfg(feature = "s3tables")]
+    pub fn new_s3tables(arn: String) -> RbResult<Self> {
+        let mut props = HashMap::new();
+        props.insert(S3TABLES_CATALOG_PROP_TABLE_BUCKET_ARN.to_string(), arn);
+        let catalog = runtime()
+            .block_on(S3TablesCatalogBuilder::default().load("s3tables", props))
+            .map_err(to_rb_err)?;
+        Ok(Self {
+            catalog: RbCatalogType::S3Tables(catalog.into()).into(),
         })
     }
 

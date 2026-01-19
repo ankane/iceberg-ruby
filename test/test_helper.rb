@@ -37,6 +37,10 @@ class Minitest::Test
         Iceberg::RestCatalog.new(
           uri: ENV.fetch("REST_CATALOG_URI", "http://localhost:8181")
         )
+      when "s3tables"
+        Iceberg::S3TablesCatalog.new(
+          arn: ENV.fetch("S3_TABLES_ARN")
+        )
       when "sql"
         Iceberg::SqlCatalog.new(
           uri: "postgres://localhost/iceberg_ruby_test",
@@ -63,6 +67,10 @@ class Minitest::Test
 
   def rest?
     catalog.is_a?(Iceberg::RestCatalog)
+  end
+
+  def s3tables?
+    catalog.is_a?(Iceberg::S3TablesCatalog)
   end
 
   def sql?

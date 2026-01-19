@@ -15,7 +15,7 @@ class NamespaceTest < Minitest::Test
     properties = catalog.namespace_properties("iceberg_ruby_test")
     assert_kind_of Hash, properties
 
-    if rest?
+    if rest? || s3tables?
       assert_raises(Iceberg::UnsupportedFeatureError) do
         catalog.update_namespace("iceberg_ruby_test", properties: {})
       end
@@ -30,18 +30,22 @@ class NamespaceTest < Minitest::Test
   end
 
   def test_namespaces_nested
-    assert_nil catalog.create_namespace("iceberg_ruby_test.nested")
-    assert_includes catalog.list_namespaces, ["iceberg_ruby_test"]
-    refute_includes catalog.list_namespaces, ["iceberg_ruby_test", "nested"]
-    assert_includes catalog.list_namespaces("iceberg_ruby_test"), ["iceberg_ruby_test", "nested"]
-    refute_includes catalog.list_namespaces("iceberg_ruby_test"), ["iceberg_ruby_test"]
+    skip if s3tables?
 
-    catalog.create_table("iceberg_ruby_test.nested.events")
-    assert_nil catalog.drop_table("iceberg_ruby_test.nested.events")
+    begin
+      assert_nil catalog.create_namespace("iceberg_ruby_test.nested")
+      assert_includes catalog.list_namespaces, ["iceberg_ruby_test"]
+      refute_includes catalog.list_namespaces, ["iceberg_ruby_test", "nested"]
+      assert_includes catalog.list_namespaces("iceberg_ruby_test"), ["iceberg_ruby_test", "nested"]
+      refute_includes catalog.list_namespaces("iceberg_ruby_test"), ["iceberg_ruby_test"]
 
-    assert_nil catalog.drop_namespace("iceberg_ruby_test.nested")
-  ensure
-    drop_namespace("iceberg_ruby_test.nested")
+      catalog.create_table("iceberg_ruby_test.nested.events")
+      assert_nil catalog.drop_table("iceberg_ruby_test.nested.events")
+
+      assert_nil catalog.drop_namespace("iceberg_ruby_test.nested")
+    ensure
+      drop_namespace("iceberg_ruby_test.nested")
+    end
   end
 
   def test_namespaces_dot
@@ -61,7 +65,7 @@ class NamespaceTest < Minitest::Test
     end
     if memory?
       assert_match "Cannot create namespace", error.message
-    elsif sql?
+    elsif sql? || s3tables?
       assert_match "already exists", error.message
     else
       assert_equal "Tried to create a namespace that already exists", error.message
@@ -78,6 +82,8 @@ class NamespaceTest < Minitest::Test
     end
     if memory? || sql?
       assert_match "No such namespace", error.message
+    elsif s3tables?
+      assert_match "The specified namespace does not exist", error.message
     else
       assert_equal "Tried to drop a namespace that does not exist", error.message
     end

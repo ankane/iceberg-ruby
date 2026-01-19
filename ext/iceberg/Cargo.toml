@@ -19,6 +19,7 @@ futures = "0.3"
 iceberg = "0.8"
 iceberg-catalog-glue = { version = "0.8", optional = true }
 iceberg-catalog-rest = { version = "0.8", optional = true }
+iceberg-catalog-s3tables = { version = "0.8", optional = true }
 iceberg-catalog-sql = { version = "0.8", optional = true }
 iceberg-datafusion = { version = "0.8", optional = true }
 magnus = "0.8"
@@ -28,8 +29,9 @@ tokio = { version = "1", features = ["rt-multi-thread"] }
 uuid = { version = "1", features = ["v4"] }
 
 [features]
-default = ["rest", "sql"]
+default = ["rest", "s3tables", "sql"]
 datafusion = ["dep:datafusion", "dep:iceberg-datafusion"]
 glue = ["dep:iceberg-catalog-glue"]
 rest = ["dep:iceberg-catalog-rest"]
+s3tables = ["dep:iceberg-catalog-s3tables"]
 sql = ["dep:iceberg-catalog-sql", "dep:sqlx"]
