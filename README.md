@@ -75,6 +75,16 @@ Iceberg::S3TablesCatalog.new(
 )
 ```
 
+### Glue
+
+[unreleased]
+
+```ruby
+Iceberg::GlueCatalog.new(
+  warehouse: "s3://my-bucket"
+)
+```
+
 ### SQL
 
 ```ruby
