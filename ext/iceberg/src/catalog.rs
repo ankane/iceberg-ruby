@@ -316,7 +316,7 @@ impl RbCatalog {
     }
 
     #[cfg(feature = "datafusion")]
-    pub fn query(&self, sql: String) -> RbResult<()> {
+    pub fn sql(&self, sql: String) -> RbResult<()> {
         let runtime = runtime();
 
         // TODO only create context once
@@ -330,8 +330,7 @@ impl RbCatalog {
         let df = runtime.block_on(ctx.sql(&sql)).unwrap();
         let _results = runtime.block_on(df.collect()).unwrap();
 
-        // println!("{:?}", df.schema().fields());
-        // println!("{:?}", results);
+        // println!("{:?}", _results);
 
         Ok(())
     }

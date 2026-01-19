@@ -108,6 +108,17 @@ class CatalogTest < Minitest::Test
     end
   end
 
+  def test_sql
+    skip
+
+    catalog.create_table("iceberg_ruby_test.events") do |t|
+      t.bigint :a
+      t.string :b
+    end
+    catalog.sql("INSERT INTO iceberg_ruby_test.events (a, b) VALUES (1, 'one'), (2, 'two'), (3, 'three')")
+    catalog.sql("SELECT * FROM iceberg_ruby_test.events")
+  end
+
   def test_inspect
     assert_equal catalog.inspect, catalog.to_s
     refute_match "@catalog", catalog.inspect

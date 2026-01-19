@@ -92,11 +92,11 @@ module Iceberg
       @catalog.register_table(table_name, metadata_location)
     end
 
-    def query(sql)
+    def sql(sql)
       # requires datafusion feature
-      raise Todo unless @catalog.respond_to?(:query)
+      raise Todo unless @catalog.respond_to?(:sql)
 
-      @catalog.query(sql)
+      @catalog.sql(sql)
     end
 
     # hide internal state

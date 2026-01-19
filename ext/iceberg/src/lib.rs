@@ -44,7 +44,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("rename_table", method!(RbCatalog::rename_table, 2))?;
     class.define_method("register_table", method!(RbCatalog::register_table, 2))?;
     #[cfg(feature = "datafusion")]
-    class.define_method("query", method!(RbCatalog::query, 1))?;
+    class.define_method("sql", method!(RbCatalog::sql, 1))?;
 
     let class = module.define_class("RbTable", ruby.class_object())?;
     class.define_method("scan", method!(RbTable::scan, 1))?;
