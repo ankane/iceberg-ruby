@@ -1,4 +1,4 @@
-## 0.10.4 (unreleased)
+## 0.11.0 (unreleased)
 
 - Updated Iceberg Rust to 0.8.0
 - Added support for Ruby 4.0
