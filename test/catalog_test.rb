@@ -40,7 +40,7 @@ class CatalogTest < Minitest::Test
   end
 
   def test_tables_dot
-    skip if s3tables?
+    skip if s3tables? || glue?
 
     begin
       catalog.create_table(["iceberg_ruby_test", "events.dot"])
@@ -64,6 +64,8 @@ class CatalogTest < Minitest::Test
       assert_match "No such table", error.message
     elsif s3tables?
       assert_match "The specified table does not exist", error.message
+    elsif glue?
+      assert_match "Table events not found", error.message
     else
       assert_equal "Tried to drop a table that does not exist", error.message
     end
@@ -77,6 +79,8 @@ class CatalogTest < Minitest::Test
       assert_match "No such table", error.message
     elsif s3tables?
       assert_match "The specified table does not exist", error.message
+    elsif glue?
+      assert_match "Entity Not Found", error.message
     else
       assert_equal "Tried to load a table that does not exist", error.message
     end
@@ -97,6 +101,8 @@ class CatalogTest < Minitest::Test
       assert_match "metadata.json is not a valid metadata file", error.message
     elsif s3tables?
       assert_match "Registering a table is not supported yet", error.message
+    elsif glue?
+      assert_match "Failed to parse url", error.message
     else
       assert_match "No such file or directory", error.message
     end

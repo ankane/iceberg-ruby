@@ -18,7 +18,8 @@ end
 desc "Run all catalog tests"
 task :test do
   CATALOGS.each do |catalog|
-    next if ["glue", "s3tables"].include?(catalog)
+    next if catalog == "glue" && !ENV["S3_BUCKET"]
+    next if catalog == "s3tables" && !ENV["S3_TABLES_ARN"]
 
     Rake::Task["test:#{catalog}"].invoke
   end

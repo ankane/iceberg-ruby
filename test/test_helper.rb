@@ -61,6 +61,10 @@ class Minitest::Test
     ENV.fetch("S3_BUCKET")
   end
 
+  def glue?
+    catalog.is_a?(Iceberg::GlueCatalog)
+  end
+
   def memory?
     catalog.is_a?(Iceberg::MemoryCatalog)
   end

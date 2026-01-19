@@ -7,6 +7,8 @@ class TableTest < Minitest::Test
     assert_kind_of String, table.uuid
     if s3tables?
       assert_match "table-s3/metadata", table.location
+    elsif glue?
+      assert_match "iceberg_ruby_test.db/events", table.location
     else
       assert_match "iceberg_ruby_test/events", table.location
     end
@@ -34,6 +36,8 @@ class TableTest < Minitest::Test
     assert_equal 1, snapshot[:sequence_number]
     if s3tables?
       assert_match "table-s3/metadata", snapshot[:manifest_list]
+    elsif glue?
+      assert_match "iceberg_ruby_test.db/events/metadata", snapshot[:manifest_list]
     else
       assert_match "iceberg_ruby_test/events/metadata", snapshot[:manifest_list]
     end

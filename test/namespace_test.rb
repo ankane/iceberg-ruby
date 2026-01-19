@@ -30,7 +30,7 @@ class NamespaceTest < Minitest::Test
   end
 
   def test_namespaces_nested
-    skip if s3tables?
+    skip if s3tables? || glue?
 
     begin
       assert_nil catalog.create_namespace("iceberg_ruby_test.nested")
@@ -65,7 +65,7 @@ class NamespaceTest < Minitest::Test
     end
     if memory?
       assert_match "Cannot create namespace", error.message
-    elsif sql? || s3tables?
+    elsif sql? || s3tables? || glue?
       assert_match "already exists", error.message
     else
       assert_equal "Tried to create a namespace that already exists", error.message
@@ -73,17 +73,19 @@ class NamespaceTest < Minitest::Test
   end
 
   def test_drop_namespace_if_exists
-    catalog.drop_namespace("iceberg_ruby_test.events", if_exists: true)
+    catalog.drop_namespace("iceberg_ruby_test2", if_exists: true)
   end
 
   def test_drop_namespace_missing
     error = assert_raises(Iceberg::Error) do
-      catalog.drop_namespace("iceberg_ruby_test.events")
+      catalog.drop_namespace("iceberg_ruby_test2")
     end
     if memory? || sql?
       assert_match "No such namespace", error.message
     elsif s3tables?
       assert_match "The specified namespace does not exist", error.message
+    elsif glue?
+      assert_match "not found", error.message
     else
       assert_equal "Tried to drop a namespace that does not exist", error.message
     end

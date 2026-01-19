@@ -20,6 +20,8 @@ class CreateTableTest < Minitest::Test
   end
 
   def test_block_types
+    skip "Conversion from Timestamptz is not supported" if glue?
+
     table =
       catalog.create_table("iceberg_ruby_test.events") do |t|
         t.boolean "boolean", default: true
