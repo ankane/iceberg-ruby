@@ -4,6 +4,7 @@
 - Added support for Ruby 4.0
 - Added support for S3 Tables
 - Added support for Glue
+- Dropped support for Ruby < 3.3
 
 ## 0.10.3 (2025-10-15)
 
