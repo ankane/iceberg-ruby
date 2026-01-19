@@ -1,6 +1,6 @@
 use iceberg::spec::{
-    Literal, NestedField, PartitionSpec, PartitionStatisticsFile, PrimitiveLiteral, PrimitiveType,
-    Schema, Snapshot, SortOrder, StatisticsFile, Type,
+    EncryptedKey, Literal, NestedField, PartitionSpec, PartitionStatisticsFile, PrimitiveLiteral,
+    PrimitiveType, Schema, Snapshot, SortOrder, StatisticsFile, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
 use magnus::{
@@ -235,6 +235,10 @@ pub fn rb_statistics_file(_statistics_file: &StatisticsFile) -> RbResult<Value> 
 pub fn rb_partition_statistics_file(
     _partition_statistics_file: &PartitionStatisticsFile,
 ) -> RbResult<Value> {
+    todo!();
+}
+
+pub fn rb_encrypted_key(_encrypted_key: &EncryptedKey) -> RbResult<Value> {
     todo!();
 }
 

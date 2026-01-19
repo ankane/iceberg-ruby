@@ -9,6 +9,7 @@ use iceberg::writer::file_writer::ParquetWriterBuilder;
 use iceberg::writer::file_writer::location_generator::{
     DefaultFileNameGenerator, DefaultLocationGenerator,
 };
+use iceberg::writer::file_writer::rolling_writer::RollingFileWriterBuilder;
 use iceberg::writer::{IcebergWriter, IcebergWriterBuilder};
 use magnus::{Error as RbErr, RArray, Ruby, Value};
 use parquet::file::properties::WriterProperties;
@@ -72,14 +73,16 @@ impl RbTable {
         let parquet_writer_builder = ParquetWriterBuilder::new(
             WriterProperties::default(),
             table.metadata().current_schema().clone(),
-            None,
+        );
+        let rolling_file_writer_builder = RollingFileWriterBuilder::new_with_default_file_size(
+            parquet_writer_builder,
             table.file_io().clone(),
             location_generator.clone(),
             file_name_generator.clone(),
         );
-        let data_file_writer_builder = DataFileWriterBuilder::new(parquet_writer_builder, None, 0);
+        let data_file_writer_builder = DataFileWriterBuilder::new(rolling_file_writer_builder);
         let mut data_file_writer = runtime
-            .block_on(data_file_writer_builder.build())
+            .block_on(data_file_writer_builder.build(None))
             .map_err(to_rb_err)?;
 
         for batch in data.0 {
@@ -112,6 +115,7 @@ impl RbTable {
         match self.table.borrow().metadata().format_version() {
             FormatVersion::V1 => 1,
             FormatVersion::V2 => 2,
+            FormatVersion::V3 => 3,
         }
     }
 
@@ -357,18 +361,18 @@ impl RbTable {
 
     pub fn encryption_keys(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let encryption_keys = ruby.ary_new();
-        for (k, v) in rb_self.table.borrow().metadata().encryption_keys_iter() {
-            encryption_keys.push((ruby.str_new(k), ruby.str_new(v)))?;
+        for k in rb_self.table.borrow().metadata().encryption_keys_iter() {
+            encryption_keys.push(rb_encrypted_key(k)?)?;
         }
         Ok(encryption_keys)
     }
 
-    pub fn encryption_key(&self, key_id: String) -> Option<String> {
-        self.table
-            .borrow()
-            .metadata()
-            .encryption_key(&key_id)
-            .cloned()
+    pub fn encryption_key(&self, key_id: String) -> RbResult<Option<Value>> {
+        let key = match self.table.borrow().metadata().encryption_key(&key_id) {
+            Some(k) => Some(rb_encrypted_key(k)?),
+            None => None,
+        };
+        Ok(key)
     }
 
     pub fn from_metadata_file(location: String) -> RbResult<Self> {

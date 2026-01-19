@@ -1,6 +1,5 @@
 #[cfg(feature = "datafusion")]
 use datafusion::execution::context::SessionContext;
-use iceberg::io::FileIO;
 use iceberg::memory::{MEMORY_CATALOG_WAREHOUSE, MemoryCatalogBuilder};
 use iceberg::spec::Schema;
 use iceberg::{Catalog, CatalogBuilder, MemoryCatalog, NamespaceIdent, TableCreation, TableIdent};
@@ -11,7 +10,10 @@ use iceberg_catalog_rest::{
     REST_CATALOG_PROP_URI, REST_CATALOG_PROP_WAREHOUSE, RestCatalog, RestCatalogBuilder,
 };
 #[cfg(feature = "sql")]
-use iceberg_catalog_sql::{SqlBindStyle, SqlCatalog, SqlCatalogConfig};
+use iceberg_catalog_sql::{
+    SQL_CATALOG_PROP_BIND_STYLE, SQL_CATALOG_PROP_URI, SQL_CATALOG_PROP_WAREHOUSE, SqlBindStyle,
+    SqlCatalog, SqlCatalogBuilder,
+};
 #[cfg(feature = "datafusion")]
 use iceberg_datafusion::IcebergCatalogProvider;
 use std::cell::RefCell;
@@ -116,20 +118,15 @@ impl RbCatalog {
         name: String,
         props: HashMap<String, String>,
     ) -> RbResult<Self> {
-        let file_io = FileIO::from_path(&warehouse)
-            .map_err(to_rb_err)?
-            .build()
-            .map_err(to_rb_err)?;
-        let config = SqlCatalogConfig::builder()
-            .uri(uri)
-            .warehouse_location(warehouse)
-            .name(name)
-            .file_io(file_io)
-            .sql_bind_style(SqlBindStyle::DollarNumeric)
-            .props(props)
-            .build();
+        let mut props = props;
+        props.insert(SQL_CATALOG_PROP_URI.to_string(), uri);
+        props.insert(SQL_CATALOG_PROP_WAREHOUSE.to_string(), warehouse);
+        props.insert(
+            SQL_CATALOG_PROP_BIND_STYLE.to_string(),
+            SqlBindStyle::DollarNumeric.to_string(),
+        );
         let catalog = runtime()
-            .block_on(SqlCatalog::new(config))
+            .block_on(SqlCatalogBuilder::default().load(name, props))
             .map_err(to_rb_err)?;
         Ok(Self {
             catalog: RbCatalogType::Sql(catalog.into()).into(),

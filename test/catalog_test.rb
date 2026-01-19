@@ -87,8 +87,6 @@ class CatalogTest < Minitest::Test
     end
     if rest?
       assert_match "metadata.json is not a valid metadata file", error.message
-    elsif sql?
-      assert_match "Registering a table is not supported yet", error.message
     else
       assert_match "No such file or directory", error.message
     end

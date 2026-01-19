@@ -33,12 +33,7 @@ class NamespaceTest < Minitest::Test
     assert_nil catalog.create_namespace("iceberg_ruby_test.nested")
     assert_includes catalog.list_namespaces, ["iceberg_ruby_test"]
     refute_includes catalog.list_namespaces, ["iceberg_ruby_test", "nested"]
-    if memory?
-      # TODO fix
-      assert_includes catalog.list_namespaces("iceberg_ruby_test"), ["nested"]
-    else
-      assert_includes catalog.list_namespaces("iceberg_ruby_test"), ["iceberg_ruby_test", "nested"]
-    end
+    assert_includes catalog.list_namespaces("iceberg_ruby_test"), ["iceberg_ruby_test", "nested"]
     refute_includes catalog.list_namespaces("iceberg_ruby_test"), ["iceberg_ruby_test"]
 
     catalog.create_table("iceberg_ruby_test.nested.events")

@@ -35,7 +35,7 @@ class Minitest::Test
         )
       when "rest"
         Iceberg::RestCatalog.new(
-          uri: "http://localhost:8181"
+          uri: ENV.fetch("REST_CATALOG_URI", "http://localhost:8181")
         )
       when "sql"
         Iceberg::SqlCatalog.new(
@@ -67,10 +67,6 @@ class Minitest::Test
 
   def sql?
     catalog.is_a?(Iceberg::SqlCatalog)
-  end
-
-  def supports_updates?
-    !sql?
   end
 
   def drop_namespace(namespace)
