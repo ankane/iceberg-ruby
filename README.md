@@ -223,6 +223,12 @@ bundle exec rake test:memory
 docker run -p 8181:8181 apache/iceberg-rest-fixture
 bundle exec rake test:rest
 
+# S3 Tables catalog
+bundle exec rake test:s3tables
+
+# Glue catalog
+bundle exec rake test:glue
+
 # SQL catalog
 createdb iceberg_ruby_test
 bundle exec rake test:sql
