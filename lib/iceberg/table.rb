@@ -87,61 +87,14 @@ module Iceberg
       TableScan.new(@table.scan(snapshot_id), self)
     end
 
-    def to_polars(snapshot_id: nil, storage_options: nil, _schema_changes: false)
+    def to_polars(snapshot_id: nil, storage_options: nil)
       require "polars-df"
 
-      # TODO always take this path in 0.2.0
-      if _schema_changes
-        return Polars.scan_iceberg(self, snapshot_id:, storage_options:)
+      if Gem::Version.new(Polars::VERSION) < Gem::Version.new("0.23")
+        raise "requires polars-df >= 0.23"
       end
 
-      scan = scan(snapshot_id:)
-      files = scan.plan_files
-
-      if files.empty?
-        snapshot = scan.snapshot
-        scan_schema = snapshot ? schema_by_id(snapshot[:schema_id]) : current_schema
-
-        # TODO improve
-        schema =
-          scan_schema.fields.to_h do |field|
-            dtype =
-              case field[:type]
-              when "int"
-                Polars::Int32
-              when "long"
-                Polars::Int64
-              when "double"
-                Polars::Float64
-              when "string"
-                Polars::String
-              when "timestamp"
-                Polars::Datetime
-              else
-                raise Todo
-              end
-
-            [field[:name], dtype]
-          end
-
-        Polars::LazyFrame.new(schema: schema)
-      else
-        sources = files.map { |v| v[:data_file_path] }
-
-        deletion_files = [
-          "iceberg-position-delete",
-          files.map.with_index
-            .select { |v, i| v[:deletes].any? }
-            .to_h { |v, i| [i, v[:deletes].map { |d| d[:file_path] }] }
-        ]
-
-        scan_options = {
-          storage_options: storage_options,
-          _deletion_files: deletion_files,
-        }
-
-        Polars.scan_parquet(sources, **scan_options)
-      end
+      Polars.scan_iceberg(self, snapshot_id:, storage_options:)
     end
 
     def append(df)

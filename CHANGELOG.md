@@ -5,6 +5,7 @@
 - Added support for S3 Tables
 - Added support for Glue
 - Dropped support for Ruby < 3.3
+- Dropped support for Polars < 0.23
 
 ## 0.10.3 (2025-10-15)
 
