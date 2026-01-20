@@ -35,7 +35,7 @@ catalog.create_table("main.events") do |t|
 end
 ```
 
-Or
+Or with [Polars](https://github.com/ankane/ruby-polars)
 
 ```ruby
 df = Polars::DataFrame.new({"id" => [1, 2], "value" => [3.0, 4.0]})
