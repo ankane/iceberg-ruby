@@ -91,7 +91,7 @@ module Iceberg
       require "polars-df"
 
       if Gem::Version.new(Polars::VERSION) < Gem::Version.new("0.23")
-        raise "requires polars-df >= 0.23"
+        raise "Requires polars-df >= 0.23"
       end
 
       Polars.scan_iceberg(self, snapshot_id:, storage_options:)
