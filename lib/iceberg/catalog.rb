@@ -7,6 +7,7 @@ module Iceberg
     def create_namespace(namespace, properties: {}, if_not_exists: nil)
       @catalog.create_namespace(namespace, properties)
     rescue Error => e
+      # ideally all catalogs would use NamespaceAlreadyExistsError
       if !if_not_exists || (e.message != "Cannot create namespace" && !e.message.include?("already exists"))
         raise e
       end
