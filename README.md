@@ -2,6 +2,8 @@
 
 [Apache Iceberg](https://iceberg.apache.org/) for Ruby
 
+:duck: Also check out [SeaDuck](https://github.com/ankane/seaduck)
+
 [![Build Status](https://github.com/ankane/iceberg-ruby/actions/workflows/build.yml/badge.svg)](https://github.com/ankane/iceberg-ruby/actions)
 
 ## Installation
