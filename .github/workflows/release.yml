@@ -31,6 +31,8 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.4
+      - name: Remove test dependencies
+        run: sed -i '8,$ d' Gemfile
       - run: gem install rb_sys
       - run: rb-sys-dock --ruby-versions 4.0,3.4,3.3 --platform ${{ matrix.platform }} --build
       - uses: actions/upload-artifact@v6
