@@ -1,6 +1,6 @@
 [package]
 name = "iceberg-ruby"
-version = "0.10.3"
+version = "0.11.0"
 license = "Apache-2.0"
 authors = ["Andrew Kane <andrew@ankane.org>"]
 edition = "2024"
