@@ -24,8 +24,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new_memory", function!(RbCatalog::new_memory, 1))?;
     #[cfg(feature = "rest")]
     class.define_singleton_method("new_rest", function!(RbCatalog::new_rest, 3))?;
-    #[cfg(feature = "sql")]
+    #[cfg(feature = "s3tables")]
     class.define_singleton_method("new_s3tables", function!(RbCatalog::new_s3tables, 1))?;
+    #[cfg(feature = "sql")]
     class.define_singleton_method("new_sql", function!(RbCatalog::new_sql, 4))?;
     class.define_method("list_namespaces", method!(RbCatalog::list_namespaces, 1))?;
     class.define_method("create_namespace", method!(RbCatalog::create_namespace, 2))?;
