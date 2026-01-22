@@ -67,26 +67,6 @@ Iceberg::RestCatalog.new(
 )
 ```
 
-### S3 Tables
-
-[unreleased]
-
-```ruby
-Iceberg::S3TablesCatalog.new(
-  arn: "arn:aws:s3tables:..."
-)
-```
-
-### Glue
-
-[unreleased]
-
-```ruby
-Iceberg::GlueCatalog.new(
-  warehouse: "s3://my-bucket"
-)
-```
-
 ### SQL
 
 ```ruby
@@ -224,12 +204,6 @@ bundle exec rake test:memory
 # REST catalog
 docker run -p 8181:8181 apache/iceberg-rest-fixture
 bundle exec rake test:rest
-
-# S3 Tables catalog
-bundle exec rake test:s3tables
-
-# Glue catalog
-bundle exec rake test:glue
 
 # SQL catalog
 createdb iceberg_ruby_test
