@@ -1,5 +1,6 @@
 #[cfg(feature = "datafusion")]
 use datafusion::execution::context::SessionContext;
+use iceberg::io::LocalFsStorageFactory;
 use iceberg::memory::{MEMORY_CATALOG_WAREHOUSE, MemoryCatalogBuilder};
 use iceberg::spec::Schema;
 use iceberg::{Catalog, CatalogBuilder, MemoryCatalog, NamespaceIdent, TableCreation, TableIdent};
@@ -95,7 +96,11 @@ impl RbCatalog {
             props.insert(MEMORY_CATALOG_WAREHOUSE.to_string(), v);
         }
         let catalog = runtime()
-            .block_on(MemoryCatalogBuilder::default().load("memory", props))
+            .block_on(
+                MemoryCatalogBuilder::default()
+                    .with_storage_factory(Arc::new(LocalFsStorageFactory))
+                    .load("memory", props),
+            )
             .map_err(to_rb_err)?;
         Ok(Self {
             catalog: RbCatalogType::Memory(catalog.into()).into(),
@@ -114,7 +119,11 @@ impl RbCatalog {
             props.insert(REST_CATALOG_PROP_WAREHOUSE.to_string(), v);
         }
         let catalog = runtime()
-            .block_on(RestCatalogBuilder::default().load("rest", props))
+            .block_on(
+                RestCatalogBuilder::default()
+                    .with_storage_factory(Arc::new(LocalFsStorageFactory))
+                    .load("rest", props),
+            )
             .map_err(to_rb_err)?;
         Ok(Self {
             catalog: RbCatalogType::Rest(catalog.into()).into(),
@@ -148,7 +157,11 @@ impl RbCatalog {
             SqlBindStyle::DollarNumeric.to_string(),
         );
         let catalog = runtime()
-            .block_on(SqlCatalogBuilder::default().load(name, props))
+            .block_on(
+                SqlCatalogBuilder::default()
+                    .with_storage_factory(Arc::new(LocalFsStorageFactory))
+                    .load(name, props),
+            )
             .map_err(to_rb_err)?;
         Ok(Self {
             catalog: RbCatalogType::Sql(catalog.into()).into(),
