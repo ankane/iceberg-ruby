@@ -2943,7 +2943,7 @@ dependencies = [
 
 [[package]]
 name = "iceberg-ruby"
-version = "0.11.0"
+version = "0.11.1"
 dependencies = [
  "arrow-array",
  "arrow-schema",

@@ -1,4 +1,4 @@
-## 0.11.1 (unreleased)
+## 0.11.1 (2026-03-18)
 
 - Updated Iceberg Rust to 0.9.0
 
