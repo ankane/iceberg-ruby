@@ -11,7 +11,7 @@ use iceberg::writer::file_writer::location_generator::{
 };
 use iceberg::writer::file_writer::rolling_writer::RollingFileWriterBuilder;
 use iceberg::writer::{IcebergWriter, IcebergWriterBuilder};
-use magnus::{Error as RbErr, RArray, Ruby, Value};
+use magnus::{RArray, Ruby, Value};
 use parquet::file::properties::WriterProperties;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -48,55 +48,50 @@ impl RbTable {
         data: RbArrowType<ArrowArrayStreamReader>,
         catalog: &RbCatalog,
     ) -> RbResult<RbTable> {
-        let runtime = runtime();
-        let table = rb_self.table.read().unwrap();
-        let catalog = catalog.catalog.read().unwrap();
-
-        let table_schema: Arc<arrow_schema::Schema> = Arc::new(
-            table
-                .metadata()
-                .current_schema()
-                .as_ref()
-                .try_into()
-                .unwrap(),
-        );
-
-        let location_generator =
-            DefaultLocationGenerator::new(table.metadata().clone()).map_err(to_rb_err)?;
-        let file_name_generator = DefaultFileNameGenerator::new(
-            // TODO move task id to suffix to match Python and Java
-            "0".to_string(),
-            Some(Uuid::new_v4().to_string()),
-            iceberg::spec::DataFileFormat::Parquet,
-        );
-
-        let parquet_writer_builder = ParquetWriterBuilder::new(
-            WriterProperties::default(),
-            table.metadata().current_schema().clone(),
-        );
-        let rolling_file_writer_builder = RollingFileWriterBuilder::new_with_default_file_size(
-            parquet_writer_builder,
-            table.file_io().clone(),
-            location_generator.clone(),
-            file_name_generator.clone(),
-        );
-        let data_file_writer_builder = DataFileWriterBuilder::new(rolling_file_writer_builder);
-        let mut data_file_writer = runtime
-            .block_on(data_file_writer_builder.build(None))
-            .map_err(to_rb_err)?;
-
-        for batch in data.0 {
-            let batch = batch
-                .unwrap()
-                .with_schema(table_schema.clone())
-                .map_err(|e| RbErr::new(ruby.exception_arg_error(), e.to_string()))?;
-            runtime
-                .block_on(data_file_writer.write(batch))
-                .map_err(to_rb_err)?;
-        }
-
         let table = ruby
             .detach(|| {
+                let runtime = runtime();
+                let table = rb_self.table.read().unwrap();
+                let catalog = catalog.catalog.read().unwrap();
+
+                let table_schema: Arc<arrow_schema::Schema> = Arc::new(
+                    table
+                        .metadata()
+                        .current_schema()
+                        .as_ref()
+                        .try_into()
+                        .unwrap(),
+                );
+
+                let location_generator = DefaultLocationGenerator::new(table.metadata().clone())?;
+                let file_name_generator = DefaultFileNameGenerator::new(
+                    // TODO move task id to suffix to match Python and Java
+                    "0".to_string(),
+                    Some(Uuid::new_v4().to_string()),
+                    iceberg::spec::DataFileFormat::Parquet,
+                );
+
+                let parquet_writer_builder = ParquetWriterBuilder::new(
+                    WriterProperties::default(),
+                    table.metadata().current_schema().clone(),
+                );
+                let rolling_file_writer_builder =
+                    RollingFileWriterBuilder::new_with_default_file_size(
+                        parquet_writer_builder,
+                        table.file_io().clone(),
+                        location_generator.clone(),
+                        file_name_generator.clone(),
+                    );
+                let data_file_writer_builder =
+                    DataFileWriterBuilder::new(rolling_file_writer_builder);
+                let mut data_file_writer =
+                    runtime.block_on(data_file_writer_builder.build(None))?;
+
+                for batch in data.0 {
+                    let batch = batch.unwrap().with_schema(table_schema.clone())?;
+                    runtime.block_on(data_file_writer.write(batch))?;
+                }
+
                 let data_files = runtime.block_on(data_file_writer.close())?;
 
                 let tx = Transaction::new(&table);

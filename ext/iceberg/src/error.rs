@@ -11,7 +11,7 @@ pub fn to_rb_err(err: iceberg::Error) -> RbErr {
         _ => "Error",
     };
 
-    let class = Ruby::get()
+    let mut class = Ruby::get()
         .unwrap()
         .class_object()
         .const_get::<_, RModule>("Iceberg")
@@ -22,6 +22,12 @@ pub fn to_rb_err(err: iceberg::Error) -> RbErr {
     // no way to get context separately
     // https://github.com/apache/iceberg-rust/issues/1071
     let message = err.to_string();
+
+    // TODO remove in 0.12.0
+    if message.contains("target schema is not superset of current schema") {
+        class = Ruby::get().unwrap().exception_arg_error();
+    }
+
     let message = message
         // TODO improve
         .strip_prefix("Unexpected => ")
