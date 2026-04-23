@@ -16,11 +16,10 @@ pub struct RbTableScan {
 
 impl RbTableScan {
     pub fn plan_files(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let scan = rb_self.scan.read().unwrap();
-
-        let runtime = runtime();
         let plan_files: Vec<_> = ruby
             .detach(|| {
+                let scan = rb_self.scan.read().unwrap();
+                let runtime = runtime();
                 let plan_files = runtime.block_on(scan.plan_files())?;
                 runtime.block_on(plan_files.try_collect())
             })
