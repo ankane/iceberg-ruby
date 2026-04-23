@@ -21,9 +21,8 @@ use iceberg_catalog_sql::{
 };
 #[cfg(feature = "datafusion")]
 use iceberg_datafusion::IcebergCatalogProvider;
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use crate::error::to_rb_err;
 use crate::runtime::runtime;
@@ -75,7 +74,7 @@ impl RbCatalogType {
 
 #[magnus::wrap(class = "Iceberg::RbCatalog")]
 pub struct RbCatalog {
-    pub catalog: RefCell<RbCatalogType>,
+    pub catalog: RwLock<RbCatalogType>,
 }
 
 impl RbCatalog {
@@ -175,7 +174,8 @@ impl RbCatalog {
         let namespaces = runtime()
             .block_on(
                 self.catalog
-                    .borrow()
+                    .read()
+                    .unwrap()
                     .as_catalog()
                     .list_namespaces(parent.map(|v| v.0).as_ref()),
             )
@@ -191,7 +191,8 @@ impl RbCatalog {
         runtime()
             .block_on(
                 self.catalog
-                    .borrow()
+                    .read()
+                    .unwrap()
                     .as_catalog()
                     .create_namespace(&name.0, props),
             )
@@ -201,7 +202,13 @@ impl RbCatalog {
 
     pub fn namespace_exists(&self, name: Wrap<NamespaceIdent>) -> RbResult<bool> {
         let exists = runtime()
-            .block_on(self.catalog.borrow().as_catalog().namespace_exists(&name.0))
+            .block_on(
+                self.catalog
+                    .read()
+                    .unwrap()
+                    .as_catalog()
+                    .namespace_exists(&name.0),
+            )
             .map_err(to_rb_err)?;
         Ok(exists)
     }
@@ -211,7 +218,13 @@ impl RbCatalog {
         name: Wrap<NamespaceIdent>,
     ) -> RbResult<HashMap<String, String>> {
         let namespace = runtime()
-            .block_on(self.catalog.borrow().as_catalog().get_namespace(&name.0))
+            .block_on(
+                self.catalog
+                    .read()
+                    .unwrap()
+                    .as_catalog()
+                    .get_namespace(&name.0),
+            )
             .map_err(to_rb_err)?;
         Ok(namespace.properties().clone())
     }
@@ -224,7 +237,8 @@ impl RbCatalog {
         runtime()
             .block_on(
                 self.catalog
-                    .borrow()
+                    .read()
+                    .unwrap()
                     .as_catalog()
                     .update_namespace(&name.0, props),
             )
@@ -234,14 +248,26 @@ impl RbCatalog {
 
     pub fn drop_namespace(&self, name: Wrap<NamespaceIdent>) -> RbResult<()> {
         runtime()
-            .block_on(self.catalog.borrow().as_catalog().drop_namespace(&name.0))
+            .block_on(
+                self.catalog
+                    .read()
+                    .unwrap()
+                    .as_catalog()
+                    .drop_namespace(&name.0),
+            )
             .map_err(to_rb_err)?;
         Ok(())
     }
 
     pub fn list_tables(&self, namespace: Wrap<NamespaceIdent>) -> RbResult<Vec<Vec<String>>> {
         let tables = runtime()
-            .block_on(self.catalog.borrow().as_catalog().list_tables(&namespace.0))
+            .block_on(
+                self.catalog
+                    .read()
+                    .unwrap()
+                    .as_catalog()
+                    .list_tables(&namespace.0),
+            )
             .map_err(to_rb_err)?;
         Ok(tables
             .iter()
@@ -267,7 +293,8 @@ impl RbCatalog {
         let table = runtime()
             .block_on(
                 self.catalog
-                    .borrow()
+                    .read()
+                    .unwrap()
                     .as_catalog()
                     .create_table(&name.0.namespace, creation),
             )
@@ -279,7 +306,13 @@ impl RbCatalog {
 
     pub fn load_table(&self, name: Wrap<TableIdent>) -> RbResult<RbTable> {
         let table = runtime()
-            .block_on(self.catalog.borrow().as_catalog().load_table(&name.0))
+            .block_on(
+                self.catalog
+                    .read()
+                    .unwrap()
+                    .as_catalog()
+                    .load_table(&name.0),
+            )
             .map_err(to_rb_err)?;
         Ok(RbTable {
             table: table.into(),
@@ -288,14 +321,26 @@ impl RbCatalog {
 
     pub fn drop_table(&self, name: Wrap<TableIdent>) -> RbResult<()> {
         runtime()
-            .block_on(self.catalog.borrow().as_catalog().drop_table(&name.0))
+            .block_on(
+                self.catalog
+                    .read()
+                    .unwrap()
+                    .as_catalog()
+                    .drop_table(&name.0),
+            )
             .map_err(to_rb_err)?;
         Ok(())
     }
 
     pub fn table_exists(&self, name: Wrap<TableIdent>) -> RbResult<bool> {
         let exists = runtime()
-            .block_on(self.catalog.borrow().as_catalog().table_exists(&name.0))
+            .block_on(
+                self.catalog
+                    .read()
+                    .unwrap()
+                    .as_catalog()
+                    .table_exists(&name.0),
+            )
             .map_err(to_rb_err)?;
         Ok(exists)
     }
@@ -304,7 +349,8 @@ impl RbCatalog {
         runtime()
             .block_on(
                 self.catalog
-                    .borrow()
+                    .read()
+                    .unwrap()
                     .as_catalog()
                     .rename_table(&name.0, &new_name.0),
             )
@@ -320,7 +366,8 @@ impl RbCatalog {
         runtime()
             .block_on(
                 self.catalog
-                    .borrow()
+                    .read()
+                    .unwrap()
                     .as_catalog()
                     .register_table(&name.0, metadata_location),
             )
@@ -333,7 +380,7 @@ impl RbCatalog {
         let runtime = runtime();
 
         // TODO only create context once
-        let catalog = self.catalog.borrow().as_arc();
+        let catalog = self.catalog.read().unwrap().as_arc();
         let provider = runtime
             .block_on(IcebergCatalogProvider::try_new(catalog))
             .unwrap();
