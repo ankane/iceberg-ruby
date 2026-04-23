@@ -1,6 +1,7 @@
 mod arrow;
 mod catalog;
 mod error;
+mod ruby;
 mod runtime;
 mod scan;
 mod table;

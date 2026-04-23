@@ -2953,6 +2953,7 @@ dependencies = [
  "iceberg-datafusion",
  "magnus",
  "parquet",
+ "rb-sys",
  "sqlx",
  "tokio",
  "uuid",

@@ -1,26 +1,29 @@
 use futures::TryStreamExt;
 use iceberg::scan::TableScan;
 use magnus::{RArray, Ruby, Value};
-use std::cell::RefCell;
+use std::sync::RwLock;
 
 use crate::RbResult;
 use crate::error::to_rb_err;
+use crate::ruby::GvlExt;
 use crate::runtime::runtime;
 use crate::utils::rb_snapshot;
 
 #[magnus::wrap(class = "Iceberg::RbTableScan")]
 pub struct RbTableScan {
-    pub scan: RefCell<TableScan>,
+    pub scan: RwLock<TableScan>,
 }
 
 impl RbTableScan {
     pub fn plan_files(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let scan = rb_self.scan.borrow();
+        let scan = rb_self.scan.read().unwrap();
 
         let runtime = runtime();
-        let plan_files = runtime.block_on(scan.plan_files()).map_err(to_rb_err)?;
-        let plan_files: Vec<_> = runtime
-            .block_on(plan_files.try_collect())
+        let plan_files: Vec<_> = ruby
+            .detach(|| {
+                let plan_files = runtime.block_on(scan.plan_files())?;
+                runtime.block_on(plan_files.try_collect())
+            })
             .map_err(to_rb_err)?;
         let files = ruby.ary_new();
         for v in plan_files {
@@ -47,7 +50,7 @@ impl RbTableScan {
     }
 
     pub fn snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<Value>> {
-        match rb_self.scan.borrow().snapshot() {
+        match rb_self.scan.read().unwrap().snapshot() {
             Some(s) => Ok(Some(rb_snapshot(ruby, s)?)),
             None => Ok(None),
         }

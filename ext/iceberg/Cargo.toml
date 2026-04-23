@@ -24,6 +24,7 @@ iceberg-catalog-sql = { version = "0.9", optional = true }
 iceberg-datafusion = { version = "0.9", optional = true }
 magnus = "0.8"
 parquet = "57"
+rb-sys = "0.9"
 sqlx = { version = "0.8", features = ["postgres", "runtime-tokio", "sqlite"], default-features = false, optional = true }
 tokio = { version = "1", features = ["rt-multi-thread"] }
 uuid = { version = "1", features = ["v4"] }
