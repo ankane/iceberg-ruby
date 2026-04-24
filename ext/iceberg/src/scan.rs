@@ -24,6 +24,7 @@ impl RbTableScan {
                 runtime.block_on(plan_files.try_collect())
             })
             .map_err(to_rb_err)?;
+
         let files = ruby.ary_new();
         for v in plan_files {
             let file = ruby.hash_new();
