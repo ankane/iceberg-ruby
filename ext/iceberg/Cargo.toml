@@ -16,12 +16,12 @@ arrow-array = { version = "57", features = ["ffi"] }
 arrow-schema = "57"
 datafusion = { version = "52", optional = true }
 futures = "0.3"
-iceberg = "0.9"
-iceberg-catalog-glue = { version = "0.9", optional = true }
-iceberg-catalog-rest = { version = "0.9", optional = true }
-iceberg-catalog-s3tables = { version = "0.9", optional = true }
-iceberg-catalog-sql = { version = "0.9", optional = true }
-iceberg-datafusion = { version = "0.9", optional = true }
+iceberg = "=0.9.1"
+iceberg-catalog-glue = { version = "=0.9.1", optional = true }
+iceberg-catalog-rest = { version = "=0.9.1", optional = true }
+iceberg-catalog-s3tables = { version = "=0.9.1", optional = true }
+iceberg-catalog-sql = { version = "=0.9.1", optional = true }
+iceberg-datafusion = { version = "=0.9.1", optional = true }
 magnus = "0.8"
 parquet = "57"
 rb-sys = "0.9"

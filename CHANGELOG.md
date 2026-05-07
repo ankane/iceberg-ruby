@@ -1,5 +1,6 @@
 ## 0.11.2 (unreleased)
 
+- Updated Iceberg Rust to 0.9.1
 - Added support for releasing GVL
 
 ## 0.11.1 (2026-03-18)
