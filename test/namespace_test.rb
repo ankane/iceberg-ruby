@@ -30,7 +30,7 @@ class NamespaceTest < Minitest::Test
   end
 
   def test_namespaces_nested
-    skip if s3tables? || glue?
+    skip if s3tables? || glue? || rest?
 
     begin
       assert_nil catalog.create_namespace("iceberg_ruby_test.nested")

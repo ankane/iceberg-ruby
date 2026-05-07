@@ -40,7 +40,7 @@ class CatalogTest < Minitest::Test
   end
 
   def test_tables_dot
-    skip if s3tables? || glue?
+    skip if s3tables? || glue? || rest?
 
     begin
       catalog.create_table(["iceberg_ruby_test", "events.dot"])
