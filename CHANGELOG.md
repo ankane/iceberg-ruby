@@ -1,3 +1,7 @@
+## 0.11.3 (unreleased)
+
+- Fixed appending data frames with string, binary, and non-microsecond timestamp columns
+
 ## 0.11.2 (2026-05-14)
 
 - Updated Iceberg Rust to 0.9.1

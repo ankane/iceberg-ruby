@@ -90,6 +90,33 @@ class TableTest < Minitest::Test
     assert_frame_equal df, table.to_polars.collect
   end
 
+  def test_append_string_and_timestamp
+    df = Polars::DataFrame.new([
+      Polars::Series.new("id", [1, 2, 3], dtype: Polars::Int64),
+      Polars::Series.new("name", ["a", "b", "c"], dtype: Polars::String),
+      Polars::Series.new("ts", [Time.at(1_720_000_000), Time.at(1_720_000_001), Time.at(1_720_000_002)], dtype: Polars::Datetime.new("ns"))
+    ])
+    table = catalog.create_table("iceberg_ruby_test.events") do |t|
+      t.bigint "id"
+      t.string "name"
+      t.timestamp "ts"
+    end
+    assert_nil table.append(df)
+    refute_nil table.current_snapshot_id
+
+    # Polars.scan_iceberg does not support string or timestamp columns yet,
+    # so read the parquet data files directly on local warehouses
+    if memory? || sql?
+      data_files = table.scan.plan_files.map { |f| f[:data_file_path].delete_prefix("file://") }
+      refute_empty data_files
+      result = Polars.read_parquet(data_files).sort("id")
+      assert_equal [1, 2, 3], result["id"].to_a
+      assert_equal ["a", "b", "c"], result["name"].to_a
+      assert_equal Polars::Datetime.new("us"), result["ts"].dtype
+      assert_equal [1_720_000_000, 1_720_000_001, 1_720_000_002], result["ts"].to_a.map(&:to_i)
+    end
+  end
+
   def test_append_column_order
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
     table = catalog.create_table("iceberg_ruby_test.events", schema: df.schema)

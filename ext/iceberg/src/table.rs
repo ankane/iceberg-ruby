@@ -1,4 +1,7 @@
+use arrow_array::RecordBatch;
 use arrow_array::ffi_stream::ArrowArrayStreamReader;
+use arrow_cast::cast;
+use arrow_schema::{ArrowError, DataType};
 use iceberg::TableIdent;
 use iceberg::io::FileIO;
 use iceberg::spec::FormatVersion;
@@ -88,7 +91,7 @@ impl RbTable {
                     runtime.block_on(data_file_writer_builder.build(None))?;
 
                 for batch in data.0 {
-                    let batch = batch.unwrap().with_schema(table_schema.clone())?;
+                    let batch = cast_batch(batch.unwrap(), &table_schema)?;
                     runtime.block_on(data_file_writer.write(batch))?;
                 }
 
@@ -433,4 +436,50 @@ impl RbTable {
             table: static_table.into_table().into(),
         })
     }
+}
+
+// Polars 1.x+ streams strings as Utf8View, binary as BinaryView, and
+// timestamps in their native unit, while the table's Arrow schema uses
+// Utf8/Binary/Timestamp(us). These conversions are lossless, but
+// RecordBatch::with_schema only relabels and rejects any physical-type
+// difference, so they need a real cast.
+fn cast_compatible(from: &DataType, to: &DataType) -> bool {
+    match (from, to) {
+        (DataType::Utf8View | DataType::LargeUtf8, DataType::Utf8) => true,
+        (DataType::BinaryView | DataType::LargeBinary, DataType::Binary) => true,
+        (DataType::Timestamp(_, from_tz), DataType::Timestamp(_, to_tz)) => from_tz == to_tz,
+        _ => false,
+    }
+}
+
+fn cast_batch(
+    batch: RecordBatch,
+    target: &Arc<arrow_schema::Schema>,
+) -> Result<RecordBatch, ArrowError> {
+    let compatible = batch.num_columns() == target.fields().len()
+        && batch
+            .columns()
+            .iter()
+            .zip(target.fields())
+            .all(|(column, field)| {
+                column.data_type() == field.data_type()
+                    || cast_compatible(column.data_type(), field.data_type())
+            });
+    if !compatible {
+        // keep with_schema's "not superset" error for genuine schema mismatches
+        return batch.with_schema(target.clone());
+    }
+    let columns = batch
+        .columns()
+        .iter()
+        .zip(target.fields())
+        .map(|(column, field)| {
+            if column.data_type() == field.data_type() {
+                Ok(column.clone())
+            } else {
+                cast(column, field.data_type())
+            }
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    RecordBatch::try_new(target.clone(), columns)
 }
