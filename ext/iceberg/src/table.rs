@@ -1,4 +1,7 @@
+use arrow_array::RecordBatch;
 use arrow_array::ffi_stream::ArrowArrayStreamReader;
+use arrow_cast::cast;
+use arrow_schema::{ArrowError, DataType, Field, Schema};
 use iceberg::TableIdent;
 use iceberg::io::FileIO;
 use iceberg::spec::FormatVersion;
@@ -88,7 +91,7 @@ impl RbTable {
                     runtime.block_on(data_file_writer_builder.build(None))?;
 
                 for batch in data.0 {
-                    let batch = batch.unwrap().with_schema(table_schema.clone())?;
+                    let batch = cast_batch(batch.unwrap())?.with_schema(table_schema.clone())?;
                     runtime.block_on(data_file_writer.write(batch))?;
                 }
 
@@ -433,4 +436,35 @@ impl RbTable {
             table: static_table.into_table().into(),
         })
     }
+}
+
+fn cast_batch(batch: RecordBatch) -> Result<RecordBatch, ArrowError> {
+    let mut fields = Vec::new();
+    let mut columns = Vec::new();
+    for (field, column) in batch.schema().fields.iter().zip(batch.columns()) {
+        match *field.data_type() {
+            DataType::Utf8View => {
+                fields.push(Arc::new(Field::new(
+                    field.name(),
+                    DataType::Utf8,
+                    field.is_nullable(),
+                )));
+                columns.push(cast(column, &DataType::Utf8)?);
+            }
+            DataType::BinaryView => {
+                fields.push(Arc::new(Field::new(
+                    field.name(),
+                    DataType::LargeBinary,
+                    field.is_nullable(),
+                )));
+                columns.push(cast(column, &DataType::LargeBinary)?);
+            }
+            _ => {
+                // cloning Arc is cheap
+                fields.push(field.clone());
+                columns.push(column.clone());
+            }
+        }
+    }
+    RecordBatch::try_new(Arc::new(Schema::new(fields)), columns)
 }

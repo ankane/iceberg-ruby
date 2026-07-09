@@ -1,3 +1,7 @@
+## 0.11.3 (unreleased)
+
+- Fixed error with `append` method for string and binary columns
+
 ## 0.11.2 (2026-05-14)
 
 - Updated Iceberg Rust to 0.9.1

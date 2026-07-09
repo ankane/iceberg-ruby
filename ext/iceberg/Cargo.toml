@@ -13,6 +13,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 arrow-array = { version = "57", features = ["ffi"] }
+arrow-cast = "57"
 arrow-schema = "57"
 datafusion = { version = "52", optional = true }
 futures = "0.3"
