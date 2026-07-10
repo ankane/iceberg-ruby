@@ -92,7 +92,9 @@ impl TryConvert for Wrap<Schema> {
                         let time_zone: Option<String> = rb_type.funcall("time_zone", ())?;
                         match (time_unit.as_str(), time_zone) {
                             ("us", None) => Type::Primitive(PrimitiveType::Timestamp),
+                            ("us", Some(_)) => Type::Primitive(PrimitiveType::Timestamptz),
                             ("ns", None) => Type::Primitive(PrimitiveType::TimestampNs),
+                            ("ns", Some(_)) => Type::Primitive(PrimitiveType::TimestamptzNs),
                             _ => {
                                 return Err(RbErr::new(
                                     ruby.exception_arg_error(),
