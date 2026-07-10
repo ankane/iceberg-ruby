@@ -12,7 +12,7 @@ use magnus::{Error as RbErr, Ruby, function, method, prelude::*};
 
 use crate::catalog::RbCatalog;
 use crate::scan::RbTableScan;
-use crate::schema::{RbArrowSchema, RbSchema};
+use crate::schema::{RbArrowSchema, RbNestedField, RbSchema};
 use crate::table::RbTable;
 
 type RbResult<T> = Result<T, RbErr>;
@@ -134,6 +134,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("fields", method!(RbSchema::fields, 0))?;
     class.define_method("schema_id", method!(RbSchema::schema_id, 0))?;
     class.define_method("arrow_c_schema", method!(RbSchema::arrow_c_schema, 0))?;
+
+    let class = module.define_class("NestedField", ruby.class_object())?;
+    class.define_method("to_h", method!(RbNestedField::to_h, 0))?;
 
     let class = module.define_class("ArrowSchema", ruby.class_object())?;
     class.define_method("to_i", method!(RbArrowSchema::to_i, 0))?;

@@ -8,7 +8,7 @@ module Iceberg
         _schema = RbSchema.new(fields.arrow_c_schema)
         fields = nil
       end
-      @fields = fields || _schema&.fields
+      @fields = fields || _schema&.fields.map(&:to_h)
       @schema_id = schema_id || _schema&.schema_id
       @_schema = _schema
     end
