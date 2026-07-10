@@ -49,6 +49,9 @@ module Iceberg
         table_definition = TableDefinition.new
         yield table_definition
         schema = Schema.new(table_definition.fields)
+      elsif schema.respond_to?(:arrow_c_schema)
+        schema = Schema.new(schema)
+      # TODO remove Polars conditions in 0.12.0
       elsif schema.is_a?(Hash) || (defined?(Polars::Schema) && schema.is_a?(Polars::Schema))
         fields =
           schema.to_h.map.with_index do |(k, v), i|

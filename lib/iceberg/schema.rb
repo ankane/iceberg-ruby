@@ -4,6 +4,10 @@ module Iceberg
     attr_reader :fields, :schema_id
 
     def initialize(fields, schema_id: nil, _schema: nil)
+      if fields.respond_to?(:arrow_c_schema) && !_schema
+        _schema = RbSchema.new(fields.arrow_c_schema)
+        fields = nil
+      end
       @fields = fields || _schema&.fields
       @schema_id = schema_id || _schema&.schema_id
       @_schema = _schema

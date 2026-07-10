@@ -1,9 +1,11 @@
+use arrow_schema::Schema as ArrowSchema;
 use arrow_schema::ffi::FFI_ArrowSchema;
-use iceberg::arrow::schema_to_arrow_schema;
+use iceberg::arrow::{arrow_schema_to_schema_auto_assign_ids, schema_to_arrow_schema};
 use iceberg::spec::{PrimitiveType, Schema, Type};
 use magnus::{RArray, Ruby};
 
 use crate::RbResult;
+use crate::arrow::RbArrowType;
 use crate::error::to_rb_err;
 use crate::utils::rb_literal;
 
@@ -24,6 +26,11 @@ impl RbArrowSchema {
 }
 
 impl RbSchema {
+    pub fn new(ob: RbArrowType<ArrowSchema>) -> RbResult<Self> {
+        let schema = arrow_schema_to_schema_auto_assign_ids(&ob.0).map_err(to_rb_err)?;
+        Ok(Self { schema })
+    }
+
     pub fn fields(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
         let fields = ruby.ary_new();
         for f in self_.schema.as_struct().fields() {
