@@ -207,15 +207,6 @@ pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
         };
         field.aset(ruby.to_symbol("type"), field_type)?;
 
-        if let Type::Primitive(PrimitiveType::Decimal { precision, scale }) = &*f.field_type {
-            field.aset(ruby.to_symbol("precision"), *precision)?;
-            field.aset(ruby.to_symbol("scale"), *scale)?;
-        }
-
-        if let Type::Primitive(PrimitiveType::Fixed(limit)) = &*f.field_type {
-            field.aset(ruby.to_symbol("limit"), *limit)?;
-        }
-
         field.aset(ruby.to_symbol("required"), f.required)?;
 
         let initial_default = f.initial_default.as_ref().map(|v| rb_literal(ruby, v));
@@ -228,6 +219,15 @@ pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
             ruby.to_symbol("doc"),
             f.doc.as_ref().map(|v| ruby.str_new(v)),
         )?;
+
+        if let Type::Primitive(PrimitiveType::Fixed(limit)) = &*f.field_type {
+            field.aset(ruby.to_symbol("limit"), *limit)?;
+        }
+
+        if let Type::Primitive(PrimitiveType::Decimal { precision, scale }) = &*f.field_type {
+            field.aset(ruby.to_symbol("precision"), *precision)?;
+            field.aset(ruby.to_symbol("scale"), *scale)?;
+        }
 
         fields.push(field)?;
     }
