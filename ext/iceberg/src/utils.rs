@@ -1,6 +1,6 @@
 use iceberg::spec::{
-    EncryptedKey, Literal, NestedField, PartitionSpec, PartitionStatisticsFile, PrimitiveLiteral,
-    PrimitiveType, Schema, Snapshot, SortOrder, StatisticsFile, Type,
+    EncryptedKey, Literal, PartitionSpec, PartitionStatisticsFile, PrimitiveLiteral, PrimitiveType,
+    Schema, Snapshot, SortOrder, StatisticsFile, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
 use magnus::{
@@ -10,7 +10,7 @@ use magnus::{
 
 use crate::RbResult;
 use crate::error::to_rb_err;
-use crate::schema::RbSchema;
+use crate::schema::{RbNestedField, RbSchema};
 
 pub struct Wrap<T>(pub T);
 
@@ -50,100 +50,8 @@ impl TryConvert for Wrap<Schema> {
         let rb_fields: RArray = ob.funcall("fields", ())?;
         for rb_field in rb_fields {
             let rb_field = RHash::try_convert(rb_field)?;
-            let rb_type: Value = rb_field.aref(ruby.to_symbol("type"))?;
-            let field_type = if let Ok(s) = String::try_convert(rb_type) {
-                match s.as_str() {
-                    "boolean" => Type::Primitive(PrimitiveType::Boolean),
-                    "int" => Type::Primitive(PrimitiveType::Int),
-                    "long" => Type::Primitive(PrimitiveType::Long),
-                    "float" => Type::Primitive(PrimitiveType::Float),
-                    "double" => Type::Primitive(PrimitiveType::Double),
-                    "decimal" => {
-                        let precision: u32 = rb_field.aref(ruby.to_symbol("precision"))?;
-                        let scale: u32 = rb_field.aref(ruby.to_symbol("scale"))?;
-                        Type::Primitive(PrimitiveType::Decimal { precision, scale })
-                    }
-                    "date" => Type::Primitive(PrimitiveType::Date),
-                    "time" => Type::Primitive(PrimitiveType::Time),
-                    "timestamp" => Type::Primitive(PrimitiveType::Timestamp),
-                    "timestamptz" => Type::Primitive(PrimitiveType::Timestamptz),
-                    "timestamp_ns" => Type::Primitive(PrimitiveType::TimestampNs),
-                    "timestamptz_ns" => Type::Primitive(PrimitiveType::TimestamptzNs),
-                    "string" => Type::Primitive(PrimitiveType::String),
-                    "uuid" => Type::Primitive(PrimitiveType::Uuid),
-                    "fixed" => {
-                        let limit: u64 = rb_field.aref(ruby.to_symbol("limit"))?;
-                        Type::Primitive(PrimitiveType::Fixed(limit))
-                    }
-                    "binary" => Type::Primitive(PrimitiveType::Binary),
-                    _ => {
-                        return Err(RbErr::new(
-                            ruby.exception_arg_error(),
-                            format!("Type not supported: {}", s),
-                        ));
-                    }
-                }
-            } else {
-                // TODO remove in 0.12.0
-                let class_name = unsafe { rb_type.classname() }.to_string();
-                match class_name.as_str() {
-                    "Polars::Boolean" => Type::Primitive(PrimitiveType::Boolean),
-                    "Polars::Int32" => Type::Primitive(PrimitiveType::Int),
-                    "Polars::Int64" => Type::Primitive(PrimitiveType::Long),
-                    "Polars::Float32" => Type::Primitive(PrimitiveType::Float),
-                    "Polars::Float64" => Type::Primitive(PrimitiveType::Double),
-                    "Polars::Decimal" => {
-                        let precision: u32 = rb_type.funcall("precision", ())?;
-                        let scale: u32 = rb_type.funcall("scale", ())?;
-                        Type::Primitive(PrimitiveType::Decimal { precision, scale })
-                    }
-                    "Polars::Date" => Type::Primitive(PrimitiveType::Date),
-                    "Polars::Time" => Type::Primitive(PrimitiveType::Time),
-                    "Polars::Datetime" => {
-                        let time_unit: String = rb_type.funcall("time_unit", ())?;
-                        let time_zone: Option<String> = rb_type.funcall("time_zone", ())?;
-                        match (time_unit.as_str(), time_zone) {
-                            ("us", None) => Type::Primitive(PrimitiveType::Timestamp),
-                            ("us", Some(_)) => Type::Primitive(PrimitiveType::Timestamptz),
-                            ("ns", None) => Type::Primitive(PrimitiveType::TimestampNs),
-                            ("ns", Some(_)) => Type::Primitive(PrimitiveType::TimestamptzNs),
-                            _ => {
-                                return Err(RbErr::new(
-                                    ruby.exception_arg_error(),
-                                    format!("Type not supported: {}", rb_type),
-                                ));
-                            }
-                        }
-                    }
-                    "Polars::String" => Type::Primitive(PrimitiveType::String),
-                    "Polars::Binary" => Type::Primitive(PrimitiveType::Binary),
-                    _ => {
-                        return Err(RbErr::new(
-                            ruby.exception_arg_error(),
-                            format!("Type not supported: {}", class_name),
-                        ));
-                    }
-                }
-            };
-
-            let initial_default = rb_field.aref(ruby.to_symbol("initial_default"))?;
-            let write_default = rb_field.aref(ruby.to_symbol("write_default"))?;
-
-            let initial_default = default_value(initial_default, &field_type)?;
-            let write_default = default_value(write_default, &field_type)?;
-
-            fields.push(
-                NestedField {
-                    id: rb_field.aref(ruby.to_symbol("id"))?,
-                    name: rb_field.aref(ruby.to_symbol("name"))?,
-                    required: rb_field.aref(ruby.to_symbol("required"))?,
-                    field_type: field_type.into(),
-                    doc: rb_field.aref(ruby.to_symbol("doc"))?,
-                    initial_default,
-                    write_default,
-                }
-                .into(),
-            );
+            let field = RbNestedField::new(&ruby, rb_field)?.field;
+            fields.push(field);
         }
         let schema = Schema::builder()
             .with_fields(fields)
@@ -153,7 +61,7 @@ impl TryConvert for Wrap<Schema> {
     }
 }
 
-fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> {
+pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> {
     if ob.is_nil() {
         return Ok(None);
     }
