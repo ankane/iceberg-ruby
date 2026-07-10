@@ -34,11 +34,10 @@ impl RbArrowSchema {
 
 impl RbSchema {
     pub fn new(ob: Value) -> RbResult<Self> {
-        if let Ok(arrow_schema) = ob.funcall::<_, _, RbArrowType<ArrowSchema>>("arrow_c_schema", ())
+        let schema = if let Ok(arrow_schema) =
+            ob.funcall::<_, _, RbArrowType<ArrowSchema>>("arrow_c_schema", ())
         {
-            let schema =
-                arrow_schema_to_schema_auto_assign_ids(&arrow_schema.0).map_err(to_rb_err)?;
-            Ok(Self { schema })
+            arrow_schema_to_schema_auto_assign_ids(&arrow_schema.0).map_err(to_rb_err)?
         } else {
             let ruby = Ruby::get_with(ob);
             let mut fields = Vec::new();
@@ -48,12 +47,12 @@ impl RbSchema {
                 let field = RbNestedField::new(&ruby, rb_field)?.field;
                 fields.push(field);
             }
-            let schema = Schema::builder()
+            Schema::builder()
                 .with_fields(fields)
                 .build()
-                .map_err(to_rb_err)?;
-            Ok(Self { schema })
-        }
+                .map_err(to_rb_err)?
+        };
+        Ok(Self { schema })
     }
 
     pub fn fields(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
