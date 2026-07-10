@@ -3,9 +3,7 @@ use iceberg::spec::{
     Schema, Snapshot, SortOrder, StatisticsFile, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
-use magnus::{
-    Error as RbErr, IntoValue, RClass, RModule, Ruby, TryConvert, Value, prelude::*,
-};
+use magnus::{Error as RbErr, IntoValue, RClass, RModule, Ruby, TryConvert, Value, prelude::*};
 
 use crate::RbResult;
 use crate::error::to_rb_err;

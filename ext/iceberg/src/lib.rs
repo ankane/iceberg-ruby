@@ -147,6 +147,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbNestedField::initial_default, 0),
     )?;
     class.define_method("write_default", method!(RbNestedField::write_default, 0))?;
+    class.define_method("inspect", method!(RbNestedField::inspect, 0))?;
     class.define_method("to_h", method!(RbNestedField::to_h, 0))?;
 
     let class = module.define_class("ArrowSchema", ruby.class_object())?;

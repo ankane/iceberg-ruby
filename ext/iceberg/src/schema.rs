@@ -234,6 +234,15 @@ impl RbNestedField {
             .map(|v| rb_literal(ruby, v))
     }
 
+    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+        format!(
+            "#<Iceberg::NestedField id={}, name={}, required={}>",
+            self_.id(),
+            RbNestedField::name(ruby, self_).inspect(),
+            self_.required(),
+        )
+    }
+
     pub fn to_h(ruby: &Ruby, self_: &Self) -> RbResult<RHash> {
         let field = ruby.hash_new();
         field.aset(ruby.to_symbol("id"), self_.id())?;
