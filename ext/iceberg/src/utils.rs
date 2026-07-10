@@ -57,7 +57,11 @@ impl TryConvert for Wrap<Schema> {
                     "long" => Type::Primitive(PrimitiveType::Long),
                     "float" => Type::Primitive(PrimitiveType::Float),
                     "double" => Type::Primitive(PrimitiveType::Double),
-                    // TODO PrimitiveType::Decimal
+                    "decimal" => {
+                        let precision: u32 = rb_field.aref(ruby.to_symbol("precision"))?;
+                        let scale: u32 = rb_field.aref(ruby.to_symbol("scale"))?;
+                        Type::Primitive(PrimitiveType::Decimal { precision, scale })
+                    }
                     "date" => Type::Primitive(PrimitiveType::Date),
                     "time" => Type::Primitive(PrimitiveType::Time),
                     "timestamp" => Type::Primitive(PrimitiveType::Timestamp),
@@ -66,7 +70,10 @@ impl TryConvert for Wrap<Schema> {
                     "timestamptz_ns" => Type::Primitive(PrimitiveType::TimestamptzNs),
                     "string" => Type::Primitive(PrimitiveType::String),
                     "uuid" => Type::Primitive(PrimitiveType::Uuid),
-                    // TODO PrimitiveType::Fixed
+                    "fixed" => {
+                        let limit: u64 = rb_field.aref(ruby.to_symbol("limit"))?;
+                        Type::Primitive(PrimitiveType::Fixed(limit))
+                    }
                     "binary" => Type::Primitive(PrimitiveType::Binary),
                     _ => {
                         return Err(RbErr::new(
