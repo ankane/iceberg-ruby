@@ -232,7 +232,6 @@ pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
 
         fields.push(field)?;
     }
-    let schema_id = schema.schema_id();
 
     ruby.class_object()
         .const_get::<_, RModule>("Iceberg")
@@ -243,7 +242,7 @@ pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
             "new",
             (
                 fields,
-                kwargs!("schema_id" => schema_id, "_schema" => RbSchema { schema: schema.clone() }),
+                kwargs!("_schema" => RbSchema { schema: schema.clone() }),
             ),
         )
 }

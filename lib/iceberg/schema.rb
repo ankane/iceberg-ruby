@@ -5,7 +5,7 @@ module Iceberg
 
     def initialize(fields, schema_id: nil, _schema: nil)
       @fields = fields
-      @schema_id = schema_id
+      @schema_id = schema_id || _schema&.schema_id
       @_schema = _schema
     end
 
