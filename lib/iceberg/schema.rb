@@ -1,10 +1,10 @@
 # TODO move class to Rust in 0.12.0
 module Iceberg
   class Schema
-    attr_reader :schema_id, :_schema
+    attr_reader :schema_id
 
     def initialize(fields, schema_id: nil)
-      @_schema =
+      @schema =
         if fields.is_a?(RbSchema)
           fields
         elsif fields.respond_to?(:arrow_c_schema)
@@ -12,15 +12,15 @@ module Iceberg
         else
           RbSchema.new(fields.map { |f| f.is_a?(NestedField) ? f : NestedField.new(f) })
         end
-      @schema_id = schema_id || @_schema.schema_id
+      @schema_id = schema_id || @schema.schema_id
     end
 
     def fields
-      @_schema.fields.map(&:to_h)
+      @schema.fields.map(&:to_h)
     end
 
     def arrow_c_schema
-      @_schema.arrow_c_schema
+      @schema.arrow_c_schema
     end
   end
 end

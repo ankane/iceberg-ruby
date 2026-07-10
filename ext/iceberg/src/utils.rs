@@ -3,7 +3,9 @@ use iceberg::spec::{
     Schema, Snapshot, SortOrder, StatisticsFile, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
-use magnus::{Error as RbErr, IntoValue, RClass, RModule, Ruby, TryConvert, Value, prelude::*};
+use magnus::{
+    Error as RbErr, IntoValue, RClass, RModule, RObject, Ruby, TryConvert, Value, prelude::*,
+};
 
 use crate::RbResult;
 use crate::error::to_rb_err;
@@ -42,7 +44,7 @@ impl TryConvert for Wrap<TableIdent> {
 
 impl TryConvert for Wrap<Schema> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let rb_schema: &RbSchema = ob.funcall("_schema", ())?;
+        let rb_schema: &RbSchema = RObject::try_convert(ob)?.ivar_get("@schema")?;
         Ok(Wrap(rb_schema.schema.clone()))
     }
 }
