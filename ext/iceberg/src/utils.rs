@@ -200,8 +200,8 @@ pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
                 PrimitiveType::TimestamptzNs => "timestamptz_ns",
                 PrimitiveType::String => "string",
                 PrimitiveType::Uuid => "uuid",
+                PrimitiveType::Fixed(_) => "fixed",
                 PrimitiveType::Binary => "binary",
-                PrimitiveType::Fixed(_) => todo!(),
             },
             _ => todo!(),
         };
@@ -210,6 +210,10 @@ pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
         if let Type::Primitive(PrimitiveType::Decimal { precision, scale }) = &*f.field_type {
             field.aset(ruby.to_symbol("precision"), *precision)?;
             field.aset(ruby.to_symbol("scale"), *scale)?;
+        }
+
+        if let Type::Primitive(PrimitiveType::Fixed(limit)) = &*f.field_type {
+            field.aset(ruby.to_symbol("limit"), *limit)?;
         }
 
         field.aset(ruby.to_symbol("required"), f.required)?;
