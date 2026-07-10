@@ -83,6 +83,11 @@ impl TryConvert for Wrap<Schema> {
                     "Polars::Int64" => Type::Primitive(PrimitiveType::Long),
                     "Polars::Float32" => Type::Primitive(PrimitiveType::Float),
                     "Polars::Float64" => Type::Primitive(PrimitiveType::Double),
+                    "Polars::Decimal" => {
+                        let precision: u32 = rb_type.funcall("precision", ())?;
+                        let scale: u32 = rb_type.funcall("scale", ())?;
+                        Type::Primitive(PrimitiveType::Decimal { precision, scale })
+                    }
                     "Polars::Date" => Type::Primitive(PrimitiveType::Date),
                     "Polars::Time" => Type::Primitive(PrimitiveType::Time),
                     "Polars::String" => Type::Primitive(PrimitiveType::String),
@@ -179,7 +184,7 @@ pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
                 PrimitiveType::Decimal {
                     precision: _,
                     scale: _,
-                } => todo!(),
+                } => "decimal",
                 PrimitiveType::Date => "date",
                 PrimitiveType::Time => "time",
                 PrimitiveType::Timestamp => "timestamp",
@@ -194,6 +199,11 @@ pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
             _ => todo!(),
         };
         field.aset(ruby.to_symbol("type"), field_type)?;
+
+        if let Type::Primitive(PrimitiveType::Decimal { precision, scale }) = &*f.field_type {
+            field.aset(ruby.to_symbol("precision"), *precision)?;
+            field.aset(ruby.to_symbol("scale"), *scale)?;
+        }
 
         field.aset(ruby.to_symbol("required"), f.required)?;
 
