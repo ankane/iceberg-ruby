@@ -1,6 +1,6 @@
 ## 0.11.3 (unreleased)
 
-- Fixed error with `append` method for string and binary columns
+- Added support for more types to `append` method
 
 ## 0.11.2 (2026-05-14)
 
