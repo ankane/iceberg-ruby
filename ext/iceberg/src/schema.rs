@@ -4,7 +4,7 @@ use arrow_schema::Schema as ArrowSchema;
 use arrow_schema::ffi::FFI_ArrowSchema;
 use iceberg::arrow::{arrow_schema_to_schema_auto_assign_ids, schema_to_arrow_schema};
 use iceberg::spec::{NestedField, PrimitiveType, Schema, Type};
-use magnus::{RArray, RHash, Ruby};
+use magnus::{RArray, RHash, RString, Ruby, Value};
 
 use crate::RbResult;
 use crate::arrow::RbArrowType;
@@ -64,20 +64,40 @@ impl RbNestedField {
         self.field.id
     }
 
-    pub fn name(&self) -> String {
-        self.field.name.clone()
+    pub fn name(ruby: &Ruby, self_: &Self) -> RString {
+        ruby.str_new(&self_.field.name)
     }
 
     pub fn required(&self) -> bool {
         self.field.required
     }
 
+    pub fn doc(ruby: &Ruby, self_: &Self) -> Option<RString> {
+        self_.field.doc.as_ref().map(|v| ruby.str_new(v))
+    }
+
+    pub fn initial_default(ruby: &Ruby, self_: &Self) -> Option<Value> {
+        self_
+            .field
+            .initial_default
+            .as_ref()
+            .map(|v| rb_literal(ruby, v))
+    }
+
+    pub fn write_default(ruby: &Ruby, self_: &Self) -> Option<Value> {
+        self_
+            .field
+            .write_default
+            .as_ref()
+            .map(|v| rb_literal(ruby, v))
+    }
+
     pub fn to_h(ruby: &Ruby, self_: &Self) -> RbResult<RHash> {
         let f = &self_.field;
 
         let field = ruby.hash_new();
-        field.aset(ruby.to_symbol("id"), f.id)?;
-        field.aset(ruby.to_symbol("name"), ruby.str_new(&f.name))?;
+        field.aset(ruby.to_symbol("id"), self_.id())?;
+        field.aset(ruby.to_symbol("name"), RbNestedField::name(ruby, self_))?;
 
         let field_type = match &*f.field_type {
             Type::Primitive(ty) => match ty {
@@ -105,18 +125,19 @@ impl RbNestedField {
         };
         field.aset(ruby.to_symbol("type"), field_type)?;
 
-        field.aset(ruby.to_symbol("required"), f.required)?;
-
-        let initial_default = f.initial_default.as_ref().map(|v| rb_literal(ruby, v));
-        field.aset(ruby.to_symbol("initial_default"), initial_default)?;
-
-        let write_default = f.write_default.as_ref().map(|v| rb_literal(ruby, v));
-        field.aset(ruby.to_symbol("write_default"), write_default)?;
+        field.aset(ruby.to_symbol("required"), self_.required())?;
 
         field.aset(
-            ruby.to_symbol("doc"),
-            f.doc.as_ref().map(|v| ruby.str_new(v)),
+            ruby.to_symbol("initial_default"),
+            RbNestedField::initial_default(ruby, self_),
         )?;
+
+        field.aset(
+            ruby.to_symbol("write_default"),
+            RbNestedField::write_default(ruby, self_),
+        )?;
+
+        field.aset(ruby.to_symbol("doc"), RbNestedField::doc(ruby, self_))?;
 
         if let Type::Primitive(PrimitiveType::Fixed(limit)) = &*f.field_type {
             field.aset(ruby.to_symbol("limit"), *limit)?;
