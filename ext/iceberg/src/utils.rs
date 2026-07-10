@@ -84,6 +84,7 @@ impl TryConvert for Wrap<Schema> {
                     }
                 }
             } else {
+                // TODO remove in 0.12.0
                 let class_name = unsafe { rb_type.classname() }.to_string();
                 match class_name.as_str() {
                     "Polars::Boolean" => Type::Primitive(PrimitiveType::Boolean),
