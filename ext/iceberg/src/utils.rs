@@ -97,8 +97,6 @@ impl TryConvert for Wrap<Schema> {
                     }
                     "Polars::Date" => Type::Primitive(PrimitiveType::Date),
                     "Polars::Time" => Type::Primitive(PrimitiveType::Time),
-                    "Polars::String" => Type::Primitive(PrimitiveType::String),
-                    "Polars::Binary" => Type::Primitive(PrimitiveType::Binary),
                     "Polars::Datetime" => {
                         let time_unit: String = rb_type.funcall("time_unit", ())?;
                         let time_zone: Option<String> = rb_type.funcall("time_zone", ())?;
@@ -115,6 +113,8 @@ impl TryConvert for Wrap<Schema> {
                             }
                         }
                     }
+                    "Polars::String" => Type::Primitive(PrimitiveType::String),
+                    "Polars::Binary" => Type::Primitive(PrimitiveType::Binary),
                     _ => {
                         return Err(RbErr::new(
                             ruby.exception_arg_error(),
