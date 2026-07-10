@@ -459,6 +459,17 @@ fn cast_batch(batch: RecordBatch) -> Result<RecordBatch, ArrowError> {
                 )));
                 columns.push(cast(column, &DataType::LargeBinary)?);
             }
+            DataType::Timestamp(time_unit, Some(_)) => {
+                fields.push(Arc::new(Field::new(
+                    field.name(),
+                    DataType::Timestamp(time_unit, Some("+00:00".into())),
+                    field.is_nullable(),
+                )));
+                columns.push(cast(
+                    column,
+                    &DataType::Timestamp(time_unit, Some("+00:00".into())),
+                )?);
+            }
             _ => {
                 // cloning Arc is cheap
                 fields.push(field.clone());
