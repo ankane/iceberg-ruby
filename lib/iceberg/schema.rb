@@ -4,7 +4,7 @@ module Iceberg
     attr_reader :fields, :schema_id
 
     def initialize(fields, schema_id: nil, _schema: nil)
-      @fields = fields
+      @fields = fields || _schema&.fields
       @schema_id = schema_id || _schema&.schema_id
       @_schema = _schema
     end
