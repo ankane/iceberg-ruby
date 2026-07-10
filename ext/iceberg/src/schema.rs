@@ -72,6 +72,35 @@ impl RbNestedField {
         self.field.required
     }
 
+    // TODO return objects
+    pub fn field_type(ruby: &Ruby, self_: &Self) -> RString {
+        let v = match &*self_.field.field_type {
+            Type::Primitive(ty) => match ty {
+                PrimitiveType::Boolean => "boolean",
+                PrimitiveType::Int => "int",
+                PrimitiveType::Long => "long",
+                PrimitiveType::Float => "float",
+                PrimitiveType::Double => "double",
+                PrimitiveType::Decimal {
+                    precision: _,
+                    scale: _,
+                } => "decimal",
+                PrimitiveType::Date => "date",
+                PrimitiveType::Time => "time",
+                PrimitiveType::Timestamp => "timestamp",
+                PrimitiveType::Timestamptz => "timestamptz",
+                PrimitiveType::TimestampNs => "timestamp_ns",
+                PrimitiveType::TimestamptzNs => "timestamptz_ns",
+                PrimitiveType::String => "string",
+                PrimitiveType::Uuid => "uuid",
+                PrimitiveType::Fixed(_) => "fixed",
+                PrimitiveType::Binary => "binary",
+            },
+            _ => todo!(),
+        };
+        ruby.str_new(v)
+    }
+
     pub fn doc(ruby: &Ruby, self_: &Self) -> Option<RString> {
         self_.field.doc.as_ref().map(|v| ruby.str_new(v))
     }
@@ -99,31 +128,10 @@ impl RbNestedField {
         field.aset(ruby.to_symbol("id"), self_.id())?;
         field.aset(ruby.to_symbol("name"), RbNestedField::name(ruby, self_))?;
 
-        let field_type = match &*f.field_type {
-            Type::Primitive(ty) => match ty {
-                PrimitiveType::Boolean => "boolean",
-                PrimitiveType::Int => "int",
-                PrimitiveType::Long => "long",
-                PrimitiveType::Float => "float",
-                PrimitiveType::Double => "double",
-                PrimitiveType::Decimal {
-                    precision: _,
-                    scale: _,
-                } => "decimal",
-                PrimitiveType::Date => "date",
-                PrimitiveType::Time => "time",
-                PrimitiveType::Timestamp => "timestamp",
-                PrimitiveType::Timestamptz => "timestamptz",
-                PrimitiveType::TimestampNs => "timestamp_ns",
-                PrimitiveType::TimestamptzNs => "timestamptz_ns",
-                PrimitiveType::String => "string",
-                PrimitiveType::Uuid => "uuid",
-                PrimitiveType::Fixed(_) => "fixed",
-                PrimitiveType::Binary => "binary",
-            },
-            _ => todo!(),
-        };
-        field.aset(ruby.to_symbol("type"), field_type)?;
+        field.aset(
+            ruby.to_symbol("type"),
+            RbNestedField::field_type(ruby, self_),
+        )?;
 
         field.aset(ruby.to_symbol("required"), self_.required())?;
 

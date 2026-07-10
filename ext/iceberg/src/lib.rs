@@ -139,6 +139,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("id", method!(RbNestedField::id, 0))?;
     class.define_method("name", method!(RbNestedField::name, 0))?;
     class.define_method("required", method!(RbNestedField::required, 0))?;
+    class.define_method("field_type", method!(RbNestedField::field_type, 0))?;
     class.define_method("doc", method!(RbNestedField::doc, 0))?;
     class.define_method(
         "initial_default",
