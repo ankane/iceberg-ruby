@@ -49,6 +49,8 @@ module Iceberg
         table_definition = TableDefinition.new
         yield table_definition
         schema = Schema.new(table_definition.fields)
+      elsif schema.is_a?(Schema)
+        # do nothing
       elsif schema.respond_to?(:arrow_c_schema)
         schema = Schema.new(schema)
       # TODO remove Polars conditions in 0.12.0
