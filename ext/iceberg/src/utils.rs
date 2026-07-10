@@ -4,13 +4,12 @@ use iceberg::spec::{
 };
 use iceberg::{NamespaceIdent, TableIdent};
 use magnus::{
-    Error as RbErr, IntoValue, RArray, RClass, RHash, RModule, Ruby, TryConvert, Value, kwargs,
-    prelude::*,
+    Error as RbErr, IntoValue, RClass, RModule, Ruby, TryConvert, Value, kwargs, prelude::*,
 };
 
 use crate::RbResult;
 use crate::error::to_rb_err;
-use crate::schema::{RbNestedField, RbSchema};
+use crate::schema::RbSchema;
 
 pub struct Wrap<T>(pub T);
 
@@ -45,19 +44,8 @@ impl TryConvert for Wrap<TableIdent> {
 
 impl TryConvert for Wrap<Schema> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let ruby = Ruby::get_with(ob);
-        let mut fields = Vec::new();
-        let rb_fields: RArray = ob.funcall("fields", ())?;
-        for rb_field in rb_fields {
-            let rb_field = RHash::try_convert(rb_field)?;
-            let field = RbNestedField::new(&ruby, rb_field)?.field;
-            fields.push(field);
-        }
-        let schema = Schema::builder()
-            .with_fields(fields)
-            .build()
-            .map_err(to_rb_err)?;
-        Ok(Wrap(schema))
+        let rb_schema: &RbSchema = ob.funcall("_schema", ())?;
+        Ok(Wrap(rb_schema.schema.clone()))
     }
 }
 

@@ -33,9 +33,27 @@ impl RbArrowSchema {
 }
 
 impl RbSchema {
-    pub fn new(ob: RbArrowType<ArrowSchema>) -> RbResult<Self> {
-        let schema = arrow_schema_to_schema_auto_assign_ids(&ob.0).map_err(to_rb_err)?;
-        Ok(Self { schema })
+    pub fn new(ob: Value) -> RbResult<Self> {
+        if let Ok(arrow_schema) = ob.funcall::<_, _, RbArrowType<ArrowSchema>>("arrow_c_schema", ())
+        {
+            let schema =
+                arrow_schema_to_schema_auto_assign_ids(&arrow_schema.0).map_err(to_rb_err)?;
+            Ok(Self { schema })
+        } else {
+            let ruby = Ruby::get_with(ob);
+            let mut fields = Vec::new();
+            let rb_fields = RArray::try_convert(ob)?;
+            for rb_field in rb_fields {
+                let rb_field = RHash::try_convert(rb_field)?;
+                let field = RbNestedField::new(&ruby, rb_field)?.field;
+                fields.push(field);
+            }
+            let schema = Schema::builder()
+                .with_fields(fields)
+                .build()
+                .map_err(to_rb_err)?;
+            Ok(Self { schema })
+        }
     }
 
     pub fn fields(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
