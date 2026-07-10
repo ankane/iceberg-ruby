@@ -122,8 +122,6 @@ impl RbNestedField {
     }
 
     pub fn to_h(ruby: &Ruby, self_: &Self) -> RbResult<RHash> {
-        let f = &self_.field;
-
         let field = ruby.hash_new();
         field.aset(ruby.to_symbol("id"), self_.id())?;
         field.aset(ruby.to_symbol("name"), RbNestedField::name(ruby, self_))?;
@@ -147,14 +145,17 @@ impl RbNestedField {
 
         field.aset(ruby.to_symbol("doc"), RbNestedField::doc(ruby, self_))?;
 
-        if let Type::Primitive(PrimitiveType::Fixed(limit)) = &*f.field_type {
+        if let Type::Primitive(PrimitiveType::Fixed(limit)) = &*self_.field.field_type {
             field.aset(ruby.to_symbol("limit"), *limit)?;
         }
 
-        if let Type::Primitive(PrimitiveType::Decimal { precision, scale }) = &*f.field_type {
+        if let Type::Primitive(PrimitiveType::Decimal { precision, scale }) =
+            &*self_.field.field_type
+        {
             field.aset(ruby.to_symbol("precision"), *precision)?;
             field.aset(ruby.to_symbol("scale"), *scale)?;
         }
+
         Ok(field)
     }
 }
