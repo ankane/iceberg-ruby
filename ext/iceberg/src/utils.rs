@@ -177,10 +177,8 @@ fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> {
 
 pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
     ruby.class_object()
-        .const_get::<_, RModule>("Iceberg")
-        .unwrap()
-        .const_get::<_, RClass>("Schema")
-        .unwrap()
+        .const_get::<_, RModule>("Iceberg")?
+        .const_get::<_, RClass>("Schema")?
         .funcall(
             "new",
             (
