@@ -3,10 +3,10 @@ module Iceberg
   class Schema
     attr_reader :schema_id, :_schema
 
-    def initialize(fields, schema_id: nil, _schema: nil)
+    def initialize(fields, schema_id: nil)
       @_schema =
-        if _schema
-          _schema
+        if fields.is_a?(RbSchema)
+          fields
         elsif fields.respond_to?(:arrow_c_schema)
           RbSchema.new(fields)
         else

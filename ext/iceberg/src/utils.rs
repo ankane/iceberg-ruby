@@ -4,7 +4,7 @@ use iceberg::spec::{
 };
 use iceberg::{NamespaceIdent, TableIdent};
 use magnus::{
-    Error as RbErr, IntoValue, RClass, RModule, Ruby, TryConvert, Value, kwargs, prelude::*,
+    Error as RbErr, IntoValue, RClass, RModule, Ruby, TryConvert, Value, prelude::*,
 };
 
 use crate::RbResult;
@@ -78,10 +78,9 @@ pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
         .const_get::<_, RClass>("Schema")?
         .funcall(
             "new",
-            (
-                ruby.qnil(),
-                kwargs!("_schema" => RbSchema { schema: schema.clone() }),
-            ),
+            (RbSchema {
+                schema: schema.clone(),
+            },),
         )
 }
 
