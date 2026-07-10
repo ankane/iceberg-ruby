@@ -136,6 +136,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("arrow_c_schema", method!(RbSchema::arrow_c_schema, 0))?;
 
     let class = module.define_class("NestedField", ruby.class_object())?;
+    class.define_method("id", method!(RbNestedField::id, 0))?;
+    class.define_method("name", method!(RbNestedField::name, 0))?;
+    class.define_method("required", method!(RbNestedField::required, 0))?;
     class.define_method("to_h", method!(RbNestedField::to_h, 0))?;
 
     let class = module.define_class("ArrowSchema", ruby.class_object())?;

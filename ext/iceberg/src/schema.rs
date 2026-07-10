@@ -60,6 +60,18 @@ impl RbSchema {
 }
 
 impl RbNestedField {
+    pub fn id(&self) -> i32 {
+        self.field.id
+    }
+
+    pub fn name(&self) -> String {
+        self.field.name.clone()
+    }
+
+    pub fn required(&self) -> bool {
+        self.field.required
+    }
+
     pub fn to_h(ruby: &Ruby, self_: &Self) -> RbResult<RHash> {
         let f = &self_.field;
 
