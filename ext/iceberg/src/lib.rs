@@ -4,6 +4,7 @@ mod error;
 mod ruby;
 mod runtime;
 mod scan;
+mod schema;
 mod table;
 mod utils;
 
@@ -11,6 +12,7 @@ use magnus::{Error as RbErr, Ruby, function, method, prelude::*};
 
 use crate::catalog::RbCatalog;
 use crate::scan::RbTableScan;
+use crate::schema::{RbArrowSchema, RbSchema};
 use crate::table::RbTable;
 
 type RbResult<T> = Result<T, RbErr>;
@@ -126,6 +128,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("RbTableScan", ruby.class_object())?;
     class.define_method("plan_files", method!(RbTableScan::plan_files, 0))?;
     class.define_method("snapshot", method!(RbTableScan::snapshot, 0))?;
+
+    let class = module.define_class("RbSchema", ruby.class_object())?;
+    class.define_method("arrow_c_schema", method!(RbSchema::arrow_c_schema, 0))?;
+
+    let class = module.define_class("ArrowSchema", ruby.class_object())?;
+    class.define_method("to_i", method!(RbArrowSchema::to_i, 0))?;
 
     Ok(())
 }

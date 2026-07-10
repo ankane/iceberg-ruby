@@ -10,6 +10,7 @@ use magnus::{
 
 use crate::RbResult;
 use crate::error::to_rb_err;
+use crate::schema::RbSchema;
 
 pub struct Wrap<T>(pub T);
 
@@ -238,7 +239,13 @@ pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
         .unwrap()
         .const_get::<_, RClass>("Schema")
         .unwrap()
-        .funcall("new", (fields, kwargs!("schema_id" => schema_id)))
+        .funcall(
+            "new",
+            (
+                fields,
+                kwargs!("schema_id" => schema_id, "_schema" => RbSchema { schema: schema.clone() }),
+            ),
+        )
 }
 
 pub fn rb_snapshot(ruby: &Ruby, snapshot: &Snapshot) -> RbResult<Value> {
