@@ -91,7 +91,7 @@ impl RbTable {
                     runtime.block_on(data_file_writer_builder.build(None))?;
 
                 for batch in data.0 {
-                    let batch = cast_batch(batch.unwrap())?.with_schema(table_schema.clone())?;
+                    let batch = cast_batch(batch.unwrap(), table_schema.clone())?;
                     runtime.block_on(data_file_writer.write(batch))?;
                 }
 
@@ -438,7 +438,7 @@ impl RbTable {
     }
 }
 
-fn cast_batch(batch: RecordBatch) -> Result<RecordBatch, ArrowError> {
+fn cast_batch(batch: RecordBatch, table_schema: Arc<Schema>) -> Result<RecordBatch, ArrowError> {
     let mut fields = Vec::new();
     let mut columns = Vec::new();
     for (field, column) in batch.schema().fields.iter().zip(batch.columns()) {
@@ -452,6 +452,7 @@ fn cast_batch(batch: RecordBatch) -> Result<RecordBatch, ArrowError> {
                 columns.push(cast(column, &DataType::Utf8)?);
             }
             DataType::BinaryView => {
+                // TODO convert to FixedSizeBinary if needed
                 fields.push(Arc::new(Field::new(
                     field.name(),
                     DataType::LargeBinary,
@@ -477,5 +478,5 @@ fn cast_batch(batch: RecordBatch) -> Result<RecordBatch, ArrowError> {
             }
         }
     }
-    RecordBatch::try_new(Arc::new(Schema::new(fields)), columns)
+    RecordBatch::try_new(Arc::new(Schema::new(fields)), columns)?.with_schema(table_schema)
 }
