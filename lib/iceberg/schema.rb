@@ -5,6 +5,9 @@ module Iceberg
 
     def initialize(fields, schema_id: nil, _schema: nil)
       if fields.respond_to?(:arrow_c_schema) || fields.is_a?(Array)
+        if fields.is_a?(Array)
+          fields = fields.map { |f| NestedField.new(f) }
+        end
         _schema = RbSchema.new(fields)
         fields = nil
       end

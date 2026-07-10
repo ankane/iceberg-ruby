@@ -39,12 +39,10 @@ impl RbSchema {
         {
             arrow_schema_to_schema_auto_assign_ids(&arrow_schema.0).map_err(to_rb_err)?
         } else {
-            let ruby = Ruby::get_with(ob);
             let mut fields = Vec::new();
             let rb_fields = RArray::try_convert(ob)?;
             for rb_field in rb_fields {
-                let rb_field = RHash::try_convert(rb_field)?;
-                let field = RbNestedField::new(&ruby, rb_field)?.field;
+                let field = <&RbNestedField>::try_convert(rb_field)?.field.clone();
                 fields.push(field);
             }
             Schema::builder()
