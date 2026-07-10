@@ -1,7 +1,9 @@
 module Iceberg
   class TableDefinition
     TYPES = %w[
-      boolean int long float double decimal date time timestamp timestamptz timestamp_ns timestamptz_ns string fixed uuid binary
+      boolean int long float double decimal date time
+      timestamp timestamptz timestamp_ns timestamptz_ns
+      string fixed uuid binary
     ]
 
     TYPE_ALIASES = {
