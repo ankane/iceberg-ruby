@@ -10,7 +10,7 @@ module Iceberg
         elsif fields.respond_to?(:arrow_c_schema)
           RbSchema.new(fields)
         else
-          RbSchema.new(fields.map { |f| NestedField.new(f) })
+          RbSchema.new(fields.map { |f| f.is_a?(NestedField) ? f : NestedField.new(f) })
         end
       @schema_id = schema_id || @_schema.schema_id
     end
