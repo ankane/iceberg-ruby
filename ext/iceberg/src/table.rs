@@ -442,7 +442,7 @@ fn cast_batch(batch: RecordBatch, table_schema: Arc<Schema>) -> Result<RecordBat
     let mut fields = Vec::new();
     let mut columns = Vec::new();
     for (field, column) in batch.schema().fields.iter().zip(batch.columns()) {
-        match *field.data_type() {
+        match field.data_type() {
             DataType::Utf8View => {
                 fields.push(Arc::new(Field::new(
                     field.name(),
@@ -463,12 +463,12 @@ fn cast_batch(batch: RecordBatch, table_schema: Arc<Schema>) -> Result<RecordBat
             DataType::Timestamp(time_unit, Some(_)) => {
                 fields.push(Arc::new(Field::new(
                     field.name(),
-                    DataType::Timestamp(time_unit, Some("+00:00".into())),
+                    DataType::Timestamp(*time_unit, Some("+00:00".into())),
                     field.is_nullable(),
                 )));
                 columns.push(cast(
                     column,
-                    &DataType::Timestamp(time_unit, Some("+00:00".into())),
+                    &DataType::Timestamp(*time_unit, Some("+00:00".into())),
                 )?);
             }
             _ => {
