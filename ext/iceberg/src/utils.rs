@@ -8,7 +8,7 @@ use magnus::{
 };
 
 use crate::RbResult;
-use crate::error::to_rb_err;
+use crate::error::{to_rb_err, todo_error};
 use crate::schema::RbSchema;
 
 pub struct Wrap<T>(pub T);
@@ -63,11 +63,11 @@ pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> 
                 PrimitiveType::Float => PrimitiveLiteral::Float(f32::try_convert(ob)?.into()),
                 PrimitiveType::Double => PrimitiveLiteral::Double(f64::try_convert(ob)?.into()),
                 PrimitiveType::String => PrimitiveLiteral::String(String::try_convert(ob)?),
-                _ => todo!(),
+                _ => return Err(todo_error()),
             };
             Literal::Primitive(pl)
         }
-        _ => todo!(),
+        _ => return Err(todo_error()),
     };
     Ok(Some(lit))
 }
@@ -101,25 +101,25 @@ pub fn rb_snapshot(ruby: &Ruby, snapshot: &Snapshot) -> RbResult<Value> {
 }
 
 pub fn rb_partition_spec(_partition_spec: &PartitionSpec) -> RbResult<Value> {
-    todo!();
+    Err(todo_error())
 }
 
 pub fn rb_sort_order(_sort_order: &SortOrder) -> RbResult<Value> {
-    todo!();
+    Err(todo_error())
 }
 
 pub fn rb_statistics_file(_statistics_file: &StatisticsFile) -> RbResult<Value> {
-    todo!();
+    Err(todo_error())
 }
 
 pub fn rb_partition_statistics_file(
     _partition_statistics_file: &PartitionStatisticsFile,
 ) -> RbResult<Value> {
-    todo!();
+    Err(todo_error())
 }
 
 pub fn rb_encrypted_key(_encrypted_key: &EncryptedKey) -> RbResult<Value> {
-    todo!();
+    Err(todo_error())
 }
 
 pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> Value {

@@ -36,3 +36,10 @@ pub fn to_rb_err(err: iceberg::Error) -> RbErr {
 
     RbErr::new(class, message)
 }
+
+pub fn todo_error() -> RbErr {
+    RbErr::new(
+        Ruby::get().unwrap().exception_runtime_error(),
+        "not implemented yet",
+    )
+}

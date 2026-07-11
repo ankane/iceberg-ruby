@@ -8,7 +8,7 @@ use magnus::{Error as RbErr, RArray, RHash, RString, Ruby, TryConvert, Value, pr
 
 use crate::RbResult;
 use crate::arrow::RbArrowType;
-use crate::error::to_rb_err;
+use crate::error::{to_rb_err, todo_error};
 use crate::utils::{default_value, rb_literal};
 
 #[magnus::wrap(class = "Iceberg::RbSchema")]
@@ -186,7 +186,7 @@ impl RbNestedField {
     }
 
     // TODO return objects
-    pub fn field_type(ruby: &Ruby, self_: &Self) -> RString {
+    pub fn field_type(ruby: &Ruby, self_: &Self) -> RbResult<RString> {
         let v = match &*self_.field.field_type {
             Type::Primitive(ty) => match ty {
                 PrimitiveType::Boolean => "boolean",
@@ -209,9 +209,9 @@ impl RbNestedField {
                 PrimitiveType::Fixed(_) => "fixed",
                 PrimitiveType::Binary => "binary",
             },
-            _ => todo!(),
+            _ => return Err(todo_error()),
         };
-        ruby.str_new(v)
+        Ok(ruby.str_new(v))
     }
 
     pub fn doc(ruby: &Ruby, self_: &Self) -> Option<RString> {
@@ -250,7 +250,7 @@ impl RbNestedField {
 
         field.aset(
             ruby.to_symbol("type"),
-            RbNestedField::field_type(ruby, self_),
+            RbNestedField::field_type(ruby, self_)?,
         )?;
 
         field.aset(ruby.to_symbol("required"), self_.required())?;

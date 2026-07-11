@@ -21,6 +21,11 @@ class TableTest < Minitest::Test
     assert_equal 0, table.default_partition_spec_id
     assert_nil table.current_snapshot_id
     assert_kind_of Hash, table.properties
+    assert_kind_of Array, table.statistics
+    assert_kind_of Array, table.partition_statistics
+    assert_nil table.statistics_for_snapshot(0)
+    assert_nil table.partition_statistics_for_snapshot(0)
+    assert_kind_of Array, table.encryption_keys
     assert_equal 0, table.next_row_id
   end
 

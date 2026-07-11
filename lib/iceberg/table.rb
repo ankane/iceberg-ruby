@@ -88,6 +88,26 @@ module Iceberg
       @table.properties
     end
 
+    def statistics
+      @table.statistics
+    end
+
+    def partition_statistics
+      @table.partition_statistics
+    end
+
+    def statistics_for_snapshot(snapshot_id)
+      @table.statistics_for_snapshot(snapshot_id)
+    end
+
+    def partition_statistics_for_snapshot(snapshot_id)
+      @table.partition_statistics_for_snapshot(snapshot_id)
+    end
+
+    def encryption_keys
+      @table.encryption_keys
+    end
+
     def next_row_id
       @table.next_row_id
     end
