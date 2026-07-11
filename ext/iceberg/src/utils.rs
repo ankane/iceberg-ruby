@@ -104,6 +104,10 @@ pub fn rb_snapshot(ruby: &Ruby, snapshot: &Snapshot) -> RbResult<Value> {
 pub fn rb_partition_spec(ruby: &Ruby, partition_spec: &PartitionSpec) -> RbResult<Value> {
     let rb_partition_spec = ruby.hash_new();
     rb_partition_spec.aset(ruby.to_symbol("spec_id"), partition_spec.spec_id())?;
+    rb_partition_spec.aset(
+        ruby.to_symbol("highest_field_id"),
+        partition_spec.highest_field_id(),
+    )?;
     Ok(rb_partition_spec.as_value())
 }
 
