@@ -100,12 +100,14 @@ pub fn rb_snapshot(ruby: &Ruby, snapshot: &Snapshot) -> RbResult<Value> {
     Ok(rb_snapshot.as_value())
 }
 
+// TODO add more fields
 pub fn rb_partition_spec(ruby: &Ruby, partition_spec: &PartitionSpec) -> RbResult<Value> {
     let rb_partition_spec = ruby.hash_new();
     rb_partition_spec.aset(ruby.to_symbol("spec_id"), partition_spec.spec_id())?;
     Ok(rb_partition_spec.as_value())
 }
 
+// TODO add more fields
 pub fn rb_sort_order(ruby: &Ruby, sort_order: &SortOrder) -> RbResult<Value> {
     let rb_sort_order = ruby.hash_new();
     rb_sort_order.aset(ruby.to_symbol("order_id"), sort_order.order_id)?;
@@ -167,6 +169,14 @@ pub fn rb_partition_statistics_file(
 pub fn rb_encrypted_key(ruby: &Ruby, encrypted_key: &EncryptedKey) -> RbResult<Value> {
     let rb_encrypted_key = ruby.hash_new();
     rb_encrypted_key.aset(ruby.to_symbol("key_id"), encrypted_key.key_id())?;
+    rb_encrypted_key.aset(
+        ruby.to_symbol("encrypted_by_id"),
+        encrypted_key.encrypted_by_id(),
+    )?;
+    rb_encrypted_key.aset(
+        ruby.to_symbol("properties"),
+        encrypted_key.properties().clone(),
+    )?;
     Ok(rb_encrypted_key.as_value())
 }
 
