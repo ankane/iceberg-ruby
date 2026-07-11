@@ -84,6 +84,14 @@ module Iceberg
       @table.current_snapshot_id
     end
 
+    def default_sort_order
+      @table.default_sort_order
+    end
+
+    def default_sort_order_id
+      @table.default_sort_order_id
+    end
+
     def properties
       @table.properties
     end

@@ -20,6 +20,8 @@ class TableTest < Minitest::Test
     assert_equal 0, table.schema_id
     assert_equal 0, table.default_partition_spec_id
     assert_nil table.current_snapshot_id
+    # assert_equal 0, table.default_sort_order
+    assert_equal 0, table.default_sort_order_id
     assert_kind_of Hash, table.properties
     assert_kind_of Array, table.statistics
     assert_kind_of Array, table.partition_statistics
