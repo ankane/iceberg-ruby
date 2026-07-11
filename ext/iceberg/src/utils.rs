@@ -122,8 +122,8 @@ pub fn rb_encrypted_key(_encrypted_key: &EncryptedKey) -> RbResult<Value> {
     Err(todo_error())
 }
 
-pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> Value {
-    match literal {
+pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> RbResult<Value> {
+    let v = match literal {
         Literal::Primitive(pl) => match pl {
             PrimitiveLiteral::Boolean(v) => v.into_value_with(ruby),
             PrimitiveLiteral::Int(v) => v.into_value_with(ruby),
@@ -132,8 +132,9 @@ pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> Value {
             PrimitiveLiteral::Double(v) => v.into_value_with(ruby),
             PrimitiveLiteral::String(v) => ruby.str_new(v).as_value(),
             PrimitiveLiteral::Binary(v) => ruby.str_from_slice(v).as_value(),
-            _ => todo!(),
+            _ => return Err(todo_error()),
         },
-        _ => todo!(),
-    }
+        _ => return Err(todo_error()),
+    };
+    Ok(v)
 }

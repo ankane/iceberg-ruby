@@ -218,20 +218,22 @@ impl RbNestedField {
         self_.field.doc.as_ref().map(|v| ruby.str_new(v))
     }
 
-    pub fn initial_default(ruby: &Ruby, self_: &Self) -> Option<Value> {
+    pub fn initial_default(ruby: &Ruby, self_: &Self) -> RbResult<Option<Value>> {
         self_
             .field
             .initial_default
             .as_ref()
             .map(|v| rb_literal(ruby, v))
+            .transpose()
     }
 
-    pub fn write_default(ruby: &Ruby, self_: &Self) -> Option<Value> {
+    pub fn write_default(ruby: &Ruby, self_: &Self) -> RbResult<Option<Value>> {
         self_
             .field
             .write_default
             .as_ref()
             .map(|v| rb_literal(ruby, v))
+            .transpose()
     }
 
     pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
@@ -257,12 +259,12 @@ impl RbNestedField {
 
         field.aset(
             ruby.to_symbol("initial_default"),
-            RbNestedField::initial_default(ruby, self_),
+            RbNestedField::initial_default(ruby, self_)?,
         )?;
 
         field.aset(
             ruby.to_symbol("write_default"),
-            RbNestedField::write_default(ruby, self_),
+            RbNestedField::write_default(ruby, self_)?,
         )?;
 
         field.aset(ruby.to_symbol("doc"), RbNestedField::doc(ruby, self_))?;
