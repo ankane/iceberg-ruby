@@ -38,8 +38,12 @@ pub fn to_rb_err(err: iceberg::Error) -> RbErr {
 }
 
 pub fn todo_error() -> RbErr {
-    RbErr::new(
-        Ruby::get().unwrap().exception_runtime_error(),
-        "not implemented yet",
-    )
+    let class = Ruby::get()
+        .unwrap()
+        .class_object()
+        .const_get::<_, RModule>("Iceberg")
+        .unwrap()
+        .const_get("Todo")
+        .unwrap();
+    RbErr::new(class, "not implemented yet")
 }
