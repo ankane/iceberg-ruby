@@ -188,28 +188,34 @@ impl RbTable {
             .metadata()
             .partition_specs_iter()
         {
-            partition_specs.push(rb_partition_spec(s)?)?;
+            partition_specs.push(rb_partition_spec(ruby, s)?)?;
         }
         Ok(partition_specs)
     }
 
-    pub fn partition_spec_by_id(&self, partition_spec_id: i32) -> RbResult<Option<Value>> {
-        let partition_spec = match self
+    pub fn partition_spec_by_id(
+        ruby: &Ruby,
+        rb_self: &Self,
+        partition_spec_id: i32,
+    ) -> RbResult<Option<Value>> {
+        let partition_spec = match rb_self
             .table
             .read()
             .unwrap()
             .metadata()
             .partition_spec_by_id(partition_spec_id)
         {
-            Some(s) => Some(rb_partition_spec(s)?),
+            Some(s) => Some(rb_partition_spec(ruby, s)?),
             None => None,
         };
         Ok(partition_spec)
     }
 
-    pub fn default_partition_spec(&self) -> RbResult<Value> {
+    pub fn default_partition_spec(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
         rb_partition_spec(
-            self.table
+            ruby,
+            rb_self
+                .table
                 .read()
                 .unwrap()
                 .metadata()
@@ -359,7 +365,7 @@ impl RbTable {
     pub fn statistics(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let statistics = ruby.ary_new();
         for s in rb_self.table.read().unwrap().metadata().statistics_iter() {
-            statistics.push(rb_statistics_file(s)?)?;
+            statistics.push(rb_statistics_file(ruby, s)?)?;
         }
         Ok(statistics)
     }
@@ -373,34 +379,42 @@ impl RbTable {
             .metadata()
             .partition_statistics_iter()
         {
-            statistics.push(rb_partition_statistics_file(s)?)?;
+            statistics.push(rb_partition_statistics_file(ruby, s)?)?;
         }
         Ok(statistics)
     }
 
-    pub fn statistics_for_snapshot(&self, snapshot_id: i64) -> RbResult<Option<Value>> {
-        let statistics = match self
+    pub fn statistics_for_snapshot(
+        ruby: &Ruby,
+        rb_self: &Self,
+        snapshot_id: i64,
+    ) -> RbResult<Option<Value>> {
+        let statistics = match rb_self
             .table
             .read()
             .unwrap()
             .metadata()
             .statistics_for_snapshot(snapshot_id)
         {
-            Some(s) => Some(rb_statistics_file(s)?),
+            Some(s) => Some(rb_statistics_file(ruby, s)?),
             None => None,
         };
         Ok(statistics)
     }
 
-    pub fn partition_statistics_for_snapshot(&self, snapshot_id: i64) -> RbResult<Option<Value>> {
-        let statistics = match self
+    pub fn partition_statistics_for_snapshot(
+        ruby: &Ruby,
+        rb_self: &Self,
+        snapshot_id: i64,
+    ) -> RbResult<Option<Value>> {
+        let statistics = match rb_self
             .table
             .read()
             .unwrap()
             .metadata()
             .partition_statistics_for_snapshot(snapshot_id)
         {
-            Some(s) => Some(rb_partition_statistics_file(s)?),
+            Some(s) => Some(rb_partition_statistics_file(ruby, s)?),
             None => None,
         };
         Ok(statistics)

@@ -100,8 +100,10 @@ pub fn rb_snapshot(ruby: &Ruby, snapshot: &Snapshot) -> RbResult<Value> {
     Ok(rb_snapshot.as_value())
 }
 
-pub fn rb_partition_spec(_partition_spec: &PartitionSpec) -> RbResult<Value> {
-    Err(todo_error())
+pub fn rb_partition_spec(ruby: &Ruby, partition_spec: &PartitionSpec) -> RbResult<Value> {
+    let rb_partition_spec = ruby.hash_new();
+    rb_partition_spec.aset(ruby.to_symbol("spec_id"), partition_spec.spec_id())?;
+    Ok(rb_partition_spec.as_value())
 }
 
 pub fn rb_sort_order(ruby: &Ruby, sort_order: &SortOrder) -> RbResult<Value> {
@@ -117,14 +119,49 @@ pub fn rb_sort_order(ruby: &Ruby, sort_order: &SortOrder) -> RbResult<Value> {
     Ok(rb_sort_order.as_value())
 }
 
-pub fn rb_statistics_file(_statistics_file: &StatisticsFile) -> RbResult<Value> {
-    Err(todo_error())
+pub fn rb_statistics_file(ruby: &Ruby, statistics_file: &StatisticsFile) -> RbResult<Value> {
+    let rb_statistics_file = ruby.hash_new();
+    rb_statistics_file.aset(ruby.to_symbol("snapshot_id"), statistics_file.snapshot_id)?;
+    rb_statistics_file.aset(
+        ruby.to_symbol("statistics_path"),
+        ruby.str_new(&statistics_file.statistics_path),
+    )?;
+    rb_statistics_file.aset(
+        ruby.to_symbol("file_size_in_bytes"),
+        statistics_file.file_size_in_bytes,
+    )?;
+    rb_statistics_file.aset(
+        ruby.to_symbol("file_footer_size_in_bytes"),
+        statistics_file.file_footer_size_in_bytes,
+    )?;
+    rb_statistics_file.aset(
+        ruby.to_symbol("key_metadata"),
+        statistics_file
+            .key_metadata
+            .as_ref()
+            .map(|v| ruby.str_new(v)),
+    )?;
+    Ok(rb_statistics_file.as_value())
 }
 
 pub fn rb_partition_statistics_file(
-    _partition_statistics_file: &PartitionStatisticsFile,
+    ruby: &Ruby,
+    partition_statistics_file: &PartitionStatisticsFile,
 ) -> RbResult<Value> {
-    Err(todo_error())
+    let rb_partition_statistics_file = ruby.hash_new();
+    rb_partition_statistics_file.aset(
+        ruby.to_symbol("snapshot_id"),
+        partition_statistics_file.snapshot_id,
+    )?;
+    rb_partition_statistics_file.aset(
+        ruby.to_symbol("statistics_path"),
+        ruby.str_new(&partition_statistics_file.statistics_path),
+    )?;
+    rb_partition_statistics_file.aset(
+        ruby.to_symbol("file_size_in_bytes"),
+        partition_statistics_file.file_size_in_bytes,
+    )?;
+    Ok(rb_partition_statistics_file.as_value())
 }
 
 pub fn rb_encrypted_key(ruby: &Ruby, encrypted_key: &EncryptedKey) -> RbResult<Value> {
