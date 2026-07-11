@@ -127,8 +127,10 @@ pub fn rb_partition_statistics_file(
     Err(todo_error())
 }
 
-pub fn rb_encrypted_key(_encrypted_key: &EncryptedKey) -> RbResult<Value> {
-    Err(todo_error())
+pub fn rb_encrypted_key(ruby: &Ruby, encrypted_key: &EncryptedKey) -> RbResult<Value> {
+    let rb_encrypted_key = ruby.hash_new();
+    rb_encrypted_key.aset(ruby.to_symbol("key_id"), encrypted_key.key_id())?;
+    Ok(rb_encrypted_key.as_value())
 }
 
 pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> RbResult<Value> {

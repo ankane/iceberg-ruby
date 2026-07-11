@@ -415,20 +415,20 @@ impl RbTable {
             .metadata()
             .encryption_keys_iter()
         {
-            encryption_keys.push(rb_encrypted_key(k)?)?;
+            encryption_keys.push(rb_encrypted_key(ruby, k)?)?;
         }
         Ok(encryption_keys)
     }
 
-    pub fn encryption_key(&self, key_id: String) -> RbResult<Option<Value>> {
-        let key = match self
+    pub fn encryption_key(ruby: &Ruby, rb_self: &Self, key_id: String) -> RbResult<Option<Value>> {
+        let key = match rb_self
             .table
             .read()
             .unwrap()
             .metadata()
             .encryption_key(&key_id)
         {
-            Some(k) => Some(rb_encrypted_key(k)?),
+            Some(k) => Some(rb_encrypted_key(ruby, k)?),
             None => None,
         };
         Ok(key)
