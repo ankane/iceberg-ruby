@@ -88,6 +88,10 @@ module Iceberg
       @table.properties
     end
 
+    def next_row_id
+      @table.next_row_id
+    end
+
     def scan(snapshot_id: nil)
       TableScan.new(@table.scan(snapshot_id), self)
     end

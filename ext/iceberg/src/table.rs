@@ -422,6 +422,10 @@ impl RbTable {
         Ok(key)
     }
 
+    pub fn next_row_id(&self) -> u64 {
+        self.table.read().unwrap().metadata().next_row_id()
+    }
+
     pub fn from_metadata_file(location: String) -> RbResult<Self> {
         let file_io = FileIO::new_with_fs();
         let table_ident = TableIdent::from_strs(["static-table", &location]).unwrap();

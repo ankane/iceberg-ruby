@@ -120,6 +120,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
     class.define_method("encryption_keys", method!(RbTable::encryption_keys, 0))?;
     class.define_method("encryption_key", method!(RbTable::encryption_key, 1))?;
+    class.define_method("next_row_id", method!(RbTable::next_row_id, 0))?;
     class.define_singleton_method(
         "from_metadata_file",
         function!(RbTable::from_metadata_file, 1),

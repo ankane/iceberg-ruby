@@ -21,6 +21,7 @@ class TableTest < Minitest::Test
     assert_equal 0, table.default_partition_spec_id
     assert_nil table.current_snapshot_id
     assert_kind_of Hash, table.properties
+    assert_equal 0, table.next_row_id
   end
 
   def test_snapshots
