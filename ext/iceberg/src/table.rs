@@ -309,27 +309,39 @@ impl RbTable {
     pub fn sort_orders(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let sort_orders = ruby.ary_new();
         for s in rb_self.table.read().unwrap().metadata().sort_orders_iter() {
-            sort_orders.push(rb_sort_order(s)?)?;
+            sort_orders.push(rb_sort_order(ruby, s)?)?;
         }
         Ok(sort_orders)
     }
 
-    pub fn sort_order_by_id(&self, sort_order_id: i64) -> RbResult<Option<Value>> {
-        let sort_order = match self
+    pub fn sort_order_by_id(
+        ruby: &Ruby,
+        rb_self: &Self,
+        sort_order_id: i64,
+    ) -> RbResult<Option<Value>> {
+        let sort_order = match rb_self
             .table
             .read()
             .unwrap()
             .metadata()
             .sort_order_by_id(sort_order_id)
         {
-            Some(s) => Some(rb_sort_order(s)?),
+            Some(s) => Some(rb_sort_order(ruby, s)?),
             None => None,
         };
         Ok(sort_order)
     }
 
-    pub fn default_sort_order(&self) -> RbResult<Value> {
-        rb_sort_order(self.table.read().unwrap().metadata().default_sort_order())
+    pub fn default_sort_order(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+        rb_sort_order(
+            ruby,
+            rb_self
+                .table
+                .read()
+                .unwrap()
+                .metadata()
+                .default_sort_order(),
+        )
     }
 
     pub fn default_sort_order_id(&self) -> i64 {

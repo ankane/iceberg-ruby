@@ -104,8 +104,17 @@ pub fn rb_partition_spec(_partition_spec: &PartitionSpec) -> RbResult<Value> {
     Err(todo_error())
 }
 
-pub fn rb_sort_order(_sort_order: &SortOrder) -> RbResult<Value> {
-    Err(todo_error())
+pub fn rb_sort_order(ruby: &Ruby, sort_order: &SortOrder) -> RbResult<Value> {
+    let rb_sort_order = ruby.hash_new();
+    rb_sort_order.aset(ruby.to_symbol("order_id"), sort_order.order_id)?;
+    let rb_fields = ruby.ary_new();
+    for field in &sort_order.fields {
+        let rb_field = ruby.hash_new();
+        rb_field.aset(ruby.to_symbol("source_id"), field.source_id)?;
+        rb_fields.push(rb_field)?;
+    }
+    rb_sort_order.aset(ruby.to_symbol("fields"), rb_fields)?;
+    Ok(rb_sort_order.as_value())
 }
 
 pub fn rb_statistics_file(_statistics_file: &StatisticsFile) -> RbResult<Value> {
