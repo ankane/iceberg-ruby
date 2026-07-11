@@ -33,6 +33,11 @@ module Iceberg
       @table.last_partition_id
     end
 
+    def last_updated_at
+      ms = @table.last_updated_ms
+      Time.at(ms / 1000, ms % 1000, :millisecond)
+    end
+
     def schemas
       @table.schemas
     end

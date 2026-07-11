@@ -16,6 +16,7 @@ class TableTest < Minitest::Test
     assert_equal 1, table.next_sequence_number
     assert_equal 0, table.last_column_id
     assert_equal 999, table.last_partition_id
+    assert_kind_of Time, table.last_updated_at
     assert_equal 0, table.schema_id
     assert_equal 0, table.default_partition_spec_id
     assert_nil table.current_snapshot_id
