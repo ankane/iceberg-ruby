@@ -27,7 +27,7 @@ pub struct RbArrowRecordBatch {
     pub(crate) batch: RecordBatch,
 }
 
-fn new_array<T: arrow_array::ArrowPrimitiveType>(
+fn new_array<T: ArrowPrimitiveType>(
     ruby: &Ruby,
     data: RArray,
     field: &Arc<Field>,
