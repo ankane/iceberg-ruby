@@ -1,10 +1,15 @@
+use std::sync::{Arc, RwLock};
+
+use arrow::array::Array;
+use arrow::datatypes::{DataType as ArrowDataType, Float32Type, Float64Type, Int32Type, Int64Type};
+use arrow_array::ArrowPrimitiveType;
+use arrow_array::cast::AsArray;
 use futures::TryStreamExt;
 use iceberg::scan::TableScan;
-use magnus::{RArray, Ruby, Value};
-use std::sync::RwLock;
+use magnus::{IntoValue, RArray, Ruby, Value};
 
 use crate::RbResult;
-use crate::error::to_rb_err;
+use crate::error::{to_rb_err, todo_error};
 use crate::ruby::GvlExt;
 use crate::runtime::runtime;
 use crate::utils::rb_snapshot;
@@ -55,4 +60,63 @@ impl RbTableScan {
             None => Ok(None),
         }
     }
+
+    pub fn collect(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+        let runtime = runtime();
+        let scan = rb_self.scan.read().unwrap();
+        let stream = runtime.block_on(scan.to_arrow()).map_err(to_rb_err)?;
+        // TODO improve performance
+        let batches: Vec<_> = runtime.block_on(stream.try_collect()).map_err(to_rb_err)?;
+
+        let columns = ruby.ary_new();
+        let rows = ruby.ary_new();
+
+        for batch in batches {
+            if columns.is_empty() {
+                for field in &batch.schema().fields {
+                    columns.push(ruby.str_new(field.name()))?;
+                }
+            }
+
+            for _ in 0..batch.num_rows() {
+                let row = ruby.ary_new();
+                rows.push(row)?;
+            }
+
+            for column in batch.columns() {
+                match column.data_type() {
+                    ArrowDataType::Int32 => collect_column::<Int32Type>(ruby, column, rows)?,
+                    ArrowDataType::Int64 => collect_column::<Int64Type>(ruby, column, rows)?,
+                    ArrowDataType::Float32 => collect_column::<Float32Type>(ruby, column, rows)?,
+                    ArrowDataType::Float64 => collect_column::<Float64Type>(ruby, column, rows)?,
+                    _ => return Err(todo_error()),
+                }
+            }
+        }
+
+        let result = ruby.ary_new();
+        result.push(columns)?;
+        result.push(rows)?;
+        Ok(result)
+    }
+}
+
+pub fn collect_column<T: ArrowPrimitiveType>(
+    ruby: &Ruby,
+    column: &Arc<dyn Array>,
+    rows: RArray,
+) -> RbResult<()>
+where
+    <T as ArrowPrimitiveType>::Native: IntoValue,
+{
+    let array = column.as_primitive::<T>();
+    for i in 0..array.len() {
+        let v = if array.is_valid(i) {
+            Some(array.value(i).into_value_with(ruby))
+        } else {
+            None
+        };
+        rows.entry::<RArray>(i.try_into().unwrap())?.push(v)?;
+    }
+    Ok(())
 }

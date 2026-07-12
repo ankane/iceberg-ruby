@@ -14,5 +14,13 @@ module Iceberg
     def snapshot
       @scan.snapshot
     end
+
+    def collect
+      Result.new(*@scan.collect)
+    end
+
+    def to_a
+      collect.to_a
+    end
   end
 end

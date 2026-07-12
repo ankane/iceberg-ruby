@@ -114,7 +114,7 @@ class TableTest < Minitest::Test
       {"int" => 3, "long" => 3, "float" => 3, "double" => 3}
     ]
     assert_nil table.append(data)
-    assert_equal data, table.to_polars.collect.to_a
+    assert_equal data, table.to_a
   end
 
   def test_append_column_order

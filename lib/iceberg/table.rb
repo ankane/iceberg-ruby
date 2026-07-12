@@ -128,6 +128,10 @@ module Iceberg
       TableScan.new(@table.scan(snapshot_id), self)
     end
 
+    def to_a(snapshot_id: nil)
+      scan(snapshot_id: snapshot_id).to_a
+    end
+
     def to_polars(snapshot_id: nil, storage_options: nil)
       require "polars-df"
 
