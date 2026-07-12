@@ -140,6 +140,7 @@ module Iceberg
 
     def append(df)
       check_catalog
+      df = ArrowRecordBatch.new(df, schema.arrow_c_schema) if df.is_a?(Array)
       @table = @table.append(df.arrow_c_stream, @catalog)
       nil
     end

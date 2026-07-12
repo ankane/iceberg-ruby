@@ -2871,6 +2871,7 @@ dependencies = [
 name = "iceberg-ruby"
 version = "0.11.2"
 dependencies = [
+ "arrow",
  "arrow-array",
  "arrow-cast",
  "arrow-schema",

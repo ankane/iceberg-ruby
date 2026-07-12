@@ -12,6 +12,7 @@ name = "iceberg"
 crate-type = ["cdylib"]
 
 [dependencies]
+arrow = "57"
 arrow-array = { version = "57", features = ["ffi"] }
 arrow-cast = "57"
 arrow-schema = "57"

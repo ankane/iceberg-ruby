@@ -1,4 +1,5 @@
 mod arrow;
+mod batch;
 mod catalog;
 mod error;
 mod ruby;
@@ -10,6 +11,7 @@ mod utils;
 
 use magnus::{Error as RbErr, Ruby, function, method, prelude::*};
 
+use crate::batch::{RbArrowArrayStream, RbArrowRecordBatch};
 use crate::catalog::RbCatalog;
 use crate::scan::RbTableScan;
 use crate::schema::{RbArrowSchema, RbNestedField, RbSchema};
@@ -153,6 +155,16 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("ArrowSchema", ruby.class_object())?;
     class.define_method("to_i", method!(RbArrowSchema::to_i, 0))?;
+
+    let class = module.define_class("ArrowArrayStream", ruby.class_object())?;
+    class.define_method("to_i", method!(RbArrowArrayStream::to_i, 0))?;
+
+    let class = module.define_class("ArrowRecordBatch", ruby.class_object())?;
+    class.define_singleton_method("new", function!(RbArrowRecordBatch::new, 2))?;
+    class.define_method(
+        "arrow_c_stream",
+        method!(RbArrowRecordBatch::arrow_c_stream, 0),
+    )?;
 
     Ok(())
 }

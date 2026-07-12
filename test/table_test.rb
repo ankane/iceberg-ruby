@@ -100,6 +100,23 @@ class TableTest < Minitest::Test
     assert_frame_equal df, table.to_polars.collect
   end
 
+  def test_append_array
+    table =
+      catalog.create_table("iceberg_ruby_test.events") do |t|
+        t.int "int"
+        t.long "long"
+        t.float "float"
+        t.double "double"
+      end
+    data = [
+      {"int" => 1, "long" => 1, "float" => 1, "double" => 1},
+      {"int" => 2, "long" => 2, "float" => 2, "double" => 2},
+      {"int" => 3, "long" => 3, "float" => 3, "double" => 3}
+    ]
+    assert_nil table.append(data)
+    assert_equal data, table.to_polars.collect.to_a
+  end
+
   def test_append_column_order
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
     table = catalog.create_table("iceberg_ruby_test.events", schema: df.schema)
