@@ -107,11 +107,12 @@ class TableTest < Minitest::Test
         t.long "long"
         t.float "float"
         t.double "double"
+        t.boolean "boolean"
       end
     data = [
-      {"int" => 1, "long" => 1, "float" => 1, "double" => 1},
-      {"int" => 2, "long" => 2, "float" => 2, "double" => 2},
-      {"int" => 3, "long" => 3, "float" => 3, "double" => 3}
+      {"int" => 1, "long" => 1, "float" => 1, "double" => 1, "boolean" => true},
+      {"int" => 2, "long" => 2, "float" => 2, "double" => 2, "boolean" => false},
+      {"int" => 3, "long" => 3, "float" => 3, "double" => 3, "boolean" => true}
     ]
     assert_nil table.append(data)
     assert_equal data, table.to_a

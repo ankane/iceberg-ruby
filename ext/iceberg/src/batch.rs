@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
-use arrow::array::{Array, ArrowPrimitiveType, PrimitiveBuilder};
-use arrow::datatypes::{DataType as ArrowDataType, Float32Type, Float64Type, Int32Type, Int64Type};
+use arrow::array::{
+    Array, BooleanBuilder, Float32Builder, Float64Builder, Int32Builder, Int64Builder,
+};
+use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::ffi_stream::FFI_ArrowArrayStream;
 use arrow_array::{RecordBatch, RecordBatchIterator};
 use arrow_schema::{Field, Schema};
@@ -27,27 +29,30 @@ pub struct RbArrowRecordBatch {
     pub(crate) batch: RecordBatch,
 }
 
-fn new_array<T: ArrowPrimitiveType>(
-    ruby: &Ruby,
-    data: RArray,
-    field: &Arc<Field>,
-) -> RbResult<Arc<dyn Array>>
-where
-    <T as ArrowPrimitiveType>::Native: TryConvert,
-{
-    let name = ruby.str_new(field.name());
-    let mut builder = PrimitiveBuilder::<T>::new();
-    for row in data.into_iter() {
-        let row = RHash::try_convert(row)?;
-        let value: Option<T::Native> = row.aref(name)?;
-        match value {
-            Some(v) => builder.append_value(v),
-            None => builder.append_null(),
+macro_rules! new_array {
+    ($name:ident, $type:ty) => {
+        fn $name(ruby: &Ruby, data: RArray, field: &Arc<Field>) -> RbResult<Arc<dyn Array>> {
+            let name = ruby.str_new(field.name());
+            let mut builder = <$type>::new();
+            for row in data.into_iter() {
+                let row = RHash::try_convert(row)?;
+                let value: Option<_> = row.aref(name)?;
+                match value {
+                    Some(v) => builder.append_value(v),
+                    None => builder.append_null(),
+                }
+            }
+            let array: Arc<dyn Array> = Arc::new(builder.finish());
+            Ok(array)
         }
-    }
-    let array: Arc<dyn Array> = Arc::new(builder.finish());
-    Ok(array)
+    };
 }
+
+new_array!(new_array_boolean, BooleanBuilder);
+new_array!(new_array_int32, Int32Builder);
+new_array!(new_array_int64, Int64Builder);
+new_array!(new_array_float32, Float32Builder);
+new_array!(new_array_float64, Float64Builder);
 
 impl RbArrowRecordBatch {
     pub fn new(ruby: &Ruby, data: RArray, schema: RbArrowType<Schema>) -> RbResult<Self> {
@@ -55,10 +60,11 @@ impl RbArrowRecordBatch {
         let mut columns = Vec::new();
         for field in &schema.fields {
             let array = match field.data_type() {
-                ArrowDataType::Int32 => new_array::<Int32Type>(ruby, data, field)?,
-                ArrowDataType::Int64 => new_array::<Int64Type>(ruby, data, field)?,
-                ArrowDataType::Float32 => new_array::<Float32Type>(ruby, data, field)?,
-                ArrowDataType::Float64 => new_array::<Float64Type>(ruby, data, field)?,
+                ArrowDataType::Boolean => new_array_boolean(ruby, data, field)?,
+                ArrowDataType::Int32 => new_array_int32(ruby, data, field)?,
+                ArrowDataType::Int64 => new_array_int64(ruby, data, field)?,
+                ArrowDataType::Float32 => new_array_float32(ruby, data, field)?,
+                ArrowDataType::Float64 => new_array_float64(ruby, data, field)?,
                 _ => return Err(todo_error()),
             };
             columns.push(array);

@@ -1,9 +1,7 @@
 use std::sync::{Arc, RwLock};
 
-use arrow::array::Array;
-use arrow::datatypes::{DataType as ArrowDataType, Float32Type, Float64Type, Int32Type, Int64Type};
-use arrow_array::ArrowPrimitiveType;
-use arrow_array::cast::AsArray;
+use arrow::array::{Array, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array};
+use arrow::datatypes::DataType as ArrowDataType;
 use futures::TryStreamExt;
 use iceberg::scan::TableScan;
 use magnus::{IntoValue, RArray, Ruby, Value};
@@ -85,10 +83,11 @@ impl RbTableScan {
 
             for column in batch.columns() {
                 match column.data_type() {
-                    ArrowDataType::Int32 => collect_column::<Int32Type>(ruby, column, rows)?,
-                    ArrowDataType::Int64 => collect_column::<Int64Type>(ruby, column, rows)?,
-                    ArrowDataType::Float32 => collect_column::<Float32Type>(ruby, column, rows)?,
-                    ArrowDataType::Float64 => collect_column::<Float64Type>(ruby, column, rows)?,
+                    ArrowDataType::Boolean => collect_column_boolean(ruby, column, rows)?,
+                    ArrowDataType::Int32 => collect_column_int32(ruby, column, rows)?,
+                    ArrowDataType::Int64 => collect_column_int64(ruby, column, rows)?,
+                    ArrowDataType::Float32 => collect_column_float32(ruby, column, rows)?,
+                    ArrowDataType::Float64 => collect_column_float64(ruby, column, rows)?,
                     _ => return Err(todo_error()),
                 }
             }
@@ -101,22 +100,25 @@ impl RbTableScan {
     }
 }
 
-pub fn collect_column<T: ArrowPrimitiveType>(
-    ruby: &Ruby,
-    column: &Arc<dyn Array>,
-    rows: RArray,
-) -> RbResult<()>
-where
-    <T as ArrowPrimitiveType>::Native: IntoValue,
-{
-    let array = column.as_primitive::<T>();
-    for i in 0..array.len() {
-        let v = if array.is_valid(i) {
-            Some(array.value(i).into_value_with(ruby))
-        } else {
-            None
-        };
-        rows.entry::<RArray>(i.try_into().unwrap())?.push(v)?;
-    }
-    Ok(())
+macro_rules! collect_column {
+    ($name:ident, $type:ty) => {
+        pub fn $name(ruby: &Ruby, column: &Arc<dyn Array>, rows: RArray) -> RbResult<()> {
+            let array = column.as_any().downcast_ref::<$type>().unwrap();
+            for i in 0..array.len() {
+                let v = if array.is_valid(i) {
+                    Some(array.value(i).into_value_with(ruby))
+                } else {
+                    None
+                };
+                rows.entry::<RArray>(i.try_into().unwrap())?.push(v)?;
+            }
+            Ok(())
+        }
+    };
 }
+
+collect_column!(collect_column_boolean, BooleanArray);
+collect_column!(collect_column_int32, Int32Array);
+collect_column!(collect_column_int64, Int64Array);
+collect_column!(collect_column_float32, Float32Array);
+collect_column!(collect_column_float64, Float64Array);
