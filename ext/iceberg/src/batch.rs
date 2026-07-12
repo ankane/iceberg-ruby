@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use arrow::array::{
     Array, BooleanBuilder, Float32Builder, Float64Builder, Int32Builder, Int64Builder,
+    StringBuilder,
 };
 use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::ffi_stream::FFI_ArrowArrayStream;
@@ -30,13 +31,13 @@ pub struct RbArrowRecordBatch {
 }
 
 macro_rules! new_array {
-    ($name:ident, $type:ty) => {
+    ($name:ident, $builder:ty, $type:ty) => {
         fn $name(ruby: &Ruby, data: RArray, field: &Arc<Field>) -> RbResult<Arc<dyn Array>> {
             let name = ruby.str_new(field.name());
-            let mut builder = <$type>::new();
+            let mut builder = <$builder>::new();
             for row in data.into_iter() {
                 let row = RHash::try_convert(row)?;
-                let value: Option<_> = row.aref(name)?;
+                let value: Option<$type> = row.aref(name)?;
                 match value {
                     Some(v) => builder.append_value(v),
                     None => builder.append_null(),
@@ -48,11 +49,12 @@ macro_rules! new_array {
     };
 }
 
-new_array!(new_array_boolean, BooleanBuilder);
-new_array!(new_array_int32, Int32Builder);
-new_array!(new_array_int64, Int64Builder);
-new_array!(new_array_float32, Float32Builder);
-new_array!(new_array_float64, Float64Builder);
+new_array!(new_array_boolean, BooleanBuilder, bool);
+new_array!(new_array_int32, Int32Builder, i32);
+new_array!(new_array_int64, Int64Builder, i64);
+new_array!(new_array_float32, Float32Builder, f32);
+new_array!(new_array_float64, Float64Builder, f64);
+new_array!(new_array_utf8, StringBuilder, String);
 
 impl RbArrowRecordBatch {
     pub fn new(ruby: &Ruby, data: RArray, schema: RbArrowType<Schema>) -> RbResult<Self> {
@@ -65,6 +67,7 @@ impl RbArrowRecordBatch {
                 ArrowDataType::Int64 => new_array_int64(ruby, data, field)?,
                 ArrowDataType::Float32 => new_array_float32(ruby, data, field)?,
                 ArrowDataType::Float64 => new_array_float64(ruby, data, field)?,
+                ArrowDataType::Utf8 => new_array_utf8(ruby, data, field)?,
                 _ => return Err(todo_error()),
             };
             columns.push(array);

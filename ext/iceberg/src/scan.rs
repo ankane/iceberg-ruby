@@ -1,6 +1,8 @@
 use std::sync::{Arc, RwLock};
 
-use arrow::array::{Array, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array};
+use arrow::array::{
+    Array, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, StringArray,
+};
 use arrow::datatypes::DataType as ArrowDataType;
 use futures::TryStreamExt;
 use iceberg::scan::TableScan;
@@ -88,6 +90,7 @@ impl RbTableScan {
                     ArrowDataType::Int64 => collect_column_int64(ruby, column, rows)?,
                     ArrowDataType::Float32 => collect_column_float32(ruby, column, rows)?,
                     ArrowDataType::Float64 => collect_column_float64(ruby, column, rows)?,
+                    ArrowDataType::Utf8 => collect_column_utf8(ruby, column, rows)?,
                     _ => return Err(todo_error()),
                 }
             }
@@ -122,3 +125,4 @@ collect_column!(collect_column_int32, Int32Array);
 collect_column!(collect_column_int64, Int64Array);
 collect_column!(collect_column_float32, Float32Array);
 collect_column!(collect_column_float64, Float64Array);
+collect_column!(collect_column_utf8, StringArray);
