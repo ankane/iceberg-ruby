@@ -3,6 +3,7 @@
 - Added `sql` method
 - Added `default_namespace` option
 - Added support for more types to `append` method
+- Dropped support for Polars < 0.24
 
 ## 0.11.2 (2026-05-14)
 

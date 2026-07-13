@@ -99,46 +99,10 @@ impl RbNestedField {
                 }
             }
         } else {
-            // TODO remove in 0.12.0
-            let class_name = unsafe { rb_type.classname() }.to_string();
-            match class_name.as_str() {
-                "Polars::Boolean" => Type::Primitive(PrimitiveType::Boolean),
-                "Polars::Int32" => Type::Primitive(PrimitiveType::Int),
-                "Polars::Int64" => Type::Primitive(PrimitiveType::Long),
-                "Polars::Float32" => Type::Primitive(PrimitiveType::Float),
-                "Polars::Float64" => Type::Primitive(PrimitiveType::Double),
-                "Polars::Decimal" => {
-                    let precision: u32 = rb_type.funcall("precision", ())?;
-                    let scale: u32 = rb_type.funcall("scale", ())?;
-                    Type::Primitive(PrimitiveType::Decimal { precision, scale })
-                }
-                "Polars::Date" => Type::Primitive(PrimitiveType::Date),
-                "Polars::Time" => Type::Primitive(PrimitiveType::Time),
-                "Polars::Datetime" => {
-                    let time_unit: String = rb_type.funcall("time_unit", ())?;
-                    let time_zone: Option<String> = rb_type.funcall("time_zone", ())?;
-                    match (time_unit.as_str(), time_zone) {
-                        ("us", None) => Type::Primitive(PrimitiveType::Timestamp),
-                        ("us", Some(_)) => Type::Primitive(PrimitiveType::Timestamptz),
-                        ("ns", None) => Type::Primitive(PrimitiveType::TimestampNs),
-                        ("ns", Some(_)) => Type::Primitive(PrimitiveType::TimestamptzNs),
-                        _ => {
-                            return Err(RbErr::new(
-                                ruby.exception_arg_error(),
-                                format!("Type not supported: {}", rb_type),
-                            ));
-                        }
-                    }
-                }
-                "Polars::String" => Type::Primitive(PrimitiveType::String),
-                "Polars::Binary" => Type::Primitive(PrimitiveType::Binary),
-                _ => {
-                    return Err(RbErr::new(
-                        ruby.exception_arg_error(),
-                        format!("Type not supported: {}", class_name),
-                    ));
-                }
-            }
+            return Err(RbErr::new(
+                ruby.exception_arg_error(),
+                format!("Type not supported: {}", rb_type),
+            ));
         };
 
         let initial_default = rb_field.aref(ruby.to_symbol("initial_default"))?;

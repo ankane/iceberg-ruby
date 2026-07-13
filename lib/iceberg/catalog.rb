@@ -58,10 +58,9 @@ module Iceberg
         # do nothing
       elsif schema.respond_to?(:arrow_c_schema)
         schema = Schema.new(schema)
-      # TODO remove Polars conditions in 0.12.0
-      elsif schema.is_a?(Hash) || (defined?(Polars::Schema) && schema.is_a?(Polars::Schema))
+      elsif schema.is_a?(Hash)
         fields =
-          schema.to_h.map.with_index do |(k, v), i|
+          schema.map.with_index do |(k, v), i|
             {
               id: i + 1,
               name: k.is_a?(Symbol) ? k.to_s : k,
