@@ -116,7 +116,7 @@ class CatalogTest < Minitest::Test
       t.string :b
     end
 
-    result = catalog.sql("INSERT INTO iceberg_ruby_test.events (a, b) VALUES (1, 'one'), (2, 'two'), (3, 'three')")
+    result = catalog.sql("INSERT INTO iceberg_ruby_test.events (a, b) VALUES ($1, $2), ($3, $4), ($5, $6)", [1, "one", 2, "two", 3, "three"])
     assert_equal ["count"], result.columns
     assert_equal [[3]], result.rows
 

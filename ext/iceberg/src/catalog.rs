@@ -1,4 +1,6 @@
 #[cfg(feature = "datafusion")]
+use datafusion::common::ScalarValue;
+#[cfg(feature = "datafusion")]
 use datafusion::execution::context::SessionContext;
 use iceberg::io::LocalFsStorageFactory;
 use iceberg::memory::{MEMORY_CATALOG_WAREHOUSE, MemoryCatalogBuilder};
@@ -22,11 +24,13 @@ use iceberg_catalog_sql::{
 #[cfg(feature = "datafusion")]
 use iceberg_datafusion::IcebergCatalogProvider;
 #[cfg(feature = "datafusion")]
-use magnus::{Ruby, Value};
+use magnus::{Float, Integer, RArray, RString, Ruby, Value};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 use crate::error::to_rb_err;
+#[cfg(feature = "datafusion")]
+use crate::error::todo_error;
 #[cfg(feature = "datafusion")]
 use crate::result::collect_batches;
 use crate::runtime::runtime;
@@ -380,8 +384,22 @@ impl RbCatalog {
     }
 
     #[cfg(feature = "datafusion")]
-    pub fn sql(ruby: &Ruby, rb_self: &Self, sql: String) -> RbResult<Value> {
+    pub fn sql(ruby: &Ruby, rb_self: &Self, sql: String, rb_params: RArray) -> RbResult<Value> {
         let runtime = runtime();
+
+        let mut params = Vec::new();
+        for param in rb_params.into_iter() {
+            if let Some(v) = Integer::from_value(param) {
+                params.push(ScalarValue::from(v.to_i64()?));
+            } else if let Some(v) = Float::from_value(param) {
+                params.push(ScalarValue::from(v.to_f64()));
+            } else if let Some(v) = RString::from_value(param) {
+                // TODO support binary strings
+                params.push(ScalarValue::from(v.to_string()?));
+            } else {
+                return Err(todo_error());
+            }
+        }
 
         // TODO only create context once
         let catalog = rb_self.catalog.read().unwrap().as_arc();
@@ -392,7 +410,9 @@ impl RbCatalog {
         ctx.register_catalog("datafusion", Arc::new(provider));
 
         let stream = runtime.block_on(ctx.sql(&sql)).unwrap();
-        let batches = runtime.block_on(stream.collect()).unwrap();
+        let batches = runtime
+            .block_on(stream.with_param_values(params).unwrap().collect())
+            .unwrap();
         collect_batches(ruby, batches)
     }
 }

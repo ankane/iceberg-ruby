@@ -100,11 +100,11 @@ module Iceberg
       @catalog.register_table(table_name, metadata_location)
     end
 
-    def sql(sql)
+    def sql(sql, params = [])
       # requires datafusion feature
       raise Todo unless @catalog.respond_to?(:sql)
 
-      @catalog.sql(sql)
+      @catalog.sql(sql, params)
     end
 
     # hide internal state
