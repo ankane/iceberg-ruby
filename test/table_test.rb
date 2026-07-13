@@ -2,7 +2,7 @@ require_relative "test_helper"
 
 class TableTest < Minitest::Test
   def test_metadata
-    table = catalog.create_table("events")
+    table = create_events
     assert_equal 2, table.format_version
     assert_kind_of String, table.uuid
     if s3tables?
@@ -12,14 +12,14 @@ class TableTest < Minitest::Test
     else
       assert_match "iceberg_ruby_test/events", table.location
     end
-    assert_equal 0, table.last_sequence_number
-    assert_equal 1, table.next_sequence_number
-    assert_equal 0, table.last_column_id
+    assert_equal 1, table.last_sequence_number
+    assert_equal 2, table.next_sequence_number
+    assert_equal 2, table.last_column_id
     assert_equal 999, table.last_partition_id
     assert_kind_of Time, table.last_updated_at
     assert_equal 0, table.schema_id
     assert_equal 0, table.default_partition_spec_id
-    assert_nil table.current_snapshot_id
+    assert_kind_of Integer, table.current_snapshot_id
     assert_kind_of Array, table.sort_orders
     assert_kind_of Hash, table.default_sort_order
     assert_equal 0, table.default_sort_order_id
@@ -34,7 +34,6 @@ class TableTest < Minitest::Test
 
   def test_snapshots
     table = create_events
-
     snapshots = table.snapshots
     assert_equal 1, snapshots.size
 
@@ -72,7 +71,7 @@ class TableTest < Minitest::Test
   end
 
   def test_inspect
-    table = catalog.create_table("events") { |t| t.integer "a" }
+    table = create_events
     assert_equal table.inspect, table.to_s
     refute_match "@table", table.inspect
   end
