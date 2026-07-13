@@ -24,6 +24,7 @@ iceberg-catalog-rest = { version = "=0.9.1", optional = true }
 iceberg-catalog-s3tables = { version = "=0.9.1", optional = true }
 iceberg-catalog-sql = { version = "=0.9.1", optional = true }
 iceberg-datafusion = { version = "=0.9.1", optional = true }
+iceberg-storage-opendal = "=0.9.1"
 magnus = "0.8"
 parquet = "57"
 rb-sys = "0.9"

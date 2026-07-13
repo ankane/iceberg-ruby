@@ -2883,6 +2883,7 @@ dependencies = [
  "iceberg-catalog-s3tables",
  "iceberg-catalog-sql",
  "iceberg-datafusion",
+ "iceberg-storage-opendal",
  "magnus",
  "parquet",
  "rb-sys",

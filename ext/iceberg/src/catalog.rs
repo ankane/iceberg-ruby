@@ -2,7 +2,6 @@
 use datafusion::common::ScalarValue;
 #[cfg(feature = "datafusion")]
 use datafusion::execution::context::{SessionConfig, SessionContext};
-use iceberg::io::LocalFsStorageFactory;
 use iceberg::memory::{MEMORY_CATALOG_WAREHOUSE, MemoryCatalogBuilder};
 use iceberg::spec::Schema;
 use iceberg::{Catalog, CatalogBuilder, MemoryCatalog, NamespaceIdent, TableCreation, TableIdent};
@@ -23,6 +22,7 @@ use iceberg_catalog_sql::{
 };
 #[cfg(feature = "datafusion")]
 use iceberg_datafusion::IcebergCatalogProvider;
+use iceberg_storage_opendal::OpenDalStorageFactory;
 #[cfg(feature = "datafusion")]
 use magnus::{
     Float, Integer, RArray, RString, Ruby, Value, value::Qfalse, value::Qtrue, value::ReprValue,
@@ -101,13 +101,13 @@ impl RbCatalog {
 
     pub fn new_memory(warehouse: Option<String>) -> RbResult<Self> {
         let mut props = HashMap::new();
-        if let Some(v) = warehouse {
-            props.insert(MEMORY_CATALOG_WAREHOUSE.to_string(), v);
+        if let Some(ref v) = warehouse {
+            props.insert(MEMORY_CATALOG_WAREHOUSE.to_string(), v.clone());
         }
         let catalog = runtime()
             .block_on(
                 MemoryCatalogBuilder::default()
-                    .with_storage_factory(Arc::new(LocalFsStorageFactory))
+                    .with_storage_factory(Arc::new(storage_factory(warehouse)))
                     .load("memory", props),
             )
             .map_err(to_rb_err)?;
@@ -124,13 +124,13 @@ impl RbCatalog {
     ) -> RbResult<Self> {
         let mut props = props;
         props.insert(REST_CATALOG_PROP_URI.to_string(), uri);
-        if let Some(v) = warehouse {
-            props.insert(REST_CATALOG_PROP_WAREHOUSE.to_string(), v);
+        if let Some(ref v) = warehouse {
+            props.insert(REST_CATALOG_PROP_WAREHOUSE.to_string(), v.clone());
         }
         let catalog = runtime()
             .block_on(
                 RestCatalogBuilder::default()
-                    .with_storage_factory(Arc::new(LocalFsStorageFactory))
+                    .with_storage_factory(Arc::new(storage_factory(warehouse)))
                     .load("rest", props),
             )
             .map_err(to_rb_err)?;
@@ -160,7 +160,7 @@ impl RbCatalog {
     ) -> RbResult<Self> {
         let mut props = props;
         props.insert(SQL_CATALOG_PROP_URI.to_string(), uri);
-        props.insert(SQL_CATALOG_PROP_WAREHOUSE.to_string(), warehouse);
+        props.insert(SQL_CATALOG_PROP_WAREHOUSE.to_string(), warehouse.clone());
         props.insert(
             SQL_CATALOG_PROP_BIND_STYLE.to_string(),
             SqlBindStyle::DollarNumeric.to_string(),
@@ -168,7 +168,7 @@ impl RbCatalog {
         let catalog = runtime()
             .block_on(
                 SqlCatalogBuilder::default()
-                    .with_storage_factory(Arc::new(LocalFsStorageFactory))
+                    .with_storage_factory(Arc::new(storage_factory(Some(warehouse))))
                     .load(name, props),
             )
             .map_err(to_rb_err)?;
@@ -440,5 +440,22 @@ impl RbSessionContext {
             .block_on(stream.collect())
             .map_err(datafusion_error)?;
         collect_batches(ruby, batches)
+    }
+}
+
+fn storage_factory(warehouse: Option<String>) -> OpenDalStorageFactory {
+    match warehouse {
+        Some(ref v) => {
+            if v.starts_with("s3://") {
+                OpenDalStorageFactory::S3 {
+                    configured_scheme: "s3".to_string(),
+                    customized_credential_load: None,
+                }
+            } else {
+                OpenDalStorageFactory::Fs
+            }
+        }
+        // TODO consider OpenDalStorageFactory::Memory
+        None => OpenDalStorageFactory::Fs,
     }
 }
