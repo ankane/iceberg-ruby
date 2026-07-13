@@ -123,6 +123,11 @@ class CatalogTest < Minitest::Test
     result = catalog.sql("SELECT * FROM iceberg_ruby_test.events")
     assert_equal ["a", "b"], result.columns
     assert_equal [[1, "one"], [2, "two"], [3, "three"]], result.rows
+
+    error = assert_raises do
+      catalog.sql("SELECT 123 AS a, 123 AS a")
+    end
+    assert_match "Projections require unique expression names", error.message
   end
 
   def test_inspect

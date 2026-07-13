@@ -24,7 +24,7 @@ use iceberg_catalog_sql::{
 #[cfg(feature = "datafusion")]
 use iceberg_datafusion::IcebergCatalogProvider;
 #[cfg(feature = "datafusion")]
-use magnus::{Float, Integer, RArray, RString, Ruby, Value};
+use magnus::{Error as RbErr, Float, Integer, RArray, RString, Ruby, Value};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
@@ -408,10 +408,15 @@ impl RbCatalog {
         let ctx = SessionContext::new();
         ctx.register_catalog("datafusion", Arc::new(provider));
 
-        let stream = runtime.block_on(ctx.sql(&sql)).unwrap();
-        let batches = runtime
-            .block_on(stream.with_param_values(params).unwrap().collect())
-            .unwrap();
+        let stream = runtime
+            .block_on(ctx.sql(&sql))
+            // TODO improve error class
+            .map_err(|e| RbErr::new(ruby.exception_runtime_error(), e.to_string()))?;
+        let stream = stream
+            .with_param_values(params)
+            // TODO improve error class
+            .map_err(|e| RbErr::new(ruby.exception_runtime_error(), e.to_string()))?;
+        let batches = runtime.block_on(stream.collect()).unwrap();
         collect_batches(ruby, batches)
     }
 }
