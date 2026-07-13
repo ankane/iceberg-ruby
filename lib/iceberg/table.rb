@@ -135,8 +135,8 @@ module Iceberg
     def to_polars(snapshot_id: nil, storage_options: nil)
       require "polars-df"
 
-      if Gem::Version.new(Polars::VERSION) < Gem::Version.new("0.23")
-        raise "Requires polars-df >= 0.23"
+      if Gem::Version.new(Polars::VERSION) < Gem::Version.new("0.24")
+        raise "Requires polars-df >= 0.24"
       end
 
       Polars.scan_iceberg(self, snapshot_id:, storage_options:)
