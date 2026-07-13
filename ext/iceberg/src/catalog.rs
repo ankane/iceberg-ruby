@@ -429,8 +429,9 @@ impl RbSessionContext {
         let runtime = runtime();
         let stream = runtime
             .block_on(rb_self.ctx.sql(&sql))
+            .map_err(datafusion_error)?
+            .with_param_values(params)
             .map_err(datafusion_error)?;
-        let stream = stream.with_param_values(params).map_err(datafusion_error)?;
         let batches = runtime
             .block_on(stream.collect())
             .map_err(datafusion_error)?;
