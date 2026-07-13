@@ -112,13 +112,9 @@ macro_rules! collect_column {
     ($name:ident, $type:ty) => {
         pub fn $name(ruby: &Ruby, column: &Arc<dyn Array>, rows: RArray) -> RbResult<()> {
             let array = column.as_any().downcast_ref::<$type>().unwrap();
-            for i in 0..array.len() {
-                let v = if array.is_valid(i) {
-                    Some(array.value(i).into_value_with(ruby))
-                } else {
-                    None
-                };
-                rows.entry::<RArray>(i.try_into().unwrap())?.push(v)?;
+            for (i, value) in array.iter().enumerate() {
+                rows.entry::<RArray>(i.try_into().unwrap())?
+                    .push(value.map(|v| v.into_value_with(ruby)))?;
             }
             Ok(())
         }
