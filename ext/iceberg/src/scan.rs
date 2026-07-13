@@ -84,8 +84,7 @@ pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<Value
         }
 
         for _ in 0..batch.num_rows() {
-            let row = ruby.ary_new();
-            rows.push(row)?;
+            rows.push(ruby.ary_new())?;
         }
 
         for column in batch.columns() {
