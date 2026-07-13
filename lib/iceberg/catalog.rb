@@ -102,7 +102,7 @@ module Iceberg
 
     def sql(sql, params = [])
       # requires datafusion feature
-      raise Todo unless session.respond_to?(:sql)
+      raise Todo unless @catalog.respond_to?(:session_context)
 
       session_context.sql(sql, params)
     end

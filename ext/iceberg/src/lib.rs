@@ -58,7 +58,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     #[cfg(feature = "datafusion")]
     {
-        let class = module.define_class("RbSessionContext", ruby.class_object())?;
+        let class = module.define_class("SessionContext", ruby.class_object())?;
         class.define_method("sql", method!(RbSessionContext::sql, 2))?;
     }
 
