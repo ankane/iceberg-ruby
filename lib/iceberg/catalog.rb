@@ -104,7 +104,7 @@ module Iceberg
       # requires datafusion feature
       raise Todo unless @catalog.respond_to?(:sql)
 
-      @catalog.sql(sql)
+      Result.new(*@catalog.sql(sql))
     end
 
     # hide internal state

@@ -115,8 +115,14 @@ class CatalogTest < Minitest::Test
       t.bigint :a
       t.string :b
     end
-    catalog.sql("INSERT INTO iceberg_ruby_test.events (a, b) VALUES (1, 'one'), (2, 'two'), (3, 'three')")
-    catalog.sql("SELECT * FROM iceberg_ruby_test.events")
+
+    result = catalog.sql("INSERT INTO iceberg_ruby_test.events (a, b) VALUES (1, 'one'), (2, 'two'), (3, 'three')")
+    assert_equal ["count"], result.columns
+    assert_equal [[3]], result.rows
+
+    result = catalog.sql("SELECT * FROM iceberg_ruby_test.events")
+    assert_equal ["a", "b"], result.columns
+    assert_equal [[1, "one"], [2, "two"], [3, "three"]], result.rows
   end
 
   def test_inspect

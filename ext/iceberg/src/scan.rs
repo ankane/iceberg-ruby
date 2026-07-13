@@ -2,8 +2,10 @@ use std::sync::{Arc, RwLock};
 
 use arrow::array::{
     Array, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, StringArray,
+    UInt64Array,
 };
 use arrow::datatypes::DataType as ArrowDataType;
+use arrow_array::RecordBatch;
 use futures::TryStreamExt;
 use iceberg::scan::TableScan;
 use magnus::{IntoValue, RArray, Ruby, Value};
@@ -67,40 +69,44 @@ impl RbTableScan {
         let stream = runtime.block_on(scan.to_arrow()).map_err(to_rb_err)?;
         // TODO improve performance
         let batches: Vec<_> = runtime.block_on(stream.try_collect()).map_err(to_rb_err)?;
+        collect_batches(ruby, batches)
+    }
+}
 
-        let columns = ruby.ary_new();
-        let rows = ruby.ary_new();
+pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<RArray> {
+    let columns = ruby.ary_new();
+    let rows = ruby.ary_new();
 
-        for batch in batches {
-            if columns.is_empty() {
-                for field in &batch.schema().fields {
-                    columns.push(ruby.str_new(field.name()))?;
-                }
-            }
-
-            for _ in 0..batch.num_rows() {
-                let row = ruby.ary_new();
-                rows.push(row)?;
-            }
-
-            for column in batch.columns() {
-                match column.data_type() {
-                    ArrowDataType::Boolean => collect_column_boolean(ruby, column, rows)?,
-                    ArrowDataType::Int32 => collect_column_int32(ruby, column, rows)?,
-                    ArrowDataType::Int64 => collect_column_int64(ruby, column, rows)?,
-                    ArrowDataType::Float32 => collect_column_float32(ruby, column, rows)?,
-                    ArrowDataType::Float64 => collect_column_float64(ruby, column, rows)?,
-                    ArrowDataType::Utf8 => collect_column_utf8(ruby, column, rows)?,
-                    _ => return Err(todo_error()),
-                }
+    for batch in batches {
+        if columns.is_empty() {
+            for field in &batch.schema().fields {
+                columns.push(ruby.str_new(field.name()))?;
             }
         }
 
-        let result = ruby.ary_new();
-        result.push(columns)?;
-        result.push(rows)?;
-        Ok(result)
+        for _ in 0..batch.num_rows() {
+            let row = ruby.ary_new();
+            rows.push(row)?;
+        }
+
+        for column in batch.columns() {
+            match column.data_type() {
+                ArrowDataType::Boolean => collect_column_boolean(ruby, column, rows)?,
+                ArrowDataType::Int32 => collect_column_int32(ruby, column, rows)?,
+                ArrowDataType::Int64 => collect_column_int64(ruby, column, rows)?,
+                ArrowDataType::UInt64 => collect_column_uint64(ruby, column, rows)?,
+                ArrowDataType::Float32 => collect_column_float32(ruby, column, rows)?,
+                ArrowDataType::Float64 => collect_column_float64(ruby, column, rows)?,
+                ArrowDataType::Utf8 => collect_column_utf8(ruby, column, rows)?,
+                _ => return Err(todo_error()),
+            }
+        }
     }
+
+    let result = ruby.ary_new();
+    result.push(columns)?;
+    result.push(rows)?;
+    Ok(result)
 }
 
 macro_rules! collect_column {
@@ -123,6 +129,7 @@ macro_rules! collect_column {
 collect_column!(collect_column_boolean, BooleanArray);
 collect_column!(collect_column_int32, Int32Array);
 collect_column!(collect_column_int64, Int64Array);
+collect_column!(collect_column_uint64, UInt64Array);
 collect_column!(collect_column_float32, Float32Array);
 collect_column!(collect_column_float64, Float64Array);
 collect_column!(collect_column_utf8, StringArray);

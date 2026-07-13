@@ -21,11 +21,15 @@ use iceberg_catalog_sql::{
 };
 #[cfg(feature = "datafusion")]
 use iceberg_datafusion::IcebergCatalogProvider;
+#[cfg(feature = "datafusion")]
+use magnus::{RArray, Ruby};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 use crate::error::to_rb_err;
 use crate::runtime::runtime;
+#[cfg(feature = "datafusion")]
+use crate::scan::collect_batches;
 use crate::utils::Wrap;
 use crate::{RbResult, RbTable};
 
@@ -376,11 +380,11 @@ impl RbCatalog {
     }
 
     #[cfg(feature = "datafusion")]
-    pub fn sql(&self, sql: String) -> RbResult<()> {
+    pub fn sql(ruby: &Ruby, rb_self: &Self, sql: String) -> RbResult<RArray> {
         let runtime = runtime();
 
         // TODO only create context once
-        let catalog = self.catalog.read().unwrap().as_arc();
+        let catalog = rb_self.catalog.read().unwrap().as_arc();
         let provider = runtime
             .block_on(IcebergCatalogProvider::try_new(catalog))
             .unwrap();
@@ -388,10 +392,7 @@ impl RbCatalog {
         ctx.register_catalog("datafusion", Arc::new(provider));
 
         let df = runtime.block_on(ctx.sql(&sql)).unwrap();
-        let _results = runtime.block_on(df.collect()).unwrap();
-
-        // println!("{:?}", _results);
-
-        Ok(())
+        let batches = runtime.block_on(df.collect()).unwrap();
+        collect_batches(ruby, batches)
     }
 }
