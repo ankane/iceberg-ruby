@@ -1,5 +1,6 @@
-## 0.11.3 (unreleased)
+## 0.12.0 (unreleased)
 
+- Added `sql` method
 - Added support for more types to `append` method
 - Added `default_namespace` option
 
