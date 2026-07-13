@@ -1,8 +1,8 @@
 use std::sync::{Arc, RwLock};
 
 use arrow::array::{
-    Array, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, StringArray,
-    UInt64Array,
+    Array, BooleanArray, Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Int64Array,
+    StringArray, UInt8Array, UInt16Array, UInt32Array, UInt64Array,
 };
 use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::RecordBatch;
@@ -90,8 +90,13 @@ pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<Value
         for column in batch.columns() {
             match column.data_type() {
                 ArrowDataType::Boolean => collect_column_boolean(ruby, column, rows)?,
+                ArrowDataType::Int8 => collect_column_int8(ruby, column, rows)?,
+                ArrowDataType::Int16 => collect_column_int16(ruby, column, rows)?,
                 ArrowDataType::Int32 => collect_column_int32(ruby, column, rows)?,
                 ArrowDataType::Int64 => collect_column_int64(ruby, column, rows)?,
+                ArrowDataType::UInt8 => collect_column_uint8(ruby, column, rows)?,
+                ArrowDataType::UInt16 => collect_column_uint16(ruby, column, rows)?,
+                ArrowDataType::UInt32 => collect_column_uint32(ruby, column, rows)?,
                 ArrowDataType::UInt64 => collect_column_uint64(ruby, column, rows)?,
                 ArrowDataType::Float32 => collect_column_float32(ruby, column, rows)?,
                 ArrowDataType::Float64 => collect_column_float64(ruby, column, rows)?,
@@ -121,8 +126,13 @@ macro_rules! collect_column {
 }
 
 collect_column!(collect_column_boolean, BooleanArray);
+collect_column!(collect_column_int8, Int8Array);
+collect_column!(collect_column_int16, Int16Array);
 collect_column!(collect_column_int32, Int32Array);
 collect_column!(collect_column_int64, Int64Array);
+collect_column!(collect_column_uint8, UInt8Array);
+collect_column!(collect_column_uint16, UInt16Array);
+collect_column!(collect_column_uint32, UInt32Array);
 collect_column!(collect_column_uint64, UInt64Array);
 collect_column!(collect_column_float32, Float32Array);
 collect_column!(collect_column_float64, Float64Array);
