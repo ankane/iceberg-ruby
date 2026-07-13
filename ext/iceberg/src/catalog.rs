@@ -385,8 +385,6 @@ impl RbCatalog {
 
     #[cfg(feature = "datafusion")]
     pub fn sql(ruby: &Ruby, rb_self: &Self, sql: String, rb_params: RArray) -> RbResult<Value> {
-        let runtime = runtime();
-
         let mut params = Vec::new();
         for param in rb_params.into_iter() {
             if let Some(v) = Integer::from_value(param) {
@@ -403,6 +401,7 @@ impl RbCatalog {
 
         // TODO only create context once
         let catalog = rb_self.catalog.read().unwrap().as_arc();
+        let runtime = runtime();
         let provider = runtime
             .block_on(IcebergCatalogProvider::try_new(catalog))
             .unwrap();
