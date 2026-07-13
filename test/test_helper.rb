@@ -13,7 +13,7 @@ class Minitest::Test
     catalog.create_namespace("iceberg_ruby_test")
     GC.stress = true if stress?
 
-    # avoid hanging from too many threads
+    # avoid hanging
     GC.start
   end
 
