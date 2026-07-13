@@ -14,7 +14,7 @@ use magnus::{Error as RbErr, Ruby, function, method, prelude::*};
 
 use crate::arrow::{RbArrowArrayStream, RbArrowSchema};
 use crate::batch::RbArrowRecordBatch;
-use crate::catalog::RbCatalog;
+use crate::catalog::{RbCatalog, RbSessionContext};
 use crate::scan::RbTableScan;
 use crate::schema::{RbNestedField, RbSchema};
 use crate::table::RbTable;
@@ -52,7 +52,13 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("rename_table", method!(RbCatalog::rename_table, 2))?;
     class.define_method("register_table", method!(RbCatalog::register_table, 2))?;
     #[cfg(feature = "datafusion")]
-    class.define_method("sql", method!(RbCatalog::sql, 2))?;
+    class.define_method("session_context", method!(RbCatalog::session_context, 0))?;
+
+    #[cfg(feature = "datafusion")]
+    {
+        let class = module.define_class("RbSessionContext", ruby.class_object())?;
+        class.define_method("sql", method!(RbSessionContext::sql, 2))?;
+    }
 
     let class = module.define_class("RbTable", ruby.class_object())?;
     class.define_method("scan", method!(RbTable::scan, 1))?;

@@ -386,6 +386,25 @@ impl RbCatalog {
     }
 
     #[cfg(feature = "datafusion")]
+    pub fn session_context(&self) -> RbResult<RbSessionContext> {
+        let catalog = self.catalog.read().unwrap().as_arc();
+        let provider = runtime()
+            .block_on(IcebergCatalogProvider::try_new(catalog))
+            .map_err(to_rb_err)?;
+        let ctx = SessionContext::new();
+        ctx.register_catalog("datafusion", Arc::new(provider));
+        Ok(RbSessionContext { ctx })
+    }
+}
+
+#[cfg(feature = "datafusion")]
+#[magnus::wrap(class = "Iceberg::SessionContext")]
+pub struct RbSessionContext {
+    pub(crate) ctx: SessionContext,
+}
+
+#[cfg(feature = "datafusion")]
+impl RbSessionContext {
     pub fn sql(ruby: &Ruby, rb_self: &Self, sql: String, rb_params: RArray) -> RbResult<Value> {
         let mut params = Vec::new();
         for param in rb_params.into_iter() {
@@ -407,16 +426,10 @@ impl RbCatalog {
             }
         }
 
-        // TODO only create context once
-        let catalog = rb_self.catalog.read().unwrap().as_arc();
         let runtime = runtime();
-        let provider = runtime
-            .block_on(IcebergCatalogProvider::try_new(catalog))
-            .map_err(to_rb_err)?;
-        let ctx = SessionContext::new();
-        ctx.register_catalog("datafusion", Arc::new(provider));
-
-        let stream = runtime.block_on(ctx.sql(&sql)).map_err(datafusion_error)?;
+        let stream = runtime
+            .block_on(rb_self.ctx.sql(&sql))
+            .map_err(datafusion_error)?;
         let stream = stream.with_param_values(params).map_err(datafusion_error)?;
         let batches = runtime
             .block_on(stream.collect())

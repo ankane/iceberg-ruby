@@ -2,7 +2,7 @@ require_relative "test_helper"
 
 class SqlTest < Minitest::Test
   def setup
-    skip
+    # skip
     super
   end
 
