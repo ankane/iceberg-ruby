@@ -63,6 +63,13 @@ class SqlTest < Minitest::Test
     assert_equal [], result.columns
   end
 
+  def test_multiple_statements
+    error = assert_raises do
+      catalog.sql("SELECT 1; SELECT 2")
+    end
+    assert_equal "This feature is not implemented: The context currently only supports a single SQL statement", error.message
+  end
+
   def test_error
     error = assert_raises do
       catalog.sql("SELECT 123 AS a, 123 AS a")
