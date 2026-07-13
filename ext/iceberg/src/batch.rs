@@ -30,32 +30,6 @@ pub struct RbArrowRecordBatch {
     pub(crate) batch: RecordBatch,
 }
 
-macro_rules! new_array {
-    ($name:ident, $builder:ty, $type:ty) => {
-        fn $name(ruby: &Ruby, data: RArray, field: &Arc<Field>) -> RbResult<Arc<dyn Array>> {
-            let name = ruby.str_new(field.name());
-            let mut builder = <$builder>::new();
-            for row in data.into_iter() {
-                let row = RHash::try_convert(row)?;
-                let value: Option<$type> = row.aref(name)?;
-                match value {
-                    Some(v) => builder.append_value(v),
-                    None => builder.append_null(),
-                }
-            }
-            let array: Arc<dyn Array> = Arc::new(builder.finish());
-            Ok(array)
-        }
-    };
-}
-
-new_array!(new_array_boolean, BooleanBuilder, bool);
-new_array!(new_array_int32, Int32Builder, i32);
-new_array!(new_array_int64, Int64Builder, i64);
-new_array!(new_array_float32, Float32Builder, f32);
-new_array!(new_array_float64, Float64Builder, f64);
-new_array!(new_array_utf8, StringBuilder, String);
-
 impl RbArrowRecordBatch {
     pub fn new(ruby: &Ruby, data: RArray, schema: RbArrowType<Schema>) -> RbResult<Self> {
         let schema = Arc::new(schema.0);
@@ -83,3 +57,29 @@ impl RbArrowRecordBatch {
         RbArrowArrayStream { stream }
     }
 }
+
+macro_rules! new_array {
+    ($name:ident, $builder:ty, $type:ty) => {
+        fn $name(ruby: &Ruby, data: RArray, field: &Arc<Field>) -> RbResult<Arc<dyn Array>> {
+            let name = ruby.str_new(field.name());
+            let mut builder = <$builder>::new();
+            for row in data.into_iter() {
+                let row = RHash::try_convert(row)?;
+                let value: Option<$type> = row.aref(name)?;
+                match value {
+                    Some(v) => builder.append_value(v),
+                    None => builder.append_null(),
+                }
+            }
+            let array: Arc<dyn Array> = Arc::new(builder.finish());
+            Ok(array)
+        }
+    };
+}
+
+new_array!(new_array_boolean, BooleanBuilder, bool);
+new_array!(new_array_int32, Int32Builder, i32);
+new_array!(new_array_int64, Int64Builder, i64);
+new_array!(new_array_float32, Float32Builder, f32);
+new_array!(new_array_float64, Float64Builder, f64);
+new_array!(new_array_utf8, StringBuilder, String);
