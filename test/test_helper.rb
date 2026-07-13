@@ -12,6 +12,9 @@ class Minitest::Test
     drop_namespace("iceberg_ruby_test")
     catalog.create_namespace("iceberg_ruby_test")
     GC.stress = true if stress?
+
+    # avoid hanging from too many threads
+    GC.start
   end
 
   def teardown
