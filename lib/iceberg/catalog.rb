@@ -1,5 +1,10 @@
 module Iceberg
   class Catalog
+    def _initialize(catalog, default_namespace:)
+      @catalog = catalog
+      @default_namespace = default_namespace
+    end
+
     def list_namespaces(parent = nil)
       @catalog.list_namespaces(parent)
     end
@@ -36,8 +41,8 @@ module Iceberg
       nil
     end
 
-    def list_tables(namespace)
-      @catalog.list_tables(namespace)
+    def list_tables(namespace = nil)
+      @catalog.list_tables(namespace || @default_namespace)
     end
 
     def create_table(table_name, schema: nil, location: nil)
@@ -69,15 +74,15 @@ module Iceberg
         schema = Schema.new([])
       end
 
-      Table.new(@catalog.create_table(table_name, schema, location), @catalog)
+      Table.new(@catalog.create_table(with_namespace(table_name), schema, location), @catalog)
     end
 
     def load_table(table_name)
-      Table.new(@catalog.load_table(table_name), @catalog)
+      Table.new(@catalog.load_table(with_namespace(table_name)), @catalog)
     end
 
     def drop_table(table_name, if_exists: nil)
-      @catalog.drop_table(table_name)
+      @catalog.drop_table(with_namespace(table_name))
     rescue Error => e
       # ideally all catalogs would use TableNotFoundError
       if !if_exists || (e.message != "Tried to drop a table that does not exist" && !e.message.include?("No such table") && !e.message.include?("The specified table does not exist") && !e.message.include?("not found"))
@@ -87,17 +92,17 @@ module Iceberg
     end
 
     def table_exists?(table_name)
-      @catalog.table_exists?(table_name)
+      @catalog.table_exists?(with_namespace(table_name))
     rescue NamespaceNotFoundError
       false
     end
 
     def rename_table(table_name, new_name)
-      @catalog.rename_table(table_name, new_name)
+      @catalog.rename_table(with_namespace(table_name), with_namespace(new_name))
     end
 
     def register_table(table_name, metadata_location)
-      @catalog.register_table(table_name, metadata_location)
+      @catalog.register_table(with_namespace(table_name), metadata_location)
     end
 
     def sql(sql, params = [])
@@ -113,6 +118,14 @@ module Iceberg
     end
 
     private
+
+    def with_namespace(table_name)
+      if @default_namespace && table_name.is_a?(String) && !table_name.include?(".")
+        [@default_namespace, table_name]
+      else
+        table_name
+      end
+    end
 
     def session_context
       @session_context ||= @catalog.session_context

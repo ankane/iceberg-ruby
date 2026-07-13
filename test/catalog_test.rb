@@ -39,6 +39,25 @@ class CatalogTest < Minitest::Test
     refute_includes catalog.list_tables(["iceberg_ruby_test"]), ["iceberg_ruby_test", "events2"]
   end
 
+  def test_tables_default_namespace
+    assert_equal false, catalog.table_exists?("events")
+    refute_includes catalog.list_tables, ["iceberg_ruby_test", "events"]
+
+    assert_kind_of Iceberg::Table, catalog.create_table("events")
+
+    assert_equal true, catalog.table_exists?("events")
+    assert_includes catalog.list_tables, ["iceberg_ruby_test", "events"]
+
+    assert_nil catalog.rename_table("events", "events2")
+    assert_equal true, catalog.table_exists?("events2")
+    assert_equal false, catalog.table_exists?("events")
+
+    assert_nil catalog.drop_table("events2")
+
+    assert_equal false, catalog.table_exists?("events2")
+    refute_includes catalog.list_tables, ["iceberg_ruby_test", "events2"]
+  end
+
   def test_tables_dot
     skip if s3tables? || glue? || rest?
 
@@ -88,7 +107,7 @@ class CatalogTest < Minitest::Test
 
   def test_load_table_missing_namespace
     error = assert_raises(Iceberg::InvalidDataError) do
-      catalog.load_table("events")
+      catalog.load_table(["events"])
     end
     assert_match "Namespace identifier can't be empty!", error.message
   end

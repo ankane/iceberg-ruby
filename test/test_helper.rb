@@ -28,29 +28,40 @@ class Minitest::Test
       case $catalog
       when "glue"
         Iceberg::GlueCatalog.new(
-          warehouse: "s3://#{s3_bucket}/glue_catalog"
+          warehouse: "s3://#{s3_bucket}/glue_catalog",
+          **catalog_options
         )
       when "memory"
         Iceberg::MemoryCatalog.new(
-          warehouse: "#{tmpdir}/memory_catalog"
+          warehouse: "#{tmpdir}/memory_catalog",
+          **catalog_options
         )
       when "rest"
         Iceberg::RestCatalog.new(
-          uri: ENV.fetch("REST_CATALOG_URI", "http://localhost:8181")
+          uri: ENV.fetch("REST_CATALOG_URI", "http://localhost:8181"),
+          **catalog_options
         )
       when "s3tables"
         Iceberg::S3TablesCatalog.new(
-          arn: ENV.fetch("S3_TABLES_ARN")
+          arn: ENV.fetch("S3_TABLES_ARN"),
+          **catalog_options
         )
       when "sql"
         Iceberg::SqlCatalog.new(
           uri: "postgres://localhost/iceberg_ruby_test",
-          warehouse: "#{tmpdir}/sql_catalog"
+          warehouse: "#{tmpdir}/sql_catalog",
+          **catalog_options
         )
       else
         raise "Unsupported catalog"
       end
     end
+  end
+
+  def catalog_options
+    {
+      default_namespace: "iceberg_ruby_test"
+    }
   end
 
   # TODO clean-up
