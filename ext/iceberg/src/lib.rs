@@ -12,10 +12,11 @@ mod utils;
 
 use magnus::{Error as RbErr, Ruby, function, method, prelude::*};
 
-use crate::batch::{RbArrowArrayStream, RbArrowRecordBatch};
+use crate::arrow::{RbArrowArrayStream, RbArrowSchema};
+use crate::batch::RbArrowRecordBatch;
 use crate::catalog::RbCatalog;
 use crate::scan::RbTableScan;
-use crate::schema::{RbArrowSchema, RbNestedField, RbSchema};
+use crate::schema::{RbNestedField, RbSchema};
 use crate::table::RbTable;
 
 type RbResult<T> = Result<T, RbErr>;

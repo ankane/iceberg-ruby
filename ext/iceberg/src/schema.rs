@@ -7,7 +7,7 @@ use iceberg::spec::{NestedField, PrimitiveType, Schema, Type};
 use magnus::{Error as RbErr, RArray, RHash, RString, Ruby, TryConvert, Value, prelude::*};
 
 use crate::RbResult;
-use crate::arrow::RbArrowType;
+use crate::arrow::{RbArrowSchema, RbArrowType};
 use crate::error::{to_rb_err, todo_error};
 use crate::utils::{default_value, rb_literal};
 
@@ -19,17 +19,6 @@ pub struct RbSchema {
 #[magnus::wrap(class = "Iceberg::NestedField")]
 pub struct RbNestedField {
     pub(crate) field: Arc<NestedField>,
-}
-
-#[magnus::wrap(class = "Iceberg::ArrowSchema")]
-pub struct RbArrowSchema {
-    pub(crate) schema: FFI_ArrowSchema,
-}
-
-impl RbArrowSchema {
-    pub fn to_i(&self) -> usize {
-        (&self.schema as *const _) as usize
-    }
 }
 
 impl RbSchema {

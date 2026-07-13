@@ -5,6 +5,28 @@ use magnus::{Error as RbErr, Ruby, TryConvert, Value, prelude::*};
 
 use crate::RbResult;
 
+#[magnus::wrap(class = "Iceberg::ArrowArrayStream")]
+pub struct RbArrowArrayStream {
+    pub(crate) stream: FFI_ArrowArrayStream,
+}
+
+impl RbArrowArrayStream {
+    pub fn to_i(&self) -> usize {
+        (&self.stream as *const _) as usize
+    }
+}
+
+#[magnus::wrap(class = "Iceberg::ArrowSchema")]
+pub struct RbArrowSchema {
+    pub(crate) schema: FFI_ArrowSchema,
+}
+
+impl RbArrowSchema {
+    pub fn to_i(&self) -> usize {
+        (&self.schema as *const _) as usize
+    }
+}
+
 pub struct RbArrowType<T>(pub T);
 
 impl TryConvert for RbArrowType<ArrowArrayStreamReader> {

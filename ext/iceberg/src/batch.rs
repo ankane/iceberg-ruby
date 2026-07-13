@@ -11,19 +11,8 @@ use arrow_schema::{Field, Schema};
 use magnus::{RArray, RHash, Ruby, TryConvert};
 
 use crate::RbResult;
-use crate::arrow::RbArrowType;
+use crate::arrow::{RbArrowArrayStream, RbArrowType};
 use crate::error::todo_error;
-
-#[magnus::wrap(class = "Iceberg::ArrowArrayStream")]
-pub struct RbArrowArrayStream {
-    pub(crate) stream: FFI_ArrowArrayStream,
-}
-
-impl RbArrowArrayStream {
-    pub fn to_i(&self) -> usize {
-        (&self.stream as *const _) as usize
-    }
-}
 
 #[magnus::wrap(class = "Iceberg::ArrowRecordBatch")]
 pub struct RbArrowRecordBatch {
