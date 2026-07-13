@@ -1,8 +1,7 @@
-# TODO move class to Rust in 0.12.0
+# TODO move class to Rust
 module Iceberg
   class Schema
-    # TODO remove schema_id in 0.12.0
-    def initialize(fields, schema_id: nil)
+    def initialize(fields)
       @schema =
         if fields.is_a?(RbSchema)
           fields
@@ -11,7 +10,6 @@ module Iceberg
         else
           RbSchema.new(fields.map { |f| f.is_a?(NestedField) ? f : NestedField.new(f) })
         end
-      @schema_id = schema_id
     end
 
     def fields
@@ -19,7 +17,7 @@ module Iceberg
     end
 
     def schema_id
-      @schema_id || @schema.schema_id
+      @schema.schema_id
     end
 
     def arrow_c_schema
