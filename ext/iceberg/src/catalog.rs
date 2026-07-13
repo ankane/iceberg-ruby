@@ -391,8 +391,8 @@ impl RbCatalog {
         let ctx = SessionContext::new();
         ctx.register_catalog("datafusion", Arc::new(provider));
 
-        let df = runtime.block_on(ctx.sql(&sql)).unwrap();
-        let batches = runtime.block_on(df.collect()).unwrap();
+        let stream = runtime.block_on(ctx.sql(&sql)).unwrap();
+        let batches = runtime.block_on(stream.collect()).unwrap();
         collect_batches(ruby, batches)
     }
 }
