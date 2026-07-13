@@ -3,7 +3,7 @@ require_relative "test_helper"
 class SchemaTest < Minitest::Test
   def test_fields
     table =
-      catalog.create_table("iceberg_ruby_test.events") do |t|
+      catalog.create_table("events") do |t|
         t.integer "a"
         t.bigint "b"
       end

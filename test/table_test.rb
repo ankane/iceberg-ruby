@@ -2,7 +2,7 @@ require_relative "test_helper"
 
 class TableTest < Minitest::Test
   def test_metadata
-    table = catalog.create_table("iceberg_ruby_test.events")
+    table = catalog.create_table("events")
     assert_equal 2, table.format_version
     assert_kind_of String, table.uuid
     if s3tables?
@@ -34,7 +34,7 @@ class TableTest < Minitest::Test
 
   def test_snapshots
     table =
-      catalog.create_table("iceberg_ruby_test.events") do |t|
+      catalog.create_table("events") do |t|
         t.int "a"
         t.string "b"
       end
@@ -59,7 +59,7 @@ class TableTest < Minitest::Test
 
   def test_append
     table =
-      catalog.create_table("iceberg_ruby_test.events") do |t|
+      catalog.create_table("events") do |t|
         t.int "int"
         t.long "long"
         t.float "float"
@@ -77,7 +77,7 @@ class TableTest < Minitest::Test
   end
 
   def test_inspect
-    table = catalog.create_table("iceberg_ruby_test.events") { |t| t.integer "a" }
+    table = catalog.create_table("events") { |t| t.integer "a" }
     assert_equal table.inspect, table.to_s
     refute_match "@table", table.inspect
   end

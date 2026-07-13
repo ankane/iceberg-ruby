@@ -3,7 +3,7 @@ require_relative "test_helper"
 class CreateTableTest < Minitest::Test
   def test_block
     table =
-      catalog.create_table("iceberg_ruby_test.events") do |t|
+      catalog.create_table("events") do |t|
         t.integer "a", default: 1
         t.bigint "b", null: false, comment: "Hello"
         t.string "c", default: "Test", comment: "World"
@@ -23,7 +23,7 @@ class CreateTableTest < Minitest::Test
     skip "Conversion from Timestamptz is not supported" if glue?
 
     table =
-      catalog.create_table("iceberg_ruby_test.events") do |t|
+      catalog.create_table("events") do |t|
         t.boolean "boolean", default: true
         t.int "int", default: 1
         t.integer "integer", default: 2
@@ -51,7 +51,7 @@ class CreateTableTest < Minitest::Test
       "a" => "int",
       "b" => "long"
     }
-    table = catalog.create_table("iceberg_ruby_test.events", schema: schema)
+    table = catalog.create_table("events", schema: schema)
     fields = table.schema.fields
     assert_equal ["a", "b"], fields.map { |v| v[:name] }
     assert_equal ["int", "long"], fields.map { |v| v[:type] }
@@ -62,46 +62,46 @@ class CreateTableTest < Minitest::Test
       a: "int",
       b: "long"
     }
-    table = catalog.create_table("iceberg_ruby_test.events", schema: schema)
+    table = catalog.create_table("events", schema: schema)
     fields = table.schema.fields
     assert_equal ["a", "b"], fields.map { |v| v[:name] }
     assert_equal ["int", "long"], fields.map { |v| v[:type] }
   end
 
   def test_schema_hash_empty
-    table = catalog.create_table("iceberg_ruby_test.events", schema: {})
+    table = catalog.create_table("events", schema: {})
     assert_empty table.schema.fields
   end
 
   def test_schema_class
     table =
-      catalog.create_table("iceberg_ruby_test.events") do |t|
+      catalog.create_table("events") do |t|
         t.integer "a"
         t.bigint "b"
       end
 
     schema = table.schema
-    catalog.drop_table("iceberg_ruby_test.events")
-    table2 = catalog.create_table("iceberg_ruby_test.events", schema: schema)
+    catalog.drop_table("events")
+    table2 = catalog.create_table("events", schema: schema)
     assert_equal schema.fields, table2.schema.fields
   end
 
   def test_no_schema_no_block
-    table = catalog.create_table("iceberg_ruby_test.events")
+    table = catalog.create_table("events")
     assert_empty table.schema.fields
   end
 
   def test_schema_block
     error = assert_raises(ArgumentError) do
-      catalog.create_table("iceberg_ruby_test.events", schema: {}) { }
+      catalog.create_table("events", schema: {}) { }
     end
     assert_equal "Must pass schema or block", error.message
   end
 
   def test_already_exists
-    catalog.create_table("iceberg_ruby_test.events")
+    catalog.create_table("events")
     error = assert_raises(Iceberg::Error) do
-      catalog.create_table("iceberg_ruby_test.events")
+      catalog.create_table("events")
     end
     assert_match "already exists", error.message
   end
