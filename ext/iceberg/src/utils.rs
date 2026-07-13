@@ -192,3 +192,9 @@ pub fn epoch(ruby: &Ruby) -> RbResult<Value> {
         .const_get::<_, RClass>("Date")?
         .new_instance((1970, 1, 1))
 }
+
+pub fn date_to_i32(value: Value) -> RbResult<i32> {
+    value
+        .funcall::<_, _, Value>("-", (epoch(&Ruby::get_with(value))?,))?
+        .funcall("to_i", ())
+}
