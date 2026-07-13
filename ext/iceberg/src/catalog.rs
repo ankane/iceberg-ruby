@@ -386,13 +386,15 @@ impl RbCatalog {
     }
 
     #[cfg(feature = "datafusion")]
-    pub fn session_context(&self, default_namespace: String) -> RbResult<RbSessionContext> {
+    pub fn session_context(&self, default_namespace: Option<String>) -> RbResult<RbSessionContext> {
         let catalog = self.catalog.read().unwrap().as_arc();
         let provider = runtime()
             .block_on(IcebergCatalogProvider::try_new(catalog))
             .map_err(to_rb_err)?;
-        let config =
-            SessionConfig::new().with_default_catalog_and_schema("datafusion", default_namespace);
+        let mut config = SessionConfig::new();
+        if let Some(namespace) = default_namespace {
+            config = config.with_default_catalog_and_schema("datafusion", namespace);
+        }
         let ctx = SessionContext::new_with_config(config);
         ctx.register_catalog("datafusion", Arc::new(provider));
         Ok(RbSessionContext { ctx })
