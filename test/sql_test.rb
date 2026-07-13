@@ -31,6 +31,11 @@ class SqlTest < Minitest::Test
     assert_kind_of NilClass, catalog.sql("SELECT $1", [nil]).rows[0][0]
   end
 
+  def test_extra_params
+    # DataFusion does not throw error
+    assert_equal [[1]], catalog.sql("SELECT $1", [1, 2]).rows
+  end
+
   def test_update
     create_events
     error = assert_raises do
