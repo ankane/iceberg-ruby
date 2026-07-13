@@ -412,7 +412,7 @@ impl RbCatalog {
         let runtime = runtime();
         let provider = runtime
             .block_on(IcebergCatalogProvider::try_new(catalog))
-            .unwrap();
+            .map_err(to_rb_err)?;
         let ctx = SessionContext::new();
         ctx.register_catalog("datafusion", Arc::new(provider));
 
