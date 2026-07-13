@@ -41,11 +41,11 @@ class SqlTest < Minitest::Test
   private
 
   def create_events
-    catalog.create_table("iceberg_ruby_test.events") do |t|
-      t.bigint "a"
-      t.string "b"
-    end
+    catalog.sql("CREATE TABLE iceberg_ruby_test.events (a bigint, b text)")
+    load_events
+  end
 
+  def load_events
     params = [1, "one", 2, "two", 3, "three"]
     result = catalog.sql("INSERT INTO iceberg_ruby_test.events VALUES ($1, $2), ($3, $4), ($5, $6)", params)
     assert_equal ["count"], result.columns
