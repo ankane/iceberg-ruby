@@ -90,4 +90,8 @@ class Minitest::Test
     end
     catalog.drop_namespace(namespace)
   end
+
+  def static_table
+    @static_table ||= Iceberg::StaticTable.new(File.expand_path("support/metadata.json", __dir__))
+  end
 end

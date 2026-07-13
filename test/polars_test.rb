@@ -74,4 +74,9 @@ class PolarsTest < Minitest::Test
     end
     assert_match "target schema is not superset of current schema", error.message
   end
+
+  def test_static_table_to_polars
+    df = static_table.to_polars.collect
+    assert_equal [Polars::Int32, Polars::String], df.dtypes
+  end
 end

@@ -11,9 +11,8 @@ class StaticTableTest < Minitest::Test
     assert_equal "file:///tmp/warehouse/main.db/events", static_table.location
   end
 
-  def test_to_polars
-    df = static_table.to_polars.collect
-    assert_equal [Polars::Int32, Polars::String], df.dtypes
+  def test_to_a
+    assert_empty static_table.to_a
   end
 
   def test_append
@@ -21,11 +20,5 @@ class StaticTableTest < Minitest::Test
       static_table.append(nil)
     end
     assert_equal "Read-only table", error.message
-  end
-
-  private
-
-  def static_table
-    @static_table ||= Iceberg::StaticTable.new(File.expand_path("support/metadata.json", __dir__))
   end
 end
