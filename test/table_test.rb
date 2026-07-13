@@ -33,12 +33,7 @@ class TableTest < Minitest::Test
   end
 
   def test_snapshots
-    table =
-      catalog.create_table("events") do |t|
-        t.int "a"
-        t.string "b"
-      end
-    table.append([{"a" => 1, "b" => "one"}, {"a" => 2, "b" => "two"}, {"a" => 3, "b" => "three"}])
+    table = create_events
 
     snapshots = table.snapshots
     assert_equal 1, snapshots.size
@@ -80,5 +75,17 @@ class TableTest < Minitest::Test
     table = catalog.create_table("events") { |t| t.integer "a" }
     assert_equal table.inspect, table.to_s
     refute_match "@table", table.inspect
+  end
+
+  private
+
+  def create_events
+    table = catalog.create_table("events", schema: {"a" => "int", "b" => "string"})
+    load_events(table)
+    table
+  end
+
+  def load_events(table)
+    table.append([{"a" => 1, "b" => "one"}, {"a" => 2, "b" => "two"}, {"a" => 3, "b" => "three"}])
   end
 end
