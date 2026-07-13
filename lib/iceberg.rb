@@ -5,6 +5,9 @@ rescue LoadError
   require "iceberg/iceberg"
 end
 
+# stdlib
+require "date"
+
 # modules
 require_relative "iceberg/catalog"
 require_relative "iceberg/result"
@@ -35,4 +38,6 @@ module Iceberg
       "not implemented yet"
     end
   end
+
+  EPOCH = ::Date.new(1970, 1, 1)
 end
