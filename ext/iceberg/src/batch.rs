@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
 use arrow::array::{
-    Array, BooleanBuilder, Float32Builder, Float64Builder, Int32Builder, Int64Builder,
-    StringBuilder,
+    Array, BooleanBuilder, Date32Builder, Float32Builder, Float64Builder, Int32Builder,
+    Int64Builder, StringBuilder,
 };
 use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::ffi_stream::FFI_ArrowArrayStream;
 use arrow_array::{RecordBatch, RecordBatchIterator};
 use arrow_schema::{Field, Schema};
-use magnus::{RArray, RHash, Ruby, TryConvert};
+use magnus::{Class, Module, RArray, RClass, RHash, Ruby, TryConvert, Value, value::ReprValue};
 
 use crate::RbResult;
 use crate::arrow::{RbArrowArrayStream, RbArrowType};
@@ -30,6 +30,7 @@ impl RbArrowRecordBatch {
                 ArrowDataType::Int64 => new_array_int64(ruby, data, field)?,
                 ArrowDataType::Float32 => new_array_float32(ruby, data, field)?,
                 ArrowDataType::Float64 => new_array_float64(ruby, data, field)?,
+                ArrowDataType::Date32 => new_array_date32(ruby, data, field)?,
                 ArrowDataType::Utf8 => new_array_utf8(ruby, data, field)?,
                 _ => return Err(todo_error()),
             };
@@ -72,3 +73,27 @@ new_array!(new_array_int64, Int64Builder, i64);
 new_array!(new_array_float32, Float32Builder, f32);
 new_array!(new_array_float64, Float64Builder, f64);
 new_array!(new_array_utf8, StringBuilder, String);
+
+fn new_array_date32(ruby: &Ruby, data: RArray, field: &Arc<Field>) -> RbResult<Arc<dyn Array>> {
+    // TODO create constant
+    let epoch = ruby
+        .class_object()
+        .const_get::<_, RClass>("Date")?
+        .new_instance((1970, 1, 1))?;
+
+    let name = ruby.str_new(field.name());
+    let mut builder = Date32Builder::new();
+    for row in data.into_iter() {
+        let row = RHash::try_convert(row)?;
+        let value: Option<Value> = row.aref(name)?;
+        match value {
+            Some(v) => builder.append_value(
+                v.funcall::<_, _, Value>("-", (epoch,))?
+                    .funcall("to_i", ())?,
+            ),
+            None => builder.append_null(),
+        }
+    }
+    let array: Arc<dyn Array> = Arc::new(builder.finish());
+    Ok(array)
+}

@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use arrow::array::{
-    Array, BooleanArray, Float32Array, Float64Array, Int8Array, Int16Array, Int32Array, Int64Array,
-    StringArray, UInt8Array, UInt16Array, UInt32Array, UInt64Array,
+    Array, BooleanArray, Date32Array, Float32Array, Float64Array, Int8Array, Int16Array,
+    Int32Array, Int64Array, StringArray, UInt8Array, UInt16Array, UInt32Array, UInt64Array,
 };
 use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::RecordBatch;
-use magnus::{Class, IntoValue, Module, RArray, RClass, RModule, Ruby, Value};
+use magnus::{Class, IntoValue, Module, RArray, RClass, RModule, Ruby, Value, value::ReprValue};
 
 use crate::RbResult;
 use crate::error::todo_error;
@@ -40,6 +40,7 @@ pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<Value
                 ArrowDataType::UInt64 => collect_column_uint64(ruby, column, rows)?,
                 ArrowDataType::Float32 => collect_column_float32(ruby, column, rows)?,
                 ArrowDataType::Float64 => collect_column_float64(ruby, column, rows)?,
+                ArrowDataType::Date32 => collect_column_date32(ruby, column, rows)?,
                 ArrowDataType::Utf8 => collect_column_utf8(ruby, column, rows)?,
                 _ => return Err(todo_error()),
             }
@@ -85,3 +86,21 @@ collect_column!(collect_column_uint64, UInt64Array);
 collect_column!(collect_column_float32, Float32Array);
 collect_column!(collect_column_float64, Float64Array);
 collect_column!(collect_column_utf8, StringArray);
+
+pub fn collect_column_date32(ruby: &Ruby, column: &Arc<dyn Array>, rows: RArray) -> RbResult<()> {
+    // TODO create constant
+    let epoch = ruby
+        .class_object()
+        .const_get::<_, RClass>("Date")?
+        .new_instance((1970, 1, 1))?;
+
+    let array = column.as_any().downcast_ref::<Date32Array>().unwrap();
+    for (i, value) in array.iter().enumerate() {
+        rows.entry::<RArray>(i.try_into().unwrap())?.push(
+            value
+                .map(|v| epoch.funcall::<_, _, Value>("+", (v,)))
+                .transpose()?,
+        )?;
+    }
+    Ok(())
+}
