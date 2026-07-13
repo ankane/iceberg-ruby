@@ -53,6 +53,15 @@ class SqlTest < Minitest::Test
   end
 
   def test_view
+    catalog.sql("CREATE TABLE events (a bigint, b text)")
+    catalog.sql("CREATE VIEW events_view AS SELECT a AS c, b AS d FROM events")
+    load_events
+    result = catalog.sql("SELECT * FROM events_view")
+    # TODO fix
+    assert_equal true, result.empty?
+  end
+
+  def test_view_data
     create_events
     error = assert_raises(Iceberg::Error) do
       catalog.sql("CREATE VIEW events_view AS SELECT a AS c, b AS d FROM events")
@@ -63,14 +72,6 @@ class SqlTest < Minitest::Test
   def test_empty_result
     create_events
     result = catalog.sql("SELECT * FROM events LIMIT 0")
-    # TODO fix
-    assert_equal [], result.columns
-  end
-
-  def test_empty_view
-    catalog.sql("CREATE TABLE events (a bigint, b text)")
-    catalog.sql("CREATE VIEW events_view AS SELECT a AS c, b AS d FROM events")
-    result = catalog.sql("SELECT * FROM events_view")
     # TODO fix
     assert_equal [], result.columns
   end
