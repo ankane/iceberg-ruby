@@ -14,7 +14,9 @@ use magnus::{Error as RbErr, Ruby, function, method, prelude::*};
 
 use crate::arrow::{RbArrowArrayStream, RbArrowSchema};
 use crate::batch::RbArrowRecordBatch;
-use crate::catalog::{RbCatalog, RbSessionContext};
+use crate::catalog::RbCatalog;
+#[cfg(feature = "datafusion")]
+use crate::catalog::RbSessionContext;
 use crate::scan::RbTableScan;
 use crate::schema::{RbNestedField, RbSchema};
 use crate::table::RbTable;
