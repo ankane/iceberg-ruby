@@ -47,3 +47,15 @@ pub fn todo_error() -> RbErr {
         .unwrap();
     RbErr::new(class, "not implemented yet")
 }
+
+#[cfg(feature = "datafusion")]
+pub fn datafusion_error(err: datafusion::common::DataFusionError) -> RbErr {
+    let class = Ruby::get()
+        .unwrap()
+        .class_object()
+        .const_get::<_, RModule>("Iceberg")
+        .unwrap()
+        .const_get("Error")
+        .unwrap();
+    RbErr::new(class, err.to_string())
+}

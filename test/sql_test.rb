@@ -38,7 +38,7 @@ class SqlTest < Minitest::Test
 
   def test_update
     create_events
-    error = assert_raises do
+    error = assert_raises(Iceberg::Error) do
       catalog.sql("UPDATE iceberg_ruby_test.events SET b = $1 WHERE a = $2", ["two!", 2])
     end
     assert_match "UPDATE not supported for Base table", error.message
@@ -46,7 +46,7 @@ class SqlTest < Minitest::Test
 
   def test_delete
     create_events
-    error = assert_raises do
+    error = assert_raises(Iceberg::Error) do
       catalog.sql("DELETE FROM iceberg_ruby_test.events WHERE a = $1", [2])
     end
     assert_match "DELETE not supported for Base table", error.message
@@ -54,7 +54,7 @@ class SqlTest < Minitest::Test
 
   def test_view
     create_events
-    error = assert_raises do
+    error = assert_raises(Iceberg::Error) do
       catalog.sql("CREATE VIEW iceberg_ruby_test.events_view AS SELECT a AS c, b AS d FROM iceberg_ruby_test.events")
     end
     assert_match "register_table does not support tables with data", error.message
@@ -69,14 +69,14 @@ class SqlTest < Minitest::Test
   end
 
   def test_multiple_statements
-    error = assert_raises do
+    error = assert_raises(Iceberg::Error) do
       catalog.sql("SELECT 1; SELECT 2")
     end
     assert_equal "This feature is not implemented: The context currently only supports a single SQL statement", error.message
   end
 
-  def test_error
-    error = assert_raises do
+  def test_duplicate_columns
+    error = assert_raises(Iceberg::Error) do
       catalog.sql("SELECT 123 AS a, 123 AS a")
     end
     assert_match "Projections require unique expression names", error.message
