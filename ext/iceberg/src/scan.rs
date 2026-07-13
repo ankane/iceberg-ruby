@@ -67,7 +67,6 @@ impl RbTableScan {
         let runtime = runtime();
         let scan = rb_self.scan.read().unwrap();
         let stream = runtime.block_on(scan.to_arrow()).map_err(to_rb_err)?;
-        // TODO improve performance
         let batches: Vec<_> = runtime.block_on(stream.try_collect()).map_err(to_rb_err)?;
         collect_batches(ruby, batches)
     }
