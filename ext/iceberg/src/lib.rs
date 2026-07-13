@@ -2,6 +2,7 @@ mod arrow;
 mod batch;
 mod catalog;
 mod error;
+mod result;
 mod ruby;
 mod runtime;
 mod scan;

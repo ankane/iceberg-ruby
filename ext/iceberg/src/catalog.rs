@@ -27,9 +27,9 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
 use crate::error::to_rb_err;
-use crate::runtime::runtime;
 #[cfg(feature = "datafusion")]
-use crate::scan::collect_batches;
+use crate::result::collect_batches;
+use crate::runtime::runtime;
 use crate::utils::Wrap;
 use crate::{RbResult, RbTable};
 
