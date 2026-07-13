@@ -31,6 +31,14 @@ class SqlTest < Minitest::Test
     assert_kind_of NilClass, catalog.sql("SELECT $1", [nil]).rows[0][0]
   end
 
+  def test_update
+    create_events
+    error = assert_raises do
+      catalog.sql("UPDATE iceberg_ruby_test.events SET b = $1 WHERE a = $2", ["two!", 2])
+    end
+    assert_match "UPDATE not supported for Base table", error.message
+  end
+
   def test_error
     error = assert_raises do
       catalog.sql("SELECT 123 AS a, 123 AS a")

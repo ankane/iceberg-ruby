@@ -425,7 +425,10 @@ impl RbCatalog {
             .with_param_values(params)
             // TODO improve error class
             .map_err(|e| RbErr::new(ruby.exception_runtime_error(), e.to_string()))?;
-        let batches = runtime.block_on(stream.collect()).unwrap();
+        let batches = runtime
+            .block_on(stream.collect())
+            // TODO improve error class
+            .map_err(|e| RbErr::new(ruby.exception_runtime_error(), e.to_string()))?;
         collect_batches(ruby, batches)
     }
 }
