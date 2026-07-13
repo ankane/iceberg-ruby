@@ -60,6 +60,13 @@ class SqlTest < Minitest::Test
     assert_match "register_table does not support tables with data", error.message
   end
 
+  def test_empty_result
+    create_events
+    result = catalog.sql("SELECT * FROM events LIMIT 0")
+    # TODO fix
+    assert_equal [], result.columns
+  end
+
   def test_empty_view
     catalog.sql("CREATE TABLE events (a bigint, b text)")
     catalog.sql("CREATE VIEW events_view AS SELECT a AS c, b AS d FROM events")
