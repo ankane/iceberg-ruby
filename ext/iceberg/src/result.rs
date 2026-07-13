@@ -28,6 +28,7 @@ pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<Value
 
         for column in batch.columns() {
             match column.data_type() {
+                ArrowDataType::Null => collect_column_null(ruby, column, rows)?,
                 ArrowDataType::Boolean => collect_column_boolean(ruby, column, rows)?,
                 ArrowDataType::Int8 => collect_column_int8(ruby, column, rows)?,
                 ArrowDataType::Int16 => collect_column_int16(ruby, column, rows)?,
@@ -49,6 +50,14 @@ pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<Value
         .const_get::<_, RModule>("Iceberg")?
         .const_get::<_, RClass>("Result")?
         .new_instance((columns, rows))
+}
+
+pub fn collect_column_null(ruby: &Ruby, column: &Arc<dyn Array>, rows: RArray) -> RbResult<()> {
+    for i in 0..column.len() {
+        rows.entry::<RArray>(i.try_into().unwrap())?
+            .push(ruby.qnil())?;
+    }
+    Ok(())
 }
 
 macro_rules! collect_column {

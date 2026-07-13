@@ -24,7 +24,10 @@ use iceberg_catalog_sql::{
 #[cfg(feature = "datafusion")]
 use iceberg_datafusion::IcebergCatalogProvider;
 #[cfg(feature = "datafusion")]
-use magnus::{Error as RbErr, Float, Integer, RArray, RString, Ruby, Value};
+use magnus::{
+    Error as RbErr, Float, Integer, RArray, RString, Ruby, Value, value::Qfalse, value::Qtrue,
+    value::ReprValue,
+};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
@@ -387,7 +390,13 @@ impl RbCatalog {
     pub fn sql(ruby: &Ruby, rb_self: &Self, sql: String, rb_params: RArray) -> RbResult<Value> {
         let mut params = Vec::new();
         for param in rb_params.into_iter() {
-            if let Some(v) = Integer::from_value(param) {
+            if param.is_nil() {
+                params.push(ScalarValue::Null);
+            } else if let Some(_) = Qtrue::from_value(param) {
+                params.push(ScalarValue::from(true));
+            } else if let Some(_) = Qfalse::from_value(param) {
+                params.push(ScalarValue::from(false));
+            } else if let Some(v) = Integer::from_value(param) {
                 params.push(ScalarValue::from(v.to_i64()?));
             } else if let Some(v) = Float::from_value(param) {
                 params.push(ScalarValue::from(v.to_f64()));
