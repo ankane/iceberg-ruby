@@ -8,18 +8,18 @@ jobs:
         include:
           - platform: x86_64-linux
             target: x86_64-unknown-linux-gnu
-          - platform: x86_64-linux-musl
-            target: x86_64-unknown-linux-musl
-          - platform: aarch64-linux
-            target: aarch64-unknown-linux-gnu
-          - platform: aarch64-linux-musl
-            target: aarch64-unknown-linux-musl
-          - platform: x86_64-darwin
-            target: x86_64-apple-darwin
-          - platform: arm64-darwin
-            target: aarch64-apple-darwin
-          - platform: x64-mingw-ucrt
-            target: x86_64-pc-windows-gnu
+          # - platform: x86_64-linux-musl
+          #   target: x86_64-unknown-linux-musl
+          # - platform: aarch64-linux
+          #   target: aarch64-unknown-linux-gnu
+          # - platform: aarch64-linux-musl
+          #   target: aarch64-unknown-linux-musl
+          # - platform: x86_64-darwin
+          #   target: x86_64-apple-darwin
+          # - platform: arm64-darwin
+          #   target: aarch64-apple-darwin
+          # - platform: x64-mingw-ucrt
+          #   target: x86_64-pc-windows-gnu
     runs-on: ubuntu-latest
     name: ${{ matrix.platform }}
     steps:
@@ -34,7 +34,7 @@ jobs:
       - name: Remove test dependencies
         run: sed -i '8,$ d' Gemfile
       - run: gem install rb_sys
-      - run: rb-sys-dock --ruby-versions 4.0,3.4,3.3 --platform ${{ matrix.platform }} --build
+      - run: rb-sys-dock --ruby-versions 4.0,3.4 --platform ${{ matrix.platform }} --build
       - uses: actions/upload-artifact@v6
         with:
           name: cross-gem-${{ matrix.platform }}
