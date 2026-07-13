@@ -8,11 +8,12 @@ use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::ffi_stream::FFI_ArrowArrayStream;
 use arrow_array::{RecordBatch, RecordBatchIterator};
 use arrow_schema::{Field, Schema};
-use magnus::{Class, Module, RArray, RClass, RHash, Ruby, TryConvert, Value, value::ReprValue};
+use magnus::{RArray, RHash, Ruby, TryConvert, Value, value::ReprValue};
 
 use crate::RbResult;
 use crate::arrow::{RbArrowArrayStream, RbArrowType};
 use crate::error::todo_error;
+use crate::utils::epoch;
 
 #[magnus::wrap(class = "Iceberg::ArrowRecordBatch")]
 pub struct RbArrowRecordBatch {
@@ -75,12 +76,7 @@ new_array!(new_array_float64, Float64Builder, f64);
 new_array!(new_array_utf8, StringBuilder, String);
 
 fn new_array_date32(ruby: &Ruby, data: RArray, field: &Arc<Field>) -> RbResult<Arc<dyn Array>> {
-    // TODO create constant
-    let epoch = ruby
-        .class_object()
-        .const_get::<_, RClass>("Date")?
-        .new_instance((1970, 1, 1))?;
-
+    let epoch = epoch(ruby)?;
     let name = ruby.str_new(field.name());
     let mut builder = Date32Builder::new();
     for row in data.into_iter() {

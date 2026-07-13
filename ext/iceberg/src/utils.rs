@@ -3,7 +3,7 @@ use iceberg::spec::{
     Schema, Snapshot, SortOrder, StatisticsFile, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
-use magnus::{Error as RbErr, IntoValue, Ruby, TryConvert, Value, prelude::*};
+use magnus::{Error as RbErr, IntoValue, RClass, Ruby, TryConvert, Value, prelude::*};
 
 use crate::RbResult;
 use crate::error::{to_rb_err, todo_error};
@@ -185,4 +185,10 @@ pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> RbResult<Value> {
         _ => return Err(todo_error()),
     };
     Ok(v)
+}
+
+pub fn epoch(ruby: &Ruby) -> RbResult<Value> {
+    ruby.class_object()
+        .const_get::<_, RClass>("Date")?
+        .new_instance((1970, 1, 1))
 }
