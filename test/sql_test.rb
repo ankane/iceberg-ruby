@@ -39,6 +39,30 @@ class SqlTest < Minitest::Test
     assert_match "UPDATE not supported for Base table", error.message
   end
 
+  def test_delete
+    create_events
+    error = assert_raises do
+      catalog.sql("DELETE FROM iceberg_ruby_test.events WHERE a = $1", [2])
+    end
+    assert_match "DELETE not supported for Base table", error.message
+  end
+
+  def test_view
+    create_events
+    error = assert_raises do
+      catalog.sql("CREATE VIEW iceberg_ruby_test.events_view AS SELECT a AS c, b AS d FROM iceberg_ruby_test.events")
+    end
+    assert_match "register_table does not support tables with data", error.message
+  end
+
+  def test_empty_view
+    catalog.sql("CREATE TABLE iceberg_ruby_test.events (a bigint, b text)")
+    catalog.sql("CREATE VIEW iceberg_ruby_test.events_view AS SELECT a AS c, b AS d FROM iceberg_ruby_test.events")
+    result = catalog.sql("SELECT * FROM iceberg_ruby_test.events_view")
+    # TODO fix
+    assert_equal [], result.columns
+  end
+
   def test_error
     error = assert_raises do
       catalog.sql("SELECT 123 AS a, 123 AS a")
