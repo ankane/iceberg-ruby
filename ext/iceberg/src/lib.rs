@@ -54,7 +54,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("rename_table", method!(RbCatalog::rename_table, 2))?;
     class.define_method("register_table", method!(RbCatalog::register_table, 2))?;
     #[cfg(feature = "datafusion")]
-    class.define_method("session_context", method!(RbCatalog::session_context, 0))?;
+    class.define_method("session_context", method!(RbCatalog::session_context, 1))?;
 
     #[cfg(feature = "datafusion")]
     {

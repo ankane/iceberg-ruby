@@ -8,7 +8,7 @@ class SqlTest < Minitest::Test
 
   def test_result
     create_events
-    result = catalog.sql("SELECT * FROM iceberg_ruby_test.events")
+    result = catalog.sql("SELECT * FROM events")
     assert_equal ["a", "b"], result.columns
     assert_equal [[1, "one"], [2, "two"], [3, "three"]], result.rows
     assert_equal [{"a" => 1, "b" => "one"}, {"a" => 2, "b" => "two"}, {"a" => 3, "b" => "three"}], result.to_a
@@ -39,7 +39,7 @@ class SqlTest < Minitest::Test
   def test_update
     create_events
     error = assert_raises(Iceberg::Error) do
-      catalog.sql("UPDATE iceberg_ruby_test.events SET b = $1 WHERE a = $2", ["two!", 2])
+      catalog.sql("UPDATE events SET b = $1 WHERE a = $2", ["two!", 2])
     end
     assert_match "UPDATE not supported for Base table", error.message
   end
@@ -47,7 +47,7 @@ class SqlTest < Minitest::Test
   def test_delete
     create_events
     error = assert_raises(Iceberg::Error) do
-      catalog.sql("DELETE FROM iceberg_ruby_test.events WHERE a = $1", [2])
+      catalog.sql("DELETE FROM events WHERE a = $1", [2])
     end
     assert_match "DELETE not supported for Base table", error.message
   end
@@ -55,15 +55,15 @@ class SqlTest < Minitest::Test
   def test_view
     create_events
     error = assert_raises(Iceberg::Error) do
-      catalog.sql("CREATE VIEW iceberg_ruby_test.events_view AS SELECT a AS c, b AS d FROM iceberg_ruby_test.events")
+      catalog.sql("CREATE VIEW events_view AS SELECT a AS c, b AS d FROM events")
     end
     assert_match "register_table does not support tables with data", error.message
   end
 
   def test_empty_view
-    catalog.sql("CREATE TABLE iceberg_ruby_test.events (a bigint, b text)")
-    catalog.sql("CREATE VIEW iceberg_ruby_test.events_view AS SELECT a AS c, b AS d FROM iceberg_ruby_test.events")
-    result = catalog.sql("SELECT * FROM iceberg_ruby_test.events_view")
+    catalog.sql("CREATE TABLE events (a bigint, b text)")
+    catalog.sql("CREATE VIEW events_view AS SELECT a AS c, b AS d FROM events")
+    result = catalog.sql("SELECT * FROM events_view")
     # TODO fix
     assert_equal [], result.columns
   end
@@ -85,12 +85,12 @@ class SqlTest < Minitest::Test
   private
 
   def create_events
-    catalog.sql("CREATE TABLE iceberg_ruby_test.events (a bigint, b text)")
+    catalog.sql("CREATE TABLE events (a bigint, b text)")
     load_events
   end
 
   def load_events
     params = [1, "one", 2, "two", 3, "three"]
-    catalog.sql("INSERT INTO iceberg_ruby_test.events VALUES ($1, $2), ($3, $4), ($5, $6)", params)
+    catalog.sql("INSERT INTO events VALUES ($1, $2), ($3, $4), ($5, $6)", params)
   end
 end

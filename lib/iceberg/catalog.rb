@@ -128,7 +128,7 @@ module Iceberg
     end
 
     def session_context
-      @session_context ||= @catalog.session_context
+      @session_context ||= @catalog.session_context(@default_namespace)
     end
   end
 end
