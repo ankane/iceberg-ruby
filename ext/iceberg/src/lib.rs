@@ -143,7 +143,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("snapshot", method!(RbTableScan::snapshot, 0))?;
     class.define_method("collect", method!(RbTableScan::collect, 0))?;
 
-    let class = module.define_class("RbSchema", ruby.class_object())?;
+    let class = module.define_class("Schema", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbSchema::new, 1))?;
     class.define_method("fields", method!(RbSchema::fields, 0))?;
     class.define_method("schema_id", method!(RbSchema::schema_id, 0))?;

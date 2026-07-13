@@ -3,9 +3,7 @@ use iceberg::spec::{
     Schema, Snapshot, SortOrder, StatisticsFile, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
-use magnus::{
-    Error as RbErr, IntoValue, RClass, RModule, RObject, Ruby, TryConvert, Value, prelude::*,
-};
+use magnus::{Error as RbErr, IntoValue, Ruby, TryConvert, Value, prelude::*};
 
 use crate::RbResult;
 use crate::error::{to_rb_err, todo_error};
@@ -42,13 +40,6 @@ impl TryConvert for Wrap<TableIdent> {
     }
 }
 
-impl TryConvert for Wrap<Schema> {
-    fn try_convert(ob: Value) -> RbResult<Self> {
-        let rb_schema: &RbSchema = RObject::try_convert(ob)?.ivar_get("@schema")?;
-        Ok(Wrap(rb_schema.schema.clone()))
-    }
-}
-
 pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> {
     if ob.is_nil() {
         return Ok(None);
@@ -73,15 +64,10 @@ pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> 
 }
 
 pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
-    ruby.class_object()
-        .const_get::<_, RModule>("Iceberg")?
-        .const_get::<_, RClass>("Schema")?
-        .funcall(
-            "new",
-            (RbSchema {
-                schema: schema.clone(),
-            },),
-        )
+    Ok(RbSchema {
+        schema: schema.clone(),
+    }
+    .into_value_with(ruby))
 }
 
 pub fn rb_snapshot(ruby: &Ruby, snapshot: &Snapshot) -> RbResult<Value> {

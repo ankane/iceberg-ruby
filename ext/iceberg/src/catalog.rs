@@ -3,7 +3,6 @@ use datafusion::common::ScalarValue;
 #[cfg(feature = "datafusion")]
 use datafusion::execution::context::{SessionConfig, SessionContext};
 use iceberg::memory::{MEMORY_CATALOG_WAREHOUSE, MemoryCatalogBuilder};
-use iceberg::spec::Schema;
 use iceberg::{Catalog, CatalogBuilder, MemoryCatalog, NamespaceIdent, TableCreation, TableIdent};
 #[cfg(feature = "glue")]
 use iceberg_catalog_glue::{GLUE_CATALOG_PROP_WAREHOUSE, GlueCatalog, GlueCatalogBuilder};
@@ -37,7 +36,7 @@ use crate::error::{datafusion_error, todo_error};
 use crate::result::collect_batches;
 use crate::runtime::runtime;
 use crate::utils::Wrap;
-use crate::{RbResult, RbTable};
+use crate::{RbResult, RbSchema, RbTable};
 
 pub enum RbCatalogType {
     #[cfg(feature = "glue")]
@@ -292,12 +291,12 @@ impl RbCatalog {
     pub fn create_table(
         &self,
         name: Wrap<TableIdent>,
-        schema: Wrap<Schema>,
+        schema: &RbSchema,
         location: Option<String>,
     ) -> RbResult<RbTable> {
         let creation = TableCreation::builder()
             .name(name.0.name)
-            .schema(schema.0)
+            .schema(schema.schema.clone())
             .location_opt(location)
             .build();
         let table = runtime()

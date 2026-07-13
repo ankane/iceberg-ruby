@@ -11,7 +11,7 @@ use crate::arrow::{RbArrowSchema, RbArrowType};
 use crate::error::{to_rb_err, todo_error};
 use crate::utils::{default_value, rb_literal};
 
-#[magnus::wrap(class = "Iceberg::RbSchema")]
+#[magnus::wrap(class = "Iceberg::Schema")]
 pub struct RbSchema {
     pub(crate) schema: Schema,
 }
@@ -22,7 +22,7 @@ pub struct RbNestedField {
 }
 
 impl RbSchema {
-    pub fn new(ob: Value) -> RbResult<Self> {
+    pub fn new(ruby: &Ruby, ob: Value) -> RbResult<Self> {
         let schema = if let Ok(arrow_schema) =
             ob.funcall::<_, _, RbArrowType<ArrowSchema>>("arrow_c_schema", ())
         {
@@ -31,8 +31,12 @@ impl RbSchema {
             let mut fields = Vec::new();
             let rb_fields = RArray::try_convert(ob)?;
             for rb_field in rb_fields {
-                let field = <&RbNestedField>::try_convert(rb_field)?.field.clone();
-                fields.push(field);
+                let nested_field = if let Some(v) = RHash::from_value(rb_field) {
+                    &RbNestedField::new(ruby, v)?
+                } else {
+                    <&RbNestedField>::try_convert(rb_field)?
+                };
+                fields.push(nested_field.field.clone());
             }
             Schema::builder()
                 .with_fields(fields)
@@ -45,9 +49,10 @@ impl RbSchema {
     pub fn fields(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
         let fields = ruby.ary_new();
         for field in self_.schema.as_struct().fields() {
-            fields.push(RbNestedField {
+            let nested_field = RbNestedField {
                 field: field.clone(),
-            })?;
+            };
+            fields.push(RbNestedField::to_h(ruby, &nested_field)?)?;
         }
         Ok(fields)
     }
