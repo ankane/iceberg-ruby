@@ -8,7 +8,7 @@ use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::RecordBatch;
 use futures::TryStreamExt;
 use iceberg::scan::TableScan;
-use magnus::{IntoValue, RArray, Ruby, Value};
+use magnus::{Class, IntoValue, Module, RArray, RClass, RModule, Ruby, Value};
 
 use crate::RbResult;
 use crate::error::{to_rb_err, todo_error};
@@ -63,7 +63,7 @@ impl RbTableScan {
         }
     }
 
-    pub fn collect(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+    pub fn collect(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
         let runtime = runtime();
         let scan = rb_self.scan.read().unwrap();
         let stream = runtime.block_on(scan.to_arrow()).map_err(to_rb_err)?;
@@ -73,7 +73,7 @@ impl RbTableScan {
     }
 }
 
-pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<RArray> {
+pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<Value> {
     let columns = ruby.ary_new();
     let rows = ruby.ary_new();
 
@@ -103,10 +103,10 @@ pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<RArra
         }
     }
 
-    let result = ruby.ary_new();
-    result.push(columns)?;
-    result.push(rows)?;
-    Ok(result)
+    ruby.class_object()
+        .const_get::<_, RModule>("Iceberg")?
+        .const_get::<_, RClass>("Result")?
+        .new_instance((columns, rows))
 }
 
 macro_rules! collect_column {

@@ -22,7 +22,7 @@ use iceberg_catalog_sql::{
 #[cfg(feature = "datafusion")]
 use iceberg_datafusion::IcebergCatalogProvider;
 #[cfg(feature = "datafusion")]
-use magnus::{RArray, Ruby};
+use magnus::{Ruby, Value};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
@@ -380,7 +380,7 @@ impl RbCatalog {
     }
 
     #[cfg(feature = "datafusion")]
-    pub fn sql(ruby: &Ruby, rb_self: &Self, sql: String) -> RbResult<RArray> {
+    pub fn sql(ruby: &Ruby, rb_self: &Self, sql: String) -> RbResult<Value> {
         let runtime = runtime();
 
         // TODO only create context once

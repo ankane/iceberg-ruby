@@ -16,7 +16,7 @@ module Iceberg
     end
 
     def collect
-      Result.new(*@scan.collect)
+      @scan.collect
     end
 
     def to_a
