@@ -1,6 +1,7 @@
 ## 0.11.3 (unreleased)
 
 - Added support for more types to `append` method
+- Added `default_namespace` option
 
 ## 0.11.2 (2026-05-14)
 
