@@ -14,7 +14,7 @@ use iceberg::writer::file_writer::location_generator::{
 };
 use iceberg::writer::file_writer::rolling_writer::RollingFileWriterBuilder;
 use iceberg::writer::{IcebergWriter, IcebergWriterBuilder};
-use magnus::{RArray, Ruby, Value};
+use magnus::{RArray, Ruby};
 use parquet::file::properties::WriterProperties;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -23,10 +23,16 @@ use uuid::Uuid;
 use crate::RbResult;
 use crate::arrow::RbArrowType;
 use crate::catalog::RbCatalog;
+use crate::encryption::RbEncryptedKey;
 use crate::error::to_rb_err;
+use crate::partitioning::RbPartitionSpec;
 use crate::ruby::GvlExt;
 use crate::runtime::runtime;
 use crate::scan::RbTableScan;
+use crate::schema::RbSchema;
+use crate::snapshot::RbSnapshot;
+use crate::sorting::RbSortOrder;
+use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
 use crate::utils::*;
 
 #[magnus::wrap(class = "Iceberg::RbTable")]
@@ -182,7 +188,7 @@ impl RbTableMetadata {
         Ok(schemas)
     }
 
-    pub fn schema_by_id(ruby: &Ruby, rb_self: &Self, schema_id: i32) -> RbResult<Option<Value>> {
+    pub fn schema_by_id(ruby: &Ruby, rb_self: &Self, schema_id: i32) -> RbResult<Option<RbSchema>> {
         let schema = match rb_self.metadata.schema_by_id(schema_id) {
             Some(s) => Some(rb_schema(ruby, s)?),
             None => None,
@@ -190,7 +196,7 @@ impl RbTableMetadata {
         Ok(schema)
     }
 
-    pub fn current_schema(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+    pub fn current_schema(ruby: &Ruby, rb_self: &Self) -> RbResult<RbSchema> {
         rb_schema(ruby, rb_self.metadata.current_schema())
     }
 
@@ -210,7 +216,7 @@ impl RbTableMetadata {
         ruby: &Ruby,
         rb_self: &Self,
         partition_spec_id: i32,
-    ) -> RbResult<Option<Value>> {
+    ) -> RbResult<Option<RbPartitionSpec>> {
         let partition_spec = match rb_self.metadata.partition_spec_by_id(partition_spec_id) {
             Some(s) => Some(rb_partition_spec(ruby, s)?),
             None => None,
@@ -218,7 +224,7 @@ impl RbTableMetadata {
         Ok(partition_spec)
     }
 
-    pub fn default_partition_spec(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+    pub fn default_partition_spec(ruby: &Ruby, rb_self: &Self) -> RbResult<RbPartitionSpec> {
         rb_partition_spec(ruby, rb_self.metadata.default_partition_spec())
     }
 
@@ -238,7 +244,7 @@ impl RbTableMetadata {
         ruby: &Ruby,
         rb_self: &Self,
         snapshot_id: i64,
-    ) -> RbResult<Option<Value>> {
+    ) -> RbResult<Option<RbSnapshot>> {
         let snapshot = match rb_self.metadata.snapshot_by_id(snapshot_id) {
             Some(s) => Some(rb_snapshot(ruby, s)?),
             None => None,
@@ -271,7 +277,7 @@ impl RbTableMetadata {
         Ok(metadata_logs)
     }
 
-    pub fn current_snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<Value>> {
+    pub fn current_snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<RbSnapshot>> {
         let snapshot = match rb_self.metadata.current_snapshot() {
             Some(s) => Some(rb_snapshot(ruby, s)?),
             None => None,
@@ -287,7 +293,7 @@ impl RbTableMetadata {
         ruby: &Ruby,
         rb_self: &Self,
         ref_name: String,
-    ) -> RbResult<Option<Value>> {
+    ) -> RbResult<Option<RbSnapshot>> {
         let snapshot = match rb_self.metadata.snapshot_for_ref(&ref_name) {
             Some(s) => Some(rb_snapshot(ruby, s)?),
             None => None,
@@ -307,7 +313,7 @@ impl RbTableMetadata {
         ruby: &Ruby,
         rb_self: &Self,
         sort_order_id: i64,
-    ) -> RbResult<Option<Value>> {
+    ) -> RbResult<Option<RbSortOrder>> {
         let sort_order = match rb_self.metadata.sort_order_by_id(sort_order_id) {
             Some(s) => Some(rb_sort_order(ruby, s)?),
             None => None,
@@ -315,7 +321,7 @@ impl RbTableMetadata {
         Ok(sort_order)
     }
 
-    pub fn default_sort_order(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+    pub fn default_sort_order(ruby: &Ruby, rb_self: &Self) -> RbResult<RbSortOrder> {
         rb_sort_order(ruby, rb_self.metadata.default_sort_order())
     }
 
@@ -347,7 +353,7 @@ impl RbTableMetadata {
         ruby: &Ruby,
         rb_self: &Self,
         snapshot_id: i64,
-    ) -> RbResult<Option<Value>> {
+    ) -> RbResult<Option<RbStatisticsFile>> {
         let statistics = match rb_self.metadata.statistics_for_snapshot(snapshot_id) {
             Some(s) => Some(rb_statistics_file(ruby, s)?),
             None => None,
@@ -359,7 +365,7 @@ impl RbTableMetadata {
         ruby: &Ruby,
         rb_self: &Self,
         snapshot_id: i64,
-    ) -> RbResult<Option<Value>> {
+    ) -> RbResult<Option<RbPartitionStatisticsFile>> {
         let statistics = match rb_self
             .metadata
             .partition_statistics_for_snapshot(snapshot_id)
@@ -378,7 +384,11 @@ impl RbTableMetadata {
         Ok(encryption_keys)
     }
 
-    pub fn encryption_key(ruby: &Ruby, rb_self: &Self, key_id: String) -> RbResult<Option<Value>> {
+    pub fn encryption_key(
+        ruby: &Ruby,
+        rb_self: &Self,
+        key_id: String,
+    ) -> RbResult<Option<RbEncryptedKey>> {
         let key = match rb_self.metadata.encryption_key(&key_id) {
             Some(k) => Some(rb_encrypted_key(ruby, k)?),
             None => None,

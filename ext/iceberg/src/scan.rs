@@ -9,6 +9,7 @@ use crate::error::to_rb_err;
 use crate::result::collect_batches;
 use crate::ruby::GvlExt;
 use crate::runtime::runtime;
+use crate::snapshot::RbSnapshot;
 use crate::utils::rb_snapshot;
 
 #[magnus::wrap(class = "Iceberg::RbTableScan")]
@@ -51,7 +52,7 @@ impl RbTableScan {
         Ok(files)
     }
 
-    pub fn snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<Value>> {
+    pub fn snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<RbSnapshot>> {
         match rb_self.scan.read().unwrap().snapshot() {
             Some(s) => Ok(Some(rb_snapshot(ruby, s)?)),
             None => Ok(None),

@@ -87,56 +87,55 @@ pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> 
     Ok(Some(lit))
 }
 
-pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
+pub fn rb_schema(_ruby: &Ruby, schema: &Schema) -> RbResult<RbSchema> {
     Ok(RbSchema {
         schema: schema.clone(),
-    }
-    .into_value_with(ruby))
+    })
 }
 
-pub fn rb_snapshot(ruby: &Ruby, snapshot: &Snapshot) -> RbResult<Value> {
+pub fn rb_snapshot(_ruby: &Ruby, snapshot: &Snapshot) -> RbResult<RbSnapshot> {
     Ok(RbSnapshot {
         snapshot: snapshot.clone(),
-    }
-    .into_value_with(ruby))
+    })
 }
 
-pub fn rb_partition_spec(ruby: &Ruby, partition_spec: &PartitionSpec) -> RbResult<Value> {
+pub fn rb_partition_spec(
+    _ruby: &Ruby,
+    partition_spec: &PartitionSpec,
+) -> RbResult<RbPartitionSpec> {
     Ok(RbPartitionSpec {
         spec: partition_spec.clone().into(),
-    }
-    .into_value_with(ruby))
+    })
 }
 
-pub fn rb_sort_order(ruby: &Ruby, sort_order: &SortOrder) -> RbResult<Value> {
+pub fn rb_sort_order(_ruby: &Ruby, sort_order: &SortOrder) -> RbResult<RbSortOrder> {
     Ok(RbSortOrder {
         order: sort_order.clone(),
-    }
-    .into_value_with(ruby))
+    })
 }
 
-pub fn rb_statistics_file(ruby: &Ruby, statistics_file: &StatisticsFile) -> RbResult<Value> {
+pub fn rb_statistics_file(
+    _ruby: &Ruby,
+    statistics_file: &StatisticsFile,
+) -> RbResult<RbStatisticsFile> {
     Ok(RbStatisticsFile {
         file: statistics_file.clone(),
-    }
-    .into_value_with(ruby))
+    })
 }
 
 pub fn rb_partition_statistics_file(
-    ruby: &Ruby,
+    _ruby: &Ruby,
     partition_statistics_file: &PartitionStatisticsFile,
-) -> RbResult<Value> {
+) -> RbResult<RbPartitionStatisticsFile> {
     Ok(RbPartitionStatisticsFile {
         file: partition_statistics_file.clone(),
-    }
-    .into_value_with(ruby))
+    })
 }
 
-pub fn rb_encrypted_key(ruby: &Ruby, encrypted_key: &EncryptedKey) -> RbResult<Value> {
+pub fn rb_encrypted_key(_ruby: &Ruby, encrypted_key: &EncryptedKey) -> RbResult<RbEncryptedKey> {
     Ok(RbEncryptedKey {
         key: encrypted_key.clone(),
-    }
-    .into_value_with(ruby))
+    })
 }
 
 pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> RbResult<Value> {
