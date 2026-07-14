@@ -54,7 +54,7 @@ impl RbTableScan {
 
     pub fn snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<RbSnapshot>> {
         match rb_self.scan.read().unwrap().snapshot() {
-            Some(s) => Ok(Some(rb_snapshot(ruby, s)?)),
+            Some(s) => Ok(Some(rb_snapshot(ruby, s))),
             None => Ok(None),
         }
     }

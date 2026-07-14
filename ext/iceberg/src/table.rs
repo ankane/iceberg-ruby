@@ -183,20 +183,20 @@ impl RbTableMetadata {
     pub fn schemas(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let schemas = ruby.ary_new();
         for s in rb_self.metadata.schemas_iter() {
-            schemas.push(rb_schema(ruby, s)?)?;
+            schemas.push(rb_schema(ruby, s))?;
         }
         Ok(schemas)
     }
 
     pub fn schema_by_id(ruby: &Ruby, rb_self: &Self, schema_id: i32) -> RbResult<Option<RbSchema>> {
         let schema = match rb_self.metadata.schema_by_id(schema_id) {
-            Some(s) => Some(rb_schema(ruby, s)?),
+            Some(s) => Some(rb_schema(ruby, s)),
             None => None,
         };
         Ok(schema)
     }
 
-    pub fn current_schema(ruby: &Ruby, rb_self: &Self) -> RbResult<RbSchema> {
+    pub fn current_schema(ruby: &Ruby, rb_self: &Self) -> RbSchema {
         rb_schema(ruby, rb_self.metadata.current_schema())
     }
 
@@ -207,7 +207,7 @@ impl RbTableMetadata {
     pub fn partition_specs(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let partition_specs = ruby.ary_new();
         for s in rb_self.metadata.partition_specs_iter() {
-            partition_specs.push(rb_partition_spec(ruby, s)?)?;
+            partition_specs.push(rb_partition_spec(ruby, s))?;
         }
         Ok(partition_specs)
     }
@@ -218,13 +218,13 @@ impl RbTableMetadata {
         partition_spec_id: i32,
     ) -> RbResult<Option<RbPartitionSpec>> {
         let partition_spec = match rb_self.metadata.partition_spec_by_id(partition_spec_id) {
-            Some(s) => Some(rb_partition_spec(ruby, s)?),
+            Some(s) => Some(rb_partition_spec(ruby, s)),
             None => None,
         };
         Ok(partition_spec)
     }
 
-    pub fn default_partition_spec(ruby: &Ruby, rb_self: &Self) -> RbResult<RbPartitionSpec> {
+    pub fn default_partition_spec(ruby: &Ruby, rb_self: &Self) -> RbPartitionSpec {
         rb_partition_spec(ruby, rb_self.metadata.default_partition_spec())
     }
 
@@ -235,7 +235,7 @@ impl RbTableMetadata {
     pub fn snapshots(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let snapshots = ruby.ary_new();
         for s in rb_self.metadata.snapshots() {
-            snapshots.push(rb_snapshot(ruby, s)?)?;
+            snapshots.push(rb_snapshot(ruby, s))?;
         }
         Ok(snapshots)
     }
@@ -246,7 +246,7 @@ impl RbTableMetadata {
         snapshot_id: i64,
     ) -> RbResult<Option<RbSnapshot>> {
         let snapshot = match rb_self.metadata.snapshot_by_id(snapshot_id) {
-            Some(s) => Some(rb_snapshot(ruby, s)?),
+            Some(s) => Some(rb_snapshot(ruby, s)),
             None => None,
         };
         Ok(snapshot)
@@ -279,7 +279,7 @@ impl RbTableMetadata {
 
     pub fn current_snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<RbSnapshot>> {
         let snapshot = match rb_self.metadata.current_snapshot() {
-            Some(s) => Some(rb_snapshot(ruby, s)?),
+            Some(s) => Some(rb_snapshot(ruby, s)),
             None => None,
         };
         Ok(snapshot)
@@ -295,7 +295,7 @@ impl RbTableMetadata {
         ref_name: String,
     ) -> RbResult<Option<RbSnapshot>> {
         let snapshot = match rb_self.metadata.snapshot_for_ref(&ref_name) {
-            Some(s) => Some(rb_snapshot(ruby, s)?),
+            Some(s) => Some(rb_snapshot(ruby, s)),
             None => None,
         };
         Ok(snapshot)
@@ -304,7 +304,7 @@ impl RbTableMetadata {
     pub fn sort_orders(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let sort_orders = ruby.ary_new();
         for s in rb_self.metadata.sort_orders_iter() {
-            sort_orders.push(rb_sort_order(ruby, s)?)?;
+            sort_orders.push(rb_sort_order(ruby, s))?;
         }
         Ok(sort_orders)
     }
@@ -315,13 +315,13 @@ impl RbTableMetadata {
         sort_order_id: i64,
     ) -> RbResult<Option<RbSortOrder>> {
         let sort_order = match rb_self.metadata.sort_order_by_id(sort_order_id) {
-            Some(s) => Some(rb_sort_order(ruby, s)?),
+            Some(s) => Some(rb_sort_order(ruby, s)),
             None => None,
         };
         Ok(sort_order)
     }
 
-    pub fn default_sort_order(ruby: &Ruby, rb_self: &Self) -> RbResult<RbSortOrder> {
+    pub fn default_sort_order(ruby: &Ruby, rb_self: &Self) -> RbSortOrder {
         rb_sort_order(ruby, rb_self.metadata.default_sort_order())
     }
 
@@ -336,7 +336,7 @@ impl RbTableMetadata {
     pub fn statistics(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let statistics = ruby.ary_new();
         for s in rb_self.metadata.statistics_iter() {
-            statistics.push(rb_statistics_file(ruby, s)?)?;
+            statistics.push(rb_statistics_file(ruby, s))?;
         }
         Ok(statistics)
     }
@@ -344,7 +344,7 @@ impl RbTableMetadata {
     pub fn partition_statistics(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let statistics = ruby.ary_new();
         for s in rb_self.metadata.partition_statistics_iter() {
-            statistics.push(rb_partition_statistics_file(ruby, s)?)?;
+            statistics.push(rb_partition_statistics_file(ruby, s))?;
         }
         Ok(statistics)
     }
@@ -355,7 +355,7 @@ impl RbTableMetadata {
         snapshot_id: i64,
     ) -> RbResult<Option<RbStatisticsFile>> {
         let statistics = match rb_self.metadata.statistics_for_snapshot(snapshot_id) {
-            Some(s) => Some(rb_statistics_file(ruby, s)?),
+            Some(s) => Some(rb_statistics_file(ruby, s)),
             None => None,
         };
         Ok(statistics)
@@ -370,7 +370,7 @@ impl RbTableMetadata {
             .metadata
             .partition_statistics_for_snapshot(snapshot_id)
         {
-            Some(s) => Some(rb_partition_statistics_file(ruby, s)?),
+            Some(s) => Some(rb_partition_statistics_file(ruby, s)),
             None => None,
         };
         Ok(statistics)
@@ -379,7 +379,7 @@ impl RbTableMetadata {
     pub fn encryption_keys(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let encryption_keys = ruby.ary_new();
         for k in rb_self.metadata.encryption_keys_iter() {
-            encryption_keys.push(rb_encrypted_key(ruby, k)?)?;
+            encryption_keys.push(rb_encrypted_key(ruby, k))?;
         }
         Ok(encryption_keys)
     }
@@ -390,7 +390,7 @@ impl RbTableMetadata {
         key_id: String,
     ) -> RbResult<Option<RbEncryptedKey>> {
         let key = match rb_self.metadata.encryption_key(&key_id) {
-            Some(k) => Some(rb_encrypted_key(ruby, k)?),
+            Some(k) => Some(rb_encrypted_key(ruby, k)),
             None => None,
         };
         Ok(key)
