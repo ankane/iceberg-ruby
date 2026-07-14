@@ -8,6 +8,7 @@ mod ruby;
 mod runtime;
 mod scan;
 mod schema;
+mod sorting;
 mod table;
 mod utils;
 
@@ -21,6 +22,7 @@ use crate::catalog::RbSessionContext;
 use crate::partitioning::{RbPartitionField, RbPartitionSpec};
 use crate::scan::RbTableScan;
 use crate::schema::{RbNestedField, RbSchema};
+use crate::sorting::{RbSortField, RbSortOrder};
 use crate::table::{RbTable, RbTableMetadata};
 
 type RbResult<T> = Result<T, RbErr>;
@@ -49,7 +51,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("update_namespace", method!(RbCatalog::update_namespace, 2))?;
     class.define_method("drop_namespace", method!(RbCatalog::drop_namespace, 1))?;
     class.define_method("list_tables", method!(RbCatalog::list_tables, 1))?;
-    class.define_method("create_table", method!(RbCatalog::create_table, 4))?;
+    class.define_method("create_table", method!(RbCatalog::create_table, 5))?;
     class.define_method("load_table", method!(RbCatalog::load_table, 1))?;
     class.define_method("drop_table", method!(RbCatalog::drop_table, 1))?;
     class.define_method("table_exists?", method!(RbCatalog::table_exists, 1))?;
@@ -228,6 +230,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("PartitionField", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbPartitionField::new, 1))?;
+
+    let class = module.define_class("SortOrder", ruby.class_object())?;
+    class.define_singleton_method("new", function!(RbSortOrder::new, 1))?;
+
+    let class = module.define_class("SortField", ruby.class_object())?;
+    class.define_singleton_method("new", function!(RbSortField::new, 1))?;
 
     Ok(())
 }

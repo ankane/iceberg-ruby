@@ -11,6 +11,7 @@ use crate::RbResult;
 use crate::error::{to_rb_err, todo_error};
 use crate::partitioning::RbPartitionSpec;
 use crate::schema::RbSchema;
+use crate::sorting::RbSortOrder;
 
 pub struct Wrap<T>(pub T);
 
@@ -113,18 +114,11 @@ pub fn rb_partition_spec(ruby: &Ruby, partition_spec: &PartitionSpec) -> RbResul
     .into_value_with(ruby))
 }
 
-// TODO add more fields
 pub fn rb_sort_order(ruby: &Ruby, sort_order: &SortOrder) -> RbResult<Value> {
-    let rb_sort_order = ruby.hash_new();
-    rb_sort_order.aset(ruby.to_symbol("order_id"), sort_order.order_id)?;
-    let rb_fields = ruby.ary_new();
-    for field in &sort_order.fields {
-        let rb_field = ruby.hash_new();
-        rb_field.aset(ruby.to_symbol("source_id"), field.source_id)?;
-        rb_fields.push(rb_field)?;
+    Ok(RbSortOrder {
+        order: sort_order.clone(),
     }
-    rb_sort_order.aset(ruby.to_symbol("fields"), rb_fields)?;
-    Ok(rb_sort_order.as_value())
+    .into_value_with(ruby))
 }
 
 pub fn rb_statistics_file(ruby: &Ruby, statistics_file: &StatisticsFile) -> RbResult<Value> {

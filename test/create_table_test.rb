@@ -120,6 +120,12 @@ class CreateTableTest < Minitest::Test
     catalog.create_table("events", schema: {"created_at" => "timestamp"}, partition_spec: partition_spec)
   end
 
+  def test_sort_order
+    sort_order = Iceberg::SortOrder.new([Iceberg::SortField.new(source_id: 1, transform: "identity")])
+    table = catalog.create_table("events", schema: {"id" => "integer"}, sort_order: sort_order)
+    table.default_sort_order
+  end
+
   def test_already_exists
     catalog.create_table("events")
     error = assert_raises(Iceberg::Error) do

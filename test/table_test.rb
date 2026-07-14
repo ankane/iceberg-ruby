@@ -21,7 +21,7 @@ class TableTest < Minitest::Test
     assert_equal 0, table.default_partition_spec_id
     assert_kind_of Integer, table.current_snapshot_id
     assert_kind_of Array, table.sort_orders
-    assert_kind_of Hash, table.default_sort_order
+    assert_kind_of Iceberg::SortOrder, table.default_sort_order
     assert_equal 0, table.default_sort_order_id
     assert_kind_of Hash, table.properties
     assert_kind_of Array, table.statistics
