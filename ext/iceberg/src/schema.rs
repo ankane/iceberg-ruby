@@ -9,9 +9,9 @@ use magnus::{
 };
 
 use crate::RbResult;
-use crate::arrow::{RbArrowSchema, RbArrowType};
+use crate::arrow::RbArrowSchema;
 use crate::error::to_rb_err;
-use crate::utils::{default_value, rb_literal};
+use crate::utils::{Wrap, default_value, rb_literal};
 
 #[magnus::wrap(class = "Iceberg::Schema")]
 pub struct RbSchema {
@@ -25,21 +25,20 @@ pub struct RbNestedField {
 
 impl RbSchema {
     pub fn new(ob: Value) -> RbResult<Self> {
-        let schema = if let Ok(arrow_schema) =
-            ob.funcall::<_, _, RbArrowType<ArrowSchema>>("arrow_c_schema", ())
-        {
-            arrow_schema_to_schema_auto_assign_ids(&arrow_schema.0).map_err(to_rb_err)?
-        } else {
-            let mut fields = Vec::new();
-            let rb_fields = RArray::try_convert(ob)?;
-            for rb_field in rb_fields {
-                fields.push(<&RbNestedField>::try_convert(rb_field)?.field.clone());
-            }
-            Schema::builder()
-                .with_fields(fields)
-                .build()
-                .map_err(to_rb_err)?
-        };
+        let schema =
+            if let Ok(arrow_schema) = ob.funcall::<_, _, Wrap<ArrowSchema>>("arrow_c_schema", ()) {
+                arrow_schema_to_schema_auto_assign_ids(&arrow_schema.0).map_err(to_rb_err)?
+            } else {
+                let mut fields = Vec::new();
+                let rb_fields = RArray::try_convert(ob)?;
+                for rb_field in rb_fields {
+                    fields.push(<&RbNestedField>::try_convert(rb_field)?.field.clone());
+                }
+                Schema::builder()
+                    .with_fields(fields)
+                    .build()
+                    .map_err(to_rb_err)?
+            };
         Ok(Self { schema })
     }
 

@@ -11,9 +11,9 @@ use arrow_schema::{Field as ArrowField, Schema as ArrowSchema, TimeUnit};
 use magnus::{RArray, RHash, RString, Ruby, TryConvert, Value, value::ReprValue};
 
 use crate::RbResult;
-use crate::arrow::{RbArrowArrayStream, RbArrowType};
+use crate::arrow::RbArrowArrayStream;
 use crate::error::todo_error;
-use crate::utils::date_to_i32;
+use crate::utils::{Wrap, date_to_i32};
 
 #[magnus::wrap(class = "Iceberg::ArrowRecordBatch")]
 pub struct RbArrowRecordBatch {
@@ -21,7 +21,7 @@ pub struct RbArrowRecordBatch {
 }
 
 impl RbArrowRecordBatch {
-    pub fn new(ruby: &Ruby, data: RArray, schema: RbArrowType<ArrowSchema>) -> RbResult<Self> {
+    pub fn new(ruby: &Ruby, data: RArray, schema: Wrap<ArrowSchema>) -> RbResult<Self> {
         let schema = Arc::new(schema.0);
         let mut columns = Vec::new();
         for field in &schema.fields {

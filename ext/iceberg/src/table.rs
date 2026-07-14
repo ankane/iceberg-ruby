@@ -21,7 +21,6 @@ use std::sync::{Arc, RwLock};
 use uuid::Uuid;
 
 use crate::RbResult;
-use crate::arrow::RbArrowType;
 use crate::catalog::RbCatalog;
 use crate::encryption::RbEncryptedKey;
 use crate::error::to_rb_err;
@@ -33,6 +32,7 @@ use crate::schema::RbSchema;
 use crate::snapshot::{RbMetadataLog, RbSnapshot, RbSnapshotLog};
 use crate::sorting::RbSortOrder;
 use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
+use crate::utils::Wrap;
 
 #[magnus::wrap(class = "Iceberg::RbTable")]
 pub struct RbTable {
@@ -53,7 +53,7 @@ impl RbTable {
     pub fn append(
         ruby: &Ruby,
         rb_self: &Self,
-        data: RbArrowType<ArrowArrayStreamReader>,
+        data: Wrap<ArrowArrayStreamReader>,
         catalog: &RbCatalog,
     ) -> RbResult<RbTable> {
         let table = ruby

@@ -4,6 +4,7 @@ use arrow_schema::ffi::FFI_ArrowSchema;
 use magnus::{Error as RbErr, Ruby, TryConvert, Value, prelude::*};
 
 use crate::RbResult;
+use crate::utils::Wrap;
 
 #[magnus::wrap(class = "Iceberg::ArrowArrayStream")]
 pub struct RbArrowArrayStream {
@@ -27,9 +28,7 @@ impl RbArrowSchema {
     }
 }
 
-pub struct RbArrowType<T>(pub T);
-
-impl TryConvert for RbArrowType<ArrowArrayStreamReader> {
+impl TryConvert for Wrap<ArrowArrayStreamReader> {
     fn try_convert(val: Value) -> RbResult<Self> {
         let ruby = Ruby::get_with(val);
         let addr: usize = val.funcall("to_i", ())?;
@@ -38,14 +37,13 @@ impl TryConvert for RbArrowType<ArrowArrayStreamReader> {
         let stream_ptr =
             Box::new(unsafe { std::ptr::replace(addr as _, FFI_ArrowArrayStream::empty()) });
 
-        Ok(RbArrowType(
-            ArrowArrayStreamReader::try_new(*stream_ptr)
-                .map_err(|e| RbErr::new(ruby.exception_arg_error(), e.to_string()))?,
-        ))
+        Ok(Wrap(ArrowArrayStreamReader::try_new(*stream_ptr).map_err(
+            |e| RbErr::new(ruby.exception_arg_error(), e.to_string()),
+        )?))
     }
 }
 
-impl TryConvert for RbArrowType<ArrowSchema> {
+impl TryConvert for Wrap<ArrowSchema> {
     fn try_convert(val: Value) -> RbResult<Self> {
         let ruby = Ruby::get_with(val);
         let addr: usize = val.funcall("to_i", ())?;
@@ -54,8 +52,8 @@ impl TryConvert for RbArrowType<ArrowSchema> {
         let schema_ptr =
             Box::new(unsafe { std::ptr::replace(addr as _, FFI_ArrowSchema::empty()) });
 
-        Ok(RbArrowType(ArrowSchema::try_from(&*schema_ptr).map_err(
-            |e| RbErr::new(ruby.exception_arg_error(), e.to_string()),
-        )?))
+        Ok(Wrap(ArrowSchema::try_from(&*schema_ptr).map_err(|e| {
+            RbErr::new(ruby.exception_arg_error(), e.to_string())
+        })?))
     }
 }
