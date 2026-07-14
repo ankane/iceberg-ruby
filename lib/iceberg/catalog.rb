@@ -62,9 +62,9 @@ module Iceberg
         fields =
           schema.map.with_index do |(k, v), i|
             {
-              id: i + 1,
+              field_id: i + 1,
               name: k.is_a?(Symbol) ? k.to_s : k,
-              type: v,
+              field_type: v,
               required: false
             }
           end

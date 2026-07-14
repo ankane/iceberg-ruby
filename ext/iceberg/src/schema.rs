@@ -88,7 +88,7 @@ impl RbSchema {
 
 impl RbNestedField {
     pub fn new(ruby: &Ruby, rb_field: RHash) -> RbResult<Self> {
-        let rb_type: Value = rb_field.aref(ruby.to_symbol("type"))?;
+        let rb_type: Value = rb_field.aref(ruby.to_symbol("field_type"))?;
         let field_type = if let Ok(s) = String::try_convert(rb_type) {
             match s.as_str() {
                 "boolean" => Type::Primitive(PrimitiveType::Boolean),
@@ -162,7 +162,7 @@ impl RbNestedField {
         let write_default = default_value(write_default, &field_type)?;
 
         let field = NestedField {
-            id: rb_field.aref(ruby.to_symbol("id"))?,
+            id: rb_field.aref(ruby.to_symbol("field_id"))?,
             name: rb_field.aref(ruby.to_symbol("name"))?,
             required: rb_field.aref(ruby.to_symbol("required"))?,
             field_type: field_type.into(),

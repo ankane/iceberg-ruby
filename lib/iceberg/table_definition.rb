@@ -26,9 +26,9 @@ module Iceberg
     def column(name, type, null: true, default: nil, comment: nil, limit: nil, precision: nil, scale: nil)
       type = type.to_s
       @fields << {
-        id: @fields.size + 1,
+        field_id: @fields.size + 1,
         name: name.to_s,
-        type: TYPE_ALIASES.fetch(type, type),
+        field_type: TYPE_ALIASES.fetch(type, type),
         required: !null,
         doc: comment,
         # no need for initial default (and not supported until v3)
