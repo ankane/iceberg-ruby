@@ -53,12 +53,26 @@ pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> 
                 PrimitiveType::Long => PrimitiveLiteral::Long(i64::try_convert(ob)?),
                 PrimitiveType::Float => PrimitiveLiteral::Float(f32::try_convert(ob)?.into()),
                 PrimitiveType::Double => PrimitiveLiteral::Double(f64::try_convert(ob)?.into()),
+                PrimitiveType::Decimal {
+                    precision: _,
+                    scale: _,
+                } => return Err(todo_error(field_type)),
+                PrimitiveType::Date => return Err(todo_error(field_type)),
+                PrimitiveType::Time => return Err(todo_error(field_type)),
+                PrimitiveType::Timestamp => return Err(todo_error(field_type)),
+                PrimitiveType::Timestamptz => return Err(todo_error(field_type)),
+                PrimitiveType::TimestampNs => return Err(todo_error(field_type)),
+                PrimitiveType::TimestamptzNs => return Err(todo_error(field_type)),
                 PrimitiveType::String => PrimitiveLiteral::String(String::try_convert(ob)?),
-                _ => return Err(todo_error(field_type)),
+                PrimitiveType::Uuid => return Err(todo_error(field_type)),
+                PrimitiveType::Fixed(_) => return Err(todo_error(field_type)),
+                PrimitiveType::Binary => return Err(todo_error(field_type)),
             };
             Literal::Primitive(pl)
         }
-        _ => return Err(todo_error(field_type)),
+        Type::Struct(_) => return Err(todo_error(field_type)),
+        Type::List(_) => return Err(todo_error(field_type)),
+        Type::Map(_) => return Err(todo_error(field_type)),
     };
     Ok(Some(lit))
 }
