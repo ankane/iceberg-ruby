@@ -227,13 +227,7 @@ impl RbTableMetadata {
     }
 
     pub fn history(ruby: &Ruby, rb_self: &Self) -> RArray {
-        ruby.ary_from_iter(
-            rb_self
-                .metadata
-                .history()
-                .iter()
-                .map(|s| RbSnapshotLog { log: s.clone() }),
-        )
+        ruby.ary_from_iter(rb_self.metadata.history().iter().map(RbSnapshotLog::from))
     }
 
     pub fn metadata_log(ruby: &Ruby, rb_self: &Self) -> RArray {
@@ -242,7 +236,7 @@ impl RbTableMetadata {
                 .metadata
                 .metadata_log()
                 .iter()
-                .map(|s| RbMetadataLog { log: s.clone() }),
+                .map(RbMetadataLog::from),
         )
     }
 

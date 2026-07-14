@@ -1,6 +1,6 @@
 use iceberg::spec::{
-    EncryptedKey, Literal, PartitionSpec, PartitionStatisticsFile, PrimitiveLiteral, PrimitiveType,
-    Schema, Snapshot, SortOrder, StatisticsFile, Transform, Type,
+    EncryptedKey, Literal, MetadataLog, PartitionSpec, PartitionStatisticsFile, PrimitiveLiteral,
+    PrimitiveType, Schema, Snapshot, SnapshotLog, SortOrder, StatisticsFile, Transform, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
 use magnus::{
@@ -13,7 +13,7 @@ use crate::encryption::RbEncryptedKey;
 use crate::error::{to_rb_err, todo_error};
 use crate::partitioning::RbPartitionSpec;
 use crate::schema::RbSchema;
-use crate::snapshot::RbSnapshot;
+use crate::snapshot::{RbMetadataLog, RbSnapshot, RbSnapshotLog};
 use crate::sorting::RbSortOrder;
 use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
 
@@ -120,6 +120,22 @@ impl From<&Arc<Snapshot>> for RbSnapshot {
     fn from(snapshot: &Arc<Snapshot>) -> Self {
         Self {
             snapshot: (**snapshot).clone(),
+        }
+    }
+}
+
+impl From<&SnapshotLog> for RbSnapshotLog {
+    fn from(snapshot_log: &SnapshotLog) -> Self {
+        Self {
+            log: snapshot_log.clone(),
+        }
+    }
+}
+
+impl From<&MetadataLog> for RbMetadataLog {
+    fn from(metadata_log: &MetadataLog) -> Self {
+        Self {
+            log: metadata_log.clone(),
         }
     }
 }
