@@ -111,6 +111,8 @@ pub fn collect_column_timestamp_ns(
     column: &Arc<dyn Array>,
     rows: RArray,
 ) -> RbResult<()> {
+    let time_class = ruby.class_object().const_get::<_, Value>("Time")?;
+    let time_unit = ruby.to_symbol("nsec");
     let array = column
         .as_any()
         .downcast_ref::<TimestampNanosecondArray>()
@@ -120,11 +122,7 @@ pub fn collect_column_timestamp_ns(
             Some(v) => {
                 let sec = v / 1_000_000_000;
                 let nsec = v % 1_000_000_000;
-                Some(
-                    ruby.class_object()
-                        .const_get::<_, Value>("Time")?
-                        .funcall("at", (sec, nsec, ruby.to_symbol("nsec")))?,
-                )
+                Some(time_class.funcall("at", (sec, nsec, time_unit))?)
             }
             None => None,
         };
