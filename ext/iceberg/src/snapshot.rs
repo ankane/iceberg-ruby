@@ -19,7 +19,7 @@ impl RbSnapshot {
     }
 
     pub fn manifest_list(&self) -> &str {
-        &self.snapshot.manifest_list()
+        self.snapshot.manifest_list()
     }
 
     pub fn schema_id(&self) -> Option<i32> {
