@@ -8,6 +8,7 @@ mod ruby;
 mod runtime;
 mod scan;
 mod schema;
+mod snapshot;
 mod sorting;
 mod table;
 mod utils;
@@ -22,6 +23,7 @@ use crate::catalog::RbSessionContext;
 use crate::partitioning::{RbPartitionField, RbPartitionSpec};
 use crate::scan::RbTableScan;
 use crate::schema::{RbNestedField, RbSchema};
+use crate::snapshot::RbSnapshot;
 use crate::sorting::{RbSortField, RbSortOrder};
 use crate::table::{RbTable, RbTableMetadata};
 
@@ -243,6 +245,16 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("SortField", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbSortField::new, 1))?;
     class.define_method("source_id", method!(RbSortField::source_id, 0))?;
+
+    let class = module.define_class("Snapshot", ruby.class_object())?;
+    class.define_method("snapshot_id", method!(RbSnapshot::snapshot_id, 0))?;
+    class.define_method(
+        "parent_snapshot_id",
+        method!(RbSnapshot::parent_snapshot_id, 0),
+    )?;
+    class.define_method("sequence_number", method!(RbSnapshot::sequence_number, 0))?;
+    class.define_method("manifest_list", method!(RbSnapshot::manifest_list, 0))?;
+    class.define_method("schema_id", method!(RbSnapshot::schema_id, 0))?;
 
     Ok(())
 }

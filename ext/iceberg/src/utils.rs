@@ -11,6 +11,7 @@ use crate::RbResult;
 use crate::error::{to_rb_err, todo_error};
 use crate::partitioning::RbPartitionSpec;
 use crate::schema::RbSchema;
+use crate::snapshot::RbSnapshot;
 use crate::sorting::RbSortOrder;
 
 pub struct Wrap<T>(pub T);
@@ -92,19 +93,10 @@ pub fn rb_schema(ruby: &Ruby, schema: &Schema) -> RbResult<Value> {
 }
 
 pub fn rb_snapshot(ruby: &Ruby, snapshot: &Snapshot) -> RbResult<Value> {
-    let rb_snapshot = ruby.hash_new();
-    rb_snapshot.aset(ruby.to_symbol("snapshot_id"), snapshot.snapshot_id())?;
-    rb_snapshot.aset(
-        ruby.to_symbol("parent_snapshot_id"),
-        snapshot.parent_snapshot_id(),
-    )?;
-    rb_snapshot.aset(
-        ruby.to_symbol("sequence_number"),
-        snapshot.sequence_number(),
-    )?;
-    rb_snapshot.aset(ruby.to_symbol("manifest_list"), snapshot.manifest_list())?;
-    rb_snapshot.aset(ruby.to_symbol("schema_id"), snapshot.schema_id())?;
-    Ok(rb_snapshot.as_value())
+    Ok(RbSnapshot {
+        snapshot: snapshot.clone(),
+    }
+    .into_value_with(ruby))
 }
 
 pub fn rb_partition_spec(ruby: &Ruby, partition_spec: &PartitionSpec) -> RbResult<Value> {

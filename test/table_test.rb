@@ -38,17 +38,17 @@ class TableTest < Minitest::Test
     assert_equal 1, snapshots.size
 
     snapshot = snapshots.last
-    assert_kind_of Integer, snapshot[:snapshot_id]
-    assert_nil snapshot.fetch(:parent_snapshot_id)
-    assert_equal 1, snapshot[:sequence_number]
+    assert_kind_of Integer, snapshot.snapshot_id
+    assert_nil snapshot.parent_snapshot_id
+    assert_equal 1, snapshot.sequence_number
     if s3tables?
-      assert_match "table-s3/metadata", snapshot[:manifest_list]
+      assert_match "table-s3/metadata", snapshot.manifest_list
     elsif glue?
-      assert_match "iceberg_ruby_test.db/events/metadata", snapshot[:manifest_list]
+      assert_match "iceberg_ruby_test.db/events/metadata", snapshot.manifest_list
     else
-      assert_match "iceberg_ruby_test/events/metadata", snapshot[:manifest_list]
+      assert_match "iceberg_ruby_test/events/metadata", snapshot.manifest_list
     end
-    assert_equal 0, snapshot[:schema_id]
+    assert_equal 0, snapshot.schema_id
   end
 
   def test_append
