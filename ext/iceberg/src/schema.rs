@@ -64,6 +64,10 @@ impl RbSchema {
         Ok(RbArrowSchema { schema })
     }
 
+    pub fn eq(&self, other: &Self) -> bool {
+        self.schema == other.schema
+    }
+
     pub fn inspect(ruby: &Ruby, self_: &Self) -> RbResult<String> {
         Ok(format!(
             "#<Iceberg::Schema fields={}>",
