@@ -8,7 +8,7 @@ class SchemaTest < Minitest::Test
   end
 
   def test_inspect
-    assert_match "#<Iceberg::Schema fields=", schema.inspect
+    assert_match "#<Iceberg::Schema fields=[#<Iceberg::NestedField field_id=1", schema.inspect
   end
 
   private
