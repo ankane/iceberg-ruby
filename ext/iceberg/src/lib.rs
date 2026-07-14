@@ -259,6 +259,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("sequence_number", method!(RbSnapshot::sequence_number, 0))?;
     class.define_method("manifest_list", method!(RbSnapshot::manifest_list, 0))?;
     class.define_method("schema_id", method!(RbSnapshot::schema_id, 0))?;
+    class.define_method("inspect", method!(RbSnapshot::inspect, 0))?;
 
     let class = module.define_class("EncryptedKey", ruby.class_object())?;
     class.define_method("key_id", method!(RbEncryptedKey::key_id, 0))?;
