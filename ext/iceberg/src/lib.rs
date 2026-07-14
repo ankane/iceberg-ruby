@@ -145,7 +145,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("Schema", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbSchema::new, 1))?;
-    class.define_method("fields", method!(RbSchema::fields, 0))?;
+    // TODO change to fields in 0.12.0
+    class.define_method("fields", method!(RbSchema::fields_hash, 0))?;
     class.define_method("schema_id", method!(RbSchema::schema_id, 0))?;
     class.define_method("arrow_c_schema", method!(RbSchema::arrow_c_schema, 0))?;
     class.define_method("inspect", method!(RbSchema::inspect, 0))?;

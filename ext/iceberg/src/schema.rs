@@ -52,12 +52,20 @@ impl RbSchema {
     pub fn fields(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
         let fields = ruby.ary_new();
         for field in self_.schema.as_struct().fields() {
-            let nested_field = RbNestedField {
+            fields.push(RbNestedField {
                 field: field.clone(),
-            };
-            fields.push(RbNestedField::to_h(ruby, &nested_field)?)?;
+            })?;
         }
         Ok(fields)
+    }
+
+    // TODO remove in 0.12.0
+    pub fn fields_hash(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
+        ruby.ary_try_from_iter(
+            Self::fields(ruby, self_)?
+                .into_iter()
+                .map(|v| v.funcall::<_, _, Value>("to_h", ())),
+        )
     }
 
     pub fn schema_id(&self) -> i32 {
