@@ -176,16 +176,12 @@ impl RbNestedField {
         })
     }
 
-    pub fn id(&self) -> i32 {
+    pub fn field_id(&self) -> i32 {
         self.field.id
     }
 
     pub fn name(ruby: &Ruby, self_: &Self) -> RString {
         ruby.str_new(&self_.field.name)
-    }
-
-    pub fn required(&self) -> bool {
-        self.field.required
     }
 
     pub fn field_type(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
@@ -285,6 +281,10 @@ impl RbNestedField {
         Ok(ruby.str_new(v))
     }
 
+    pub fn required(&self) -> bool {
+        self.field.required
+    }
+
     pub fn doc(ruby: &Ruby, self_: &Self) -> Option<RString> {
         self_.field.doc.as_ref().map(|v| ruby.str_new(v))
     }
@@ -309,19 +309,19 @@ impl RbNestedField {
 
     pub fn inspect(ruby: &Ruby, self_: &Self) -> RbResult<String> {
         Ok(format!(
-            "#<Iceberg::NestedField id={}, name={}, field_type={}, required={}, initial_default={}, write_default={}, doc={}>",
-            self_.id().into_value_with(ruby).inspect(),
+            "#<Iceberg::NestedField field_id={}, name={}, field_type={}, required={}, doc={}, initial_default={}, write_default={}>",
+            self_.field_id().into_value_with(ruby).inspect(),
             Self::name(ruby, self_).inspect(),
             Self::field_type(ruby, self_)?.inspect(),
             self_.required().into_value_with(ruby).inspect(),
+            Self::doc(ruby, self_)
+                .map(|v| v.as_value())
+                .unwrap_or(ruby.qnil().as_value())
+                .inspect(),
             Self::initial_default(ruby, self_)?
                 .unwrap_or(ruby.qnil().as_value())
                 .inspect(),
             Self::write_default(ruby, self_)?
-                .unwrap_or(ruby.qnil().as_value())
-                .inspect(),
-            Self::doc(ruby, self_)
-                .map(|v| v.as_value())
                 .unwrap_or(ruby.qnil().as_value())
                 .inspect(),
         ))
@@ -330,7 +330,7 @@ impl RbNestedField {
     // TODO remove in 0.12.0
     pub fn to_h(ruby: &Ruby, self_: &Self) -> RbResult<RHash> {
         let field = ruby.hash_new();
-        field.aset(ruby.to_symbol("id"), self_.id())?;
+        field.aset(ruby.to_symbol("id"), self_.field_id())?;
         field.aset(ruby.to_symbol("name"), RbNestedField::name(ruby, self_))?;
 
         field.aset(
