@@ -35,7 +35,9 @@ use crate::error::{datafusion_error, todo_error};
 #[cfg(feature = "datafusion")]
 use crate::result::collect_batches;
 use crate::runtime::runtime;
-use crate::utils::{Wrap, date_to_i32};
+use crate::utils::Wrap;
+#[cfg(feature = "datafusion")]
+use crate::utils::date_to_i32;
 use crate::{RbResult, RbSchema, RbTable};
 
 pub enum RbCatalogType {
