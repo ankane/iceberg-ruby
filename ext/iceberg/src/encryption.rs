@@ -20,12 +20,12 @@ impl RbEncryptedKey {
         self.key.properties().clone()
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
             "#<Iceberg::EncryptedKey key_id={}, encrypted_by_id={}, properties={}>",
-            self_.key_id().into_value_with(ruby).inspect(),
-            self_.encrypted_by_id().into_value_with(ruby).inspect(),
-            self_.properties().into_value_with(ruby).inspect(),
+            rb_self.key_id().into_value_with(ruby).inspect(),
+            rb_self.encrypted_by_id().into_value_with(ruby).inspect(),
+            rb_self.properties().into_value_with(ruby).inspect(),
         )
     }
 }

@@ -42,11 +42,11 @@ impl RbPartitionSpec {
         )
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
             "#<Iceberg::PartitionSpec spec_id={}, fields={}>",
-            self_.spec_id().into_value_with(ruby).inspect(),
-            Self::fields(ruby, self_).inspect(),
+            rb_self.spec_id().into_value_with(ruby).inspect(),
+            Self::fields(ruby, rb_self).inspect(),
         )
     }
 }
@@ -86,13 +86,13 @@ impl RbPartitionField {
         Ok(v)
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> RbResult<String> {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> RbResult<String> {
         Ok(format!(
             "#<Iceberg::PartitionField source_id={}, field_id={}, name={}, transform={}>",
-            self_.source_id().into_value_with(ruby).inspect(),
-            self_.field_id().into_value_with(ruby).inspect(),
-            self_.name().into_value_with(ruby).inspect(),
-            self_.transform()?.into_value_with(ruby).inspect(),
+            rb_self.source_id().into_value_with(ruby).inspect(),
+            rb_self.field_id().into_value_with(ruby).inspect(),
+            rb_self.name().into_value_with(ruby).inspect(),
+            rb_self.transform()?.into_value_with(ruby).inspect(),
         ))
     }
 }

@@ -28,13 +28,13 @@ impl RbStatisticsFile {
         self.file.file_footer_size_in_bytes
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
             "#<Iceberg::StatisticsFile snapshot_id={}, statistics_path={}, file_size_in_bytes={}, file_footer_size_in_bytes={}>",
-            self_.snapshot_id().into_value_with(ruby).inspect(),
-            self_.statistics_path().into_value_with(ruby).inspect(),
-            self_.file_size_in_bytes().into_value_with(ruby).inspect(),
-            self_
+            rb_self.snapshot_id().into_value_with(ruby).inspect(),
+            rb_self.statistics_path().into_value_with(ruby).inspect(),
+            rb_self.file_size_in_bytes().into_value_with(ruby).inspect(),
+            rb_self
                 .file_footer_size_in_bytes()
                 .into_value_with(ruby)
                 .inspect(),
@@ -55,12 +55,12 @@ impl RbPartitionStatisticsFile {
         self.file.file_size_in_bytes
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
             "#<Iceberg::PartitionStatisticsFile snapshot_id={}, statistics_path={}, file_size_in_bytes={}>",
-            self_.snapshot_id().into_value_with(ruby).inspect(),
-            self_.statistics_path().into_value_with(ruby).inspect(),
-            self_.file_size_in_bytes().into_value_with(ruby).inspect(),
+            rb_self.snapshot_id().into_value_with(ruby).inspect(),
+            rb_self.statistics_path().into_value_with(ruby).inspect(),
+            rb_self.file_size_in_bytes().into_value_with(ruby).inspect(),
         )
     }
 }

@@ -43,9 +43,9 @@ impl RbSchema {
         Ok(Self { schema })
     }
 
-    pub fn fields(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
+    pub fn fields(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
         let fields = ruby.ary_new();
-        for field in self_.schema.as_struct().fields() {
+        for field in rb_self.schema.as_struct().fields() {
             fields.push(RbNestedField {
                 field: field.clone(),
             })?;
@@ -67,10 +67,10 @@ impl RbSchema {
         self.schema == other.schema
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> RbResult<String> {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> RbResult<String> {
         Ok(format!(
             "#<Iceberg::Schema fields={}>",
-            Self::fields(ruby, self_)?.inspect()
+            Self::fields(ruby, rb_self)?.inspect()
         ))
     }
 }
@@ -139,9 +139,9 @@ impl RbNestedField {
         &self.field.name
     }
 
-    pub fn field_type(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
+    pub fn field_type(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
         let iceberg = ruby.class_object().const_get::<_, RModule>("Iceberg")?;
-        let field_type = &*self_.field.field_type;
+        let field_type = &*rb_self.field.field_type;
         let v = match field_type {
             Type::Primitive(ty) => match ty {
                 PrimitiveType::Boolean => iceberg
@@ -214,8 +214,8 @@ impl RbNestedField {
         self.field.doc.as_deref()
     }
 
-    pub fn initial_default(ruby: &Ruby, self_: &Self) -> RbResult<Option<Value>> {
-        self_
+    pub fn initial_default(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<Value>> {
+        rb_self
             .field
             .initial_default
             .as_ref()
@@ -223,8 +223,8 @@ impl RbNestedField {
             .transpose()
     }
 
-    pub fn write_default(ruby: &Ruby, self_: &Self) -> RbResult<Option<Value>> {
-        self_
+    pub fn write_default(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<Value>> {
+        rb_self
             .field
             .write_default
             .as_ref()
@@ -236,18 +236,18 @@ impl RbNestedField {
         self.field == other.field
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> RbResult<String> {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> RbResult<String> {
         Ok(format!(
             "#<Iceberg::NestedField field_id={}, name={}, field_type={}, required={}, doc={}, initial_default={}, write_default={}>",
-            self_.field_id().into_value_with(ruby).inspect(),
-            self_.name().into_value_with(ruby).inspect(),
-            Self::field_type(ruby, self_)?.inspect(),
-            self_.required().into_value_with(ruby).inspect(),
-            self_.doc().into_value_with(ruby).inspect(),
-            Self::initial_default(ruby, self_)?
+            rb_self.field_id().into_value_with(ruby).inspect(),
+            rb_self.name().into_value_with(ruby).inspect(),
+            Self::field_type(ruby, rb_self)?.inspect(),
+            rb_self.required().into_value_with(ruby).inspect(),
+            rb_self.doc().into_value_with(ruby).inspect(),
+            Self::initial_default(ruby, rb_self)?
                 .into_value_with(ruby)
                 .inspect(),
-            Self::write_default(ruby, self_)?
+            Self::write_default(ruby, rb_self)?
                 .into_value_with(ruby)
                 .inspect(),
         ))

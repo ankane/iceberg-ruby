@@ -37,13 +37,13 @@ impl RbSnapshot {
         self.snapshot.schema_id()
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
             "#<Iceberg::Snapshot snapshot_id={}, parent_snapshot_id={}, sequence_number={}, schema_id={}>",
-            self_.snapshot_id().into_value_with(ruby).inspect(),
-            self_.parent_snapshot_id().into_value_with(ruby).inspect(),
-            self_.sequence_number().into_value_with(ruby).inspect(),
-            self_.schema_id().into_value_with(ruby).inspect(),
+            rb_self.snapshot_id().into_value_with(ruby).inspect(),
+            rb_self.parent_snapshot_id().into_value_with(ruby).inspect(),
+            rb_self.sequence_number().into_value_with(ruby).inspect(),
+            rb_self.schema_id().into_value_with(ruby).inspect(),
         )
     }
 }
@@ -57,11 +57,11 @@ impl RbSnapshotLog {
         self.log.timestamp_ms
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
             "#<Iceberg::SnapshotLog snapshot_id={}, timestamp_ms={}>",
-            self_.snapshot_id().into_value_with(ruby).inspect(),
-            self_.timestamp_ms().into_value_with(ruby).inspect(),
+            rb_self.snapshot_id().into_value_with(ruby).inspect(),
+            rb_self.timestamp_ms().into_value_with(ruby).inspect(),
         )
     }
 }
@@ -75,11 +75,11 @@ impl RbMetadataLog {
         self.log.timestamp_ms
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
             "#<Iceberg::MetadataLog metadata_file={}, timestamp_ms={}>",
-            self_.metadata_file().into_value_with(ruby).inspect(),
-            self_.timestamp_ms().into_value_with(ruby).inspect(),
+            rb_self.metadata_file().into_value_with(ruby).inspect(),
+            rb_self.timestamp_ms().into_value_with(ruby).inspect(),
         )
     }
 }

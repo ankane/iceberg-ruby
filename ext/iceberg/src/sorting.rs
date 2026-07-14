@@ -42,10 +42,10 @@ impl RbSortOrder {
         )
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
             "#<Iceberg::SortOrder order_id={}>",
-            self_.order_id().into_value_with(ruby).inspect(),
+            rb_self.order_id().into_value_with(ruby).inspect(),
         )
     }
 }
@@ -70,10 +70,10 @@ impl RbSortField {
         self.field.source_id
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
             "#<Iceberg::SortField source_id={}>",
-            self_.source_id().into_value_with(ruby).inspect(),
+            rb_self.source_id().into_value_with(ruby).inspect(),
         )
     }
 }
