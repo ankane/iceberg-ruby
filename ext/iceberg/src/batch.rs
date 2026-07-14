@@ -2,13 +2,13 @@ use std::sync::Arc;
 
 use arrow::array::{
     Array, BooleanBuilder, Date32Builder, Float32Builder, Float64Builder, Int32Builder,
-    Int64Builder, StringBuilder, TimestampMicrosecondBuilder,
+    Int64Builder, LargeBinaryBuilder, StringBuilder, TimestampMicrosecondBuilder,
 };
 use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::ffi_stream::FFI_ArrowArrayStream;
 use arrow_array::{RecordBatch, RecordBatchIterator};
 use arrow_schema::{Field, Schema, TimeUnit};
-use magnus::{RArray, RHash, Ruby, TryConvert, Value, value::ReprValue};
+use magnus::{RArray, RHash, RString, Ruby, TryConvert, Value, value::ReprValue};
 
 use crate::RbResult;
 use crate::arrow::{RbArrowArrayStream, RbArrowType};
@@ -36,6 +36,7 @@ impl RbArrowRecordBatch {
                     new_array_timestamp_us(ruby, data, field)?
                 }
                 ArrowDataType::Utf8 => new_array_utf8(ruby, data, field)?,
+                ArrowDataType::LargeBinary => new_array_large_binary(ruby, data, field)?,
                 _ => return Err(todo_error(field.data_type())),
             };
             columns.push(array);
@@ -109,6 +110,25 @@ fn new_array_timestamp_us(
                 let usec: i64 = v.funcall("usec", ())?;
                 builder.append_value(sec * 1_000_000 + usec);
             }
+            None => builder.append_null(),
+        }
+    }
+    let array: Arc<dyn Array> = Arc::new(builder.finish());
+    Ok(array)
+}
+
+fn new_array_large_binary(
+    ruby: &Ruby,
+    data: RArray,
+    field: &Arc<Field>,
+) -> RbResult<Arc<dyn Array>> {
+    let name = ruby.str_new(field.name());
+    let mut builder = LargeBinaryBuilder::new();
+    for row in data.into_iter() {
+        let row = RHash::try_convert(row)?;
+        let value: Option<RString> = row.aref(name)?;
+        match value {
+            Some(v) => builder.append_value(unsafe { v.as_slice() }),
             None => builder.append_null(),
         }
     }

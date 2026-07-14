@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use arrow::array::{
     Array, BooleanArray, Date32Array, Float32Array, Float64Array, Int8Array, Int16Array,
-    Int32Array, Int64Array, StringArray, TimestampMicrosecondArray, TimestampNanosecondArray,
-    UInt8Array, UInt16Array, UInt32Array, UInt64Array,
+    Int32Array, Int64Array, LargeBinaryArray, StringArray, TimestampMicrosecondArray,
+    TimestampNanosecondArray, UInt8Array, UInt16Array, UInt32Array, UInt64Array,
 };
 use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::RecordBatch;
@@ -51,6 +51,7 @@ pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<Value
                     collect_column_timestamp_ns(ruby, column, rows)?
                 }
                 ArrowDataType::Utf8 => collect_column_utf8(ruby, column, rows)?,
+                ArrowDataType::LargeBinary => collect_column_large_binary(ruby, column, rows)?,
                 _ => return Err(todo_error(column.data_type())),
             }
         }
@@ -155,6 +156,19 @@ pub fn collect_column_timestamp_ns(
             None => None,
         };
         rows.entry::<RArray>(i.try_into().unwrap())?.push(value)?;
+    }
+    Ok(())
+}
+
+pub fn collect_column_large_binary(
+    ruby: &Ruby,
+    column: &Arc<dyn Array>,
+    rows: RArray,
+) -> RbResult<()> {
+    let array = column.as_any().downcast_ref::<LargeBinaryArray>().unwrap();
+    for (i, value) in array.iter().enumerate() {
+        rows.entry::<RArray>(i.try_into().unwrap())?
+            .push(value.map(|v| ruby.str_from_slice(v)))?;
     }
     Ok(())
 }
