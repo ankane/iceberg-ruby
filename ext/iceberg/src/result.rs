@@ -2,10 +2,12 @@ use std::sync::Arc;
 
 use arrow::array::{
     Array, BooleanArray, Date32Array, Float32Array, Float64Array, Int8Array, Int16Array,
-    Int32Array, Int64Array, StringArray, UInt8Array, UInt16Array, UInt32Array, UInt64Array,
+    Int32Array, Int64Array, StringArray, TimestampNanosecondArray, UInt8Array, UInt16Array,
+    UInt32Array, UInt64Array,
 };
 use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::RecordBatch;
+use arrow_schema::TimeUnit;
 use magnus::{Class, IntoValue, Module, RArray, RClass, RModule, Ruby, Value, value::ReprValue};
 
 use crate::RbResult;
@@ -42,6 +44,9 @@ pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<Value
                 ArrowDataType::Float32 => collect_column_float32(ruby, column, rows)?,
                 ArrowDataType::Float64 => collect_column_float64(ruby, column, rows)?,
                 ArrowDataType::Date32 => collect_column_date32(ruby, column, rows)?,
+                ArrowDataType::Timestamp(TimeUnit::Nanosecond, None) => {
+                    collect_column_timestamp_ns(ruby, column, rows)?
+                }
                 ArrowDataType::Utf8 => collect_column_utf8(ruby, column, rows)?,
                 _ => return Err(todo_error()),
             }
@@ -97,6 +102,33 @@ pub fn collect_column_date32(ruby: &Ruby, column: &Arc<dyn Array>, rows: RArray)
                 .map(|v| epoch.funcall::<_, _, Value>("+", (v,)))
                 .transpose()?,
         )?;
+    }
+    Ok(())
+}
+
+pub fn collect_column_timestamp_ns(
+    ruby: &Ruby,
+    column: &Arc<dyn Array>,
+    rows: RArray,
+) -> RbResult<()> {
+    let array = column
+        .as_any()
+        .downcast_ref::<TimestampNanosecondArray>()
+        .unwrap();
+    for (i, value) in array.iter().enumerate() {
+        let value: Option<Value> = match value {
+            Some(v) => {
+                let sec = v / 1_000_000_000;
+                let nsec = v % 1_000_000_000;
+                Some(
+                    ruby.class_object()
+                        .const_get::<_, Value>("Time")?
+                        .funcall("at", (sec, nsec, ruby.to_symbol("nsec")))?,
+                )
+            }
+            None => None,
+        };
+        rows.entry::<RArray>(i.try_into().unwrap())?.push(value)?;
     }
     Ok(())
 }
