@@ -38,6 +38,4 @@ module Iceberg
       "not implemented yet"
     end
   end
-
-  EPOCH = ::Date.new(1970, 1, 1)
 end

@@ -10,7 +10,7 @@ use magnus::{Class, IntoValue, Module, RArray, RClass, RModule, Ruby, Value, val
 
 use crate::RbResult;
 use crate::error::todo_error;
-use crate::utils::epoch;
+use crate::utils::EPOCH;
 
 pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<Value> {
     let columns = ruby.ary_new();
@@ -89,7 +89,7 @@ collect_column!(collect_column_float64, Float64Array);
 collect_column!(collect_column_utf8, StringArray);
 
 pub fn collect_column_date32(ruby: &Ruby, column: &Arc<dyn Array>, rows: RArray) -> RbResult<()> {
-    let epoch = epoch(ruby)?;
+    let epoch = ruby.get_inner(&EPOCH);
     let array = column.as_any().downcast_ref::<Date32Array>().unwrap();
     for (i, value) in array.iter().enumerate() {
         rows.entry::<RArray>(i.try_into().unwrap())?.push(

@@ -3,7 +3,7 @@ use iceberg::spec::{
     Schema, Snapshot, SortOrder, StatisticsFile, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
-use magnus::{Error as RbErr, IntoValue, RModule, Ruby, TryConvert, Value, prelude::*};
+use magnus::{Error as RbErr, IntoValue, RClass, Ruby, TryConvert, Value, prelude::*, value::Lazy};
 
 use crate::RbResult;
 use crate::error::{to_rb_err, todo_error};
@@ -187,14 +187,17 @@ pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> RbResult<Value> {
     Ok(v)
 }
 
-pub fn epoch(ruby: &Ruby) -> RbResult<Value> {
+pub static EPOCH: Lazy<Value> = Lazy::new(|ruby| {
     ruby.class_object()
-        .const_get::<_, RModule>("Iceberg")?
-        .const_get::<_, Value>("EPOCH")
-}
+        .const_get::<_, RClass>("Date")
+        .unwrap()
+        .new_instance((1970, 1, 1))
+        .unwrap()
+});
 
 pub fn date_to_i32(value: Value) -> RbResult<i32> {
+    let epoch = Ruby::get_with(value).get_inner(&EPOCH);
     value
-        .funcall::<_, _, Value>("-", (epoch(&Ruby::get_with(value))?,))?
+        .funcall::<_, _, Value>("-", (epoch,))?
         .funcall("to_i", ())
 }
