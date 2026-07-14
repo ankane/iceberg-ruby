@@ -1,10 +1,11 @@
+import os
 import pyarrow as pa
 from pyiceberg.catalog import load_catalog
 
 catalog = load_catalog(
     'main',
     type='rest',
-    uri='http://localhost:8181'
+    uri=os.getenv('REST_CATALOG_URI', 'http://localhost:8181')
 )
 
 a = pa.array([1, 2], type=pa.int64())

@@ -33,7 +33,7 @@ class PolarsTest < Minitest::Test
 
     table = catalog.load_table("events")
     expected = Polars::DataFrame.new({"c" => [1, 2, 3]})
-    assert_frame_equal expected, table.to_polars(_schema_changes: true).sort("c").collect
+    assert_frame_equal expected, table.to_polars.sort("c").collect
   end
 
   def test_append
