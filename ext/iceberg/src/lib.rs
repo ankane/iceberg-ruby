@@ -145,8 +145,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("Schema", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbSchema::new, 1))?;
-    // TODO change to fields in 0.12.0
-    class.define_method("fields", method!(RbSchema::fields_hash, 0))?;
+    class.define_method("fields", method!(RbSchema::fields, 0))?;
     class.define_method("schema_id", method!(RbSchema::schema_id, 0))?;
     class.define_method("arrow_c_schema", method!(RbSchema::arrow_c_schema, 0))?;
     class.define_method("inspect", method!(RbSchema::inspect, 0))?;
@@ -163,8 +162,8 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbNestedField::initial_default, 0),
     )?;
     class.define_method("write_default", method!(RbNestedField::write_default, 0))?;
+    class.define_method("==", method!(RbNestedField::eq, 1))?;
     class.define_method("inspect", method!(RbNestedField::inspect, 0))?;
-    class.define_method("to_h", method!(RbNestedField::to_h, 0))?;
 
     let class = module.define_class("ArrowSchema", ruby.class_object())?;
     class.define_method("to_i", method!(RbArrowSchema::to_i, 0))?;

@@ -3,8 +3,8 @@ require_relative "test_helper"
 class SchemaTest < Minitest::Test
   def test_fields
     fields = schema.fields
-    assert_equal ["a", "b"], fields.map { |v| v[:name] }
-    assert_equal ["int", "long"], fields.map { |v| v[:type] }
+    assert_equal ["a", "b"], fields.map(&:name)
+    assert_equal [Iceberg::IntType.new, Iceberg::LongType.new], fields.map(&:field_type)
   end
 
   def test_inspect

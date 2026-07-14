@@ -11,7 +11,7 @@ use magnus::{
 
 use crate::RbResult;
 use crate::arrow::{RbArrowSchema, RbArrowType};
-use crate::error::{to_rb_err, todo_error};
+use crate::error::to_rb_err;
 use crate::utils::{default_value, rb_literal};
 
 #[magnus::wrap(class = "Iceberg::Schema")]
@@ -52,15 +52,6 @@ impl RbSchema {
             })?;
         }
         Ok(fields)
-    }
-
-    // TODO remove in 0.12.0
-    pub fn fields_hash(ruby: &Ruby, self_: &Self) -> RbResult<RArray> {
-        ruby.ary_try_from_iter(
-            Self::fields(ruby, self_)?
-                .into_iter()
-                .map(|v| v.funcall::<_, _, Value>("to_h", ())),
-        )
     }
 
     pub fn schema_id(&self) -> i32 {
@@ -212,36 +203,6 @@ impl RbNestedField {
         Ok(v)
     }
 
-    // TODO remove in 0.12.0
-    pub fn field_type_str(ruby: &Ruby, self_: &Self) -> RbResult<RString> {
-        let field_type = &*self_.field.field_type;
-        let v = match field_type {
-            Type::Primitive(ty) => match ty {
-                PrimitiveType::Boolean => "boolean",
-                PrimitiveType::Int => "int",
-                PrimitiveType::Long => "long",
-                PrimitiveType::Float => "float",
-                PrimitiveType::Double => "double",
-                PrimitiveType::Decimal {
-                    precision: _,
-                    scale: _,
-                } => "decimal",
-                PrimitiveType::Date => "date",
-                PrimitiveType::Time => "time",
-                PrimitiveType::Timestamp => "timestamp",
-                PrimitiveType::Timestamptz => "timestamptz",
-                PrimitiveType::TimestampNs => "timestamp_ns",
-                PrimitiveType::TimestamptzNs => "timestamptz_ns",
-                PrimitiveType::String => "string",
-                PrimitiveType::Uuid => "uuid",
-                PrimitiveType::Fixed(_) => "fixed",
-                PrimitiveType::Binary => "binary",
-            },
-            _ => return Err(todo_error(field_type)),
-        };
-        Ok(ruby.str_new(v))
-    }
-
     pub fn required(&self) -> bool {
         self.field.required
     }
@@ -268,6 +229,10 @@ impl RbNestedField {
             .transpose()
     }
 
+    pub fn eq(&self, other: &Self) -> bool {
+        self.field == other.field
+    }
+
     pub fn inspect(ruby: &Ruby, self_: &Self) -> RbResult<String> {
         Ok(format!(
             "#<Iceberg::NestedField field_id={}, name={}, field_type={}, required={}, doc={}, initial_default={}, write_default={}>",
@@ -286,44 +251,5 @@ impl RbNestedField {
                 .unwrap_or(ruby.qnil().as_value())
                 .inspect(),
         ))
-    }
-
-    // TODO remove in 0.12.0
-    pub fn to_h(ruby: &Ruby, self_: &Self) -> RbResult<RHash> {
-        let field = ruby.hash_new();
-        field.aset(ruby.to_symbol("id"), self_.field_id())?;
-        field.aset(ruby.to_symbol("name"), RbNestedField::name(ruby, self_))?;
-
-        field.aset(
-            ruby.to_symbol("type"),
-            RbNestedField::field_type_str(ruby, self_)?,
-        )?;
-
-        field.aset(ruby.to_symbol("required"), self_.required())?;
-
-        field.aset(
-            ruby.to_symbol("initial_default"),
-            RbNestedField::initial_default(ruby, self_)?,
-        )?;
-
-        field.aset(
-            ruby.to_symbol("write_default"),
-            RbNestedField::write_default(ruby, self_)?,
-        )?;
-
-        field.aset(ruby.to_symbol("doc"), RbNestedField::doc(ruby, self_))?;
-
-        if let Type::Primitive(PrimitiveType::Fixed(limit)) = &*self_.field.field_type {
-            field.aset(ruby.to_symbol("limit"), *limit)?;
-        }
-
-        if let Type::Primitive(PrimitiveType::Decimal { precision, scale }) =
-            &*self_.field.field_type
-        {
-            field.aset(ruby.to_symbol("precision"), *precision)?;
-            field.aset(ruby.to_symbol("scale"), *scale)?;
-        }
-
-        Ok(field)
     }
 }

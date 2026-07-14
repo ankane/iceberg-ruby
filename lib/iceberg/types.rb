@@ -6,6 +6,9 @@ module Iceberg
   end
 
   class PrimitiveType < Type
+    def ==(other)
+      other.is_a?(self.class)
+    end
   end
 
   class BooleanType < PrimitiveType
@@ -29,6 +32,10 @@ module Iceberg
     def initialize(precision, scale)
       @precision = precision
       @scale = scale
+    end
+
+    def ==(other)
+      other.is_a?(self.class) && other.precision == @precision && other.scale == @scale
     end
 
     def inspect
@@ -65,6 +72,10 @@ module Iceberg
 
     def initialize(length)
       @length = length
+    end
+
+    def ==(other)
+      other.is_a?(self.class) && other.length == @length
     end
 
     def inspect

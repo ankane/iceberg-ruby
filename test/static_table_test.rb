@@ -3,8 +3,8 @@ require_relative "test_helper"
 class StaticTableTest < Minitest::Test
   def test_schema
     fields = static_table.schema.fields
-    assert_equal ["a", "b"], fields.map { |v| v[:name] }
-    assert_equal ["int", "string"], fields.map { |v| v[:type] }
+    assert_equal ["a", "b"], fields.map(&:name)
+    assert_equal [Iceberg::IntType.new, Iceberg::StringType.new], fields.map(&:field_type)
   end
 
   def test_location

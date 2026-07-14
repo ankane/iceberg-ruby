@@ -10,13 +10,13 @@ class CreateTableTest < Minitest::Test
       end
 
     fields = table.schema.fields
-    assert_equal [1, 2, 3], fields.map { |v| v[:id] }
-    assert_equal ["a", "b", "c"], fields.map { |v| v[:name] }
-    assert_equal ["int", "long", "string"], fields.map { |v| v[:type] }
-    assert_equal [false, true, false], fields.map { |v| v[:required] }
-    assert_equal [nil, nil, nil], fields.map { |v| v[:initial_default] }
-    assert_equal [1, nil, "Test"], fields.map { |v| v[:write_default] }
-    assert_equal [nil, "Hello", "World"], fields.map { |v| v[:doc] }
+    assert_equal [1, 2, 3], fields.map(&:field_id)
+    assert_equal ["a", "b", "c"], fields.map(&:name)
+    assert_equal [Iceberg::IntType.new, Iceberg::LongType.new, Iceberg::StringType.new], fields.map(&:field_type)
+    assert_equal [false, true, false], fields.map(&:required)
+    assert_equal [nil, nil, nil], fields.map(&:initial_default)
+    assert_equal [1, nil, "Test"], fields.map(&:write_default)
+    assert_equal [nil, "Hello", "World"], fields.map(&:doc)
   end
 
   def test_block_types
@@ -40,10 +40,24 @@ class CreateTableTest < Minitest::Test
       end
 
     fields = table.schema.fields
-    expected = %w[boolean int int long long float double date timestamp timestamptz string uuid binary]
-    assert_equal expected, fields.map { |v| v[:type] }
+    expected = [
+      Iceberg::BooleanType.new,
+      Iceberg::IntType.new,
+      Iceberg::IntType.new,
+      Iceberg::LongType.new,
+      Iceberg::LongType.new,
+      Iceberg::FloatType.new,
+      Iceberg::DoubleType.new,
+      Iceberg::DateType.new,
+      Iceberg::TimestampType.new,
+      Iceberg::TimestamptzType.new,
+      Iceberg::StringType.new,
+      Iceberg::UUIDType.new,
+      Iceberg::BinaryType.new
+    ]
+    assert_equal expected, fields.map(&:field_type)
     expected = [true, 1, 2, 1, 2, 1, 2, nil, nil, nil, "Test", nil, nil]
-    assert_equal expected, fields.map { |v| v[:write_default] }
+    assert_equal expected, fields.map(&:write_default)
   end
 
   def test_schema_hash
@@ -53,8 +67,8 @@ class CreateTableTest < Minitest::Test
     }
     table = catalog.create_table("events", schema: schema)
     fields = table.schema.fields
-    assert_equal ["a", "b"], fields.map { |v| v[:name] }
-    assert_equal ["int", "long"], fields.map { |v| v[:type] }
+    assert_equal ["a", "b"], fields.map(&:name)
+    assert_equal [Iceberg::IntType.new, Iceberg::LongType.new], fields.map(&:field_type)
   end
 
   def test_schema_hash_symbols
@@ -64,8 +78,8 @@ class CreateTableTest < Minitest::Test
     }
     table = catalog.create_table("events", schema: schema)
     fields = table.schema.fields
-    assert_equal ["a", "b"], fields.map { |v| v[:name] }
-    assert_equal ["int", "long"], fields.map { |v| v[:type] }
+    assert_equal ["a", "b"], fields.map(&:name)
+    assert_equal [Iceberg::IntType.new, Iceberg::LongType.new], fields.map(&:field_type)
   end
 
   def test_schema_hash_empty

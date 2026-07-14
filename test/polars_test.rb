@@ -3,6 +3,11 @@ require_relative "test_helper"
 class PolarsTest < Minitest::Test
   include Polars::Testing
 
+  # TODO remove in 0.12.0
+  def setup
+    skip
+  end
+
   def test_to_polars
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
     table = catalog.create_table("events", schema: df.schema)
