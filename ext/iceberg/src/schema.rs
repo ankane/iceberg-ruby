@@ -244,15 +244,12 @@ impl RbNestedField {
             Self::name(ruby, self_).inspect(),
             Self::field_type(ruby, self_)?.inspect(),
             self_.required().into_value_with(ruby).inspect(),
-            Self::doc(ruby, self_)
-                .map(|v| v.as_value())
-                .unwrap_or(ruby.qnil().as_value())
-                .inspect(),
+            Self::doc(ruby, self_).into_value_with(ruby).inspect(),
             Self::initial_default(ruby, self_)?
-                .unwrap_or(ruby.qnil().as_value())
+                .into_value_with(ruby)
                 .inspect(),
             Self::write_default(ruby, self_)?
-                .unwrap_or(ruby.qnil().as_value())
+                .into_value_with(ruby)
                 .inspect(),
         ))
     }
