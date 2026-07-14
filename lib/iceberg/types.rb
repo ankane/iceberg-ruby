@@ -63,4 +63,16 @@ module Iceberg
 
   class BinaryType < PrimitiveType
   end
+
+  class StructType < Type
+    # TODO improve
+  end
+
+  class ListType < Type
+    # TODO improve
+  end
+
+  class MapType < Type
+    # TODO improve
+  end
 end

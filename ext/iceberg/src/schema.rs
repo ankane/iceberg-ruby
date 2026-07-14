@@ -234,7 +234,15 @@ impl RbNestedField {
                     .const_get::<_, RClass>("BinaryType")?
                     .new_instance(())?,
             },
-            _ => return Err(todo_error(field_type)),
+            Type::Struct(_) => iceberg
+                .const_get::<_, RClass>("StructType")?
+                .new_instance(())?,
+            Type::List(_) => iceberg
+                .const_get::<_, RClass>("ListType")?
+                .new_instance(())?,
+            Type::Map(_) => iceberg
+                .const_get::<_, RClass>("MapType")?
+                .new_instance(())?,
         };
         Ok(v)
     }
