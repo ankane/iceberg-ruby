@@ -25,7 +25,7 @@ class SqlTest < Minitest::Test
     assert_kind_of Integer, catalog.sql("SELECT $1", [1]).rows[0][0]
     assert_kind_of Float, catalog.sql("SELECT $1", [1.0]).rows[0][0]
     assert_kind_of Date, catalog.sql("SELECT $1", [Date.today]).rows[0][0]
-    # assert_kind_of Time, catalog.sql("SELECT $1", [Time.now]).rows[0][0]
+    assert_kind_of Time, catalog.sql("SELECT $1", [Time.now]).rows[0][0]
     assert_kind_of TrueClass, catalog.sql("SELECT $1", [true]).rows[0][0]
     assert_kind_of FalseClass, catalog.sql("SELECT $1", [false]).rows[0][0]
     assert_kind_of NilClass, catalog.sql("SELECT $1", [nil]).rows[0][0]

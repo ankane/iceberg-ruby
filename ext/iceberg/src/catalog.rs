@@ -426,6 +426,13 @@ impl RbSessionContext {
                 params.push(ScalarValue::from(v.to_string()?));
             } else if unsafe { param.classname() } == "Date" {
                 params.push(ScalarValue::Date32(Some(date_to_i32(param)?)));
+            } else if unsafe { param.classname() } == "Time" {
+                let sec: i64 = param.funcall("to_i", ())?;
+                let nsec: i64 = param.funcall("nsec", ())?;
+                params.push(ScalarValue::TimestampNanosecond(
+                    Some(sec * 1_000_000_000 + nsec),
+                    None,
+                ));
             } else {
                 return Err(todo_error());
             }
