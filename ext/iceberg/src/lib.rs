@@ -26,7 +26,7 @@ use crate::encryption::RbEncryptedKey;
 use crate::partitioning::{RbPartitionField, RbPartitionSpec};
 use crate::scan::RbTableScan;
 use crate::schema::{RbNestedField, RbSchema};
-use crate::snapshot::RbSnapshot;
+use crate::snapshot::{RbMetadataLog, RbSnapshot, RbSnapshotLog};
 use crate::sorting::{RbSortField, RbSortOrder};
 use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
 use crate::table::{RbTable, RbTableMetadata};
@@ -265,6 +265,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("manifest_list", method!(RbSnapshot::manifest_list, 0))?;
     class.define_method("schema_id", method!(RbSnapshot::schema_id, 0))?;
     class.define_method("inspect", method!(RbSnapshot::inspect, 0))?;
+
+    let class = module.define_class("SnapshotLog", ruby.class_object())?;
+    class.define_method("snapshot_id", method!(RbSnapshotLog::snapshot_id, 0))?;
+    class.define_method("inspect", method!(RbSnapshotLog::inspect, 0))?;
+
+    let class = module.define_class("MetadataLog", ruby.class_object())?;
+    class.define_method("metadata_file", method!(RbMetadataLog::metadata_file, 0))?;
+    class.define_method("inspect", method!(RbMetadataLog::inspect, 0))?;
 
     let class = module.define_class("EncryptedKey", ruby.class_object())?;
     class.define_method("key_id", method!(RbEncryptedKey::key_id, 0))?;

@@ -1,9 +1,19 @@
-use iceberg::spec::Snapshot;
+use iceberg::spec::{MetadataLog, Snapshot, SnapshotLog};
 use magnus::{IntoValue, Ruby, value::ReprValue};
 
 #[magnus::wrap(class = "Iceberg::Snapshot")]
 pub struct RbSnapshot {
     pub(crate) snapshot: Snapshot,
+}
+
+#[magnus::wrap(class = "Iceberg::SnapshotLog")]
+pub struct RbSnapshotLog {
+    pub(crate) log: SnapshotLog,
+}
+
+#[magnus::wrap(class = "Iceberg::MetadataLog")]
+pub struct RbMetadataLog {
+    pub(crate) log: MetadataLog,
 }
 
 impl RbSnapshot {
@@ -34,6 +44,32 @@ impl RbSnapshot {
             self_.parent_snapshot_id().into_value_with(ruby).inspect(),
             self_.sequence_number().into_value_with(ruby).inspect(),
             self_.schema_id().into_value_with(ruby).inspect(),
+        )
+    }
+}
+
+impl RbSnapshotLog {
+    pub fn snapshot_id(&self) -> i64 {
+        self.log.snapshot_id
+    }
+
+    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+        format!(
+            "#<Iceberg::SnapshotLog snapshot_id={}>",
+            self_.snapshot_id().into_value_with(ruby).inspect(),
+        )
+    }
+}
+
+impl RbMetadataLog {
+    pub fn metadata_file(&self) -> &str {
+        &self.log.metadata_file
+    }
+
+    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+        format!(
+            "#<Iceberg::MetadataLog metadata_file={}>",
+            self_.metadata_file().into_value_with(ruby).inspect(),
         )
     }
 }

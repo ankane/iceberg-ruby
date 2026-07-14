@@ -30,7 +30,7 @@ use crate::ruby::GvlExt;
 use crate::runtime::runtime;
 use crate::scan::RbTableScan;
 use crate::schema::RbSchema;
-use crate::snapshot::RbSnapshot;
+use crate::snapshot::{RbMetadataLog, RbSnapshot, RbSnapshotLog};
 use crate::sorting::RbSortOrder;
 use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
 use crate::utils::*;
@@ -227,29 +227,24 @@ impl RbTableMetadata {
         self.metadata.snapshot_by_id(snapshot_id).map(rb_snapshot)
     }
 
-    pub fn history(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let history = ruby.ary_new();
-        for s in rb_self.metadata.history() {
-            let snapshot_log = ruby.hash_new();
-            snapshot_log.aset(ruby.to_symbol("snapshot_id"), s.snapshot_id)?;
-            // TODO timestamp
-            history.push(snapshot_log)?;
-        }
-        Ok(history)
+    pub fn history(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(
+            rb_self
+                .metadata
+                .history()
+                .into_iter()
+                .map(|s| RbSnapshotLog { log: s.clone() }),
+        )
     }
 
-    pub fn metadata_log(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let metadata_logs = ruby.ary_new();
-        for s in rb_self.metadata.metadata_log() {
-            let metadata_log = ruby.hash_new();
-            metadata_log.aset(
-                ruby.to_symbol("metadata_file"),
-                ruby.str_new(&s.metadata_file),
-            )?;
-            // TODO timestamp
-            metadata_logs.push(metadata_log)?;
-        }
-        Ok(metadata_logs)
+    pub fn metadata_log(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(
+            rb_self
+                .metadata
+                .metadata_log()
+                .into_iter()
+                .map(|s| RbMetadataLog { log: s.clone() }),
+        )
     }
 
     pub fn current_snapshot(&self) -> Option<RbSnapshot> {
