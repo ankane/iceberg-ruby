@@ -180,9 +180,14 @@ pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> RbResult<Value> {
             PrimitiveLiteral::Double(v) => v.into_value_with(ruby),
             PrimitiveLiteral::String(v) => ruby.str_new(v).as_value(),
             PrimitiveLiteral::Binary(v) => ruby.str_from_slice(v).as_value(),
-            _ => return Err(todo_error(literal)),
+            PrimitiveLiteral::Int128(_) => return Err(todo_error(literal)),
+            PrimitiveLiteral::UInt128(_) => return Err(todo_error(literal)),
+            PrimitiveLiteral::AboveMax => return Err(todo_error(literal)),
+            PrimitiveLiteral::BelowMin => return Err(todo_error(literal)),
         },
-        _ => return Err(todo_error(literal)),
+        Literal::Struct(_) => return Err(todo_error(literal)),
+        Literal::List(_) => return Err(todo_error(literal)),
+        Literal::Map(_) => return Err(todo_error(literal)),
     };
     Ok(v)
 }
