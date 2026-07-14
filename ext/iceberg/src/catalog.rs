@@ -434,7 +434,7 @@ impl RbSessionContext {
                     None,
                 ));
             } else {
-                return Err(todo_error());
+                return Err(todo_error(param));
             }
         }
 

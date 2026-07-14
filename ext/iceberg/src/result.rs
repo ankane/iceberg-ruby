@@ -51,7 +51,7 @@ pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<Value
                     collect_column_timestamp_ns(ruby, column, rows)?
                 }
                 ArrowDataType::Utf8 => collect_column_utf8(ruby, column, rows)?,
-                _ => return Err(todo_error()),
+                _ => return Err(todo_error(column.data_type())),
             }
         }
     }

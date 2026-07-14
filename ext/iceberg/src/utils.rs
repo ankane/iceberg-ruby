@@ -54,11 +54,11 @@ pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> 
                 PrimitiveType::Float => PrimitiveLiteral::Float(f32::try_convert(ob)?.into()),
                 PrimitiveType::Double => PrimitiveLiteral::Double(f64::try_convert(ob)?.into()),
                 PrimitiveType::String => PrimitiveLiteral::String(String::try_convert(ob)?),
-                _ => return Err(todo_error()),
+                _ => return Err(todo_error(field_type)),
             };
             Literal::Primitive(pl)
         }
-        _ => return Err(todo_error()),
+        _ => return Err(todo_error(field_type)),
     };
     Ok(Some(lit))
 }
@@ -180,9 +180,9 @@ pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> RbResult<Value> {
             PrimitiveLiteral::Double(v) => v.into_value_with(ruby),
             PrimitiveLiteral::String(v) => ruby.str_new(v).as_value(),
             PrimitiveLiteral::Binary(v) => ruby.str_from_slice(v).as_value(),
-            _ => return Err(todo_error()),
+            _ => return Err(todo_error(literal)),
         },
-        _ => return Err(todo_error()),
+        _ => return Err(todo_error(literal)),
     };
     Ok(v)
 }

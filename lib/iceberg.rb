@@ -34,8 +34,8 @@ module Iceberg
   class UnsupportedFeatureError < Error; end
 
   class Todo < Error
-    def message
-      "not implemented yet"
+    def initialize(message = "not implemented yet")
+      super(message)
     end
   end
 end

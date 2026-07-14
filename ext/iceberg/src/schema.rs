@@ -145,7 +145,8 @@ impl RbNestedField {
 
     // TODO return objects
     pub fn field_type(ruby: &Ruby, self_: &Self) -> RbResult<RString> {
-        let v = match &*self_.field.field_type {
+        let field_type = &*self_.field.field_type;
+        let v = match field_type {
             Type::Primitive(ty) => match ty {
                 PrimitiveType::Boolean => "boolean",
                 PrimitiveType::Int => "int",
@@ -167,7 +168,7 @@ impl RbNestedField {
                 PrimitiveType::Fixed(_) => "fixed",
                 PrimitiveType::Binary => "binary",
             },
-            _ => return Err(todo_error()),
+            _ => return Err(todo_error(field_type)),
         };
         Ok(ruby.str_new(v))
     }

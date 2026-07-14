@@ -36,7 +36,7 @@ impl RbArrowRecordBatch {
                     new_array_timestamp_us(ruby, data, field)?
                 }
                 ArrowDataType::Utf8 => new_array_utf8(ruby, data, field)?,
-                _ => return Err(todo_error()),
+                _ => return Err(todo_error(field.data_type())),
             };
             columns.push(array);
         }

@@ -37,7 +37,7 @@ pub fn to_rb_err(err: iceberg::Error) -> RbErr {
     RbErr::new(class, message)
 }
 
-pub fn todo_error() -> RbErr {
+pub fn todo_error<T: std::fmt::Debug>(message: T) -> RbErr {
     let class = Ruby::get()
         .unwrap()
         .class_object()
@@ -45,7 +45,7 @@ pub fn todo_error() -> RbErr {
         .unwrap()
         .const_get("Todo")
         .unwrap();
-    RbErr::new(class, "not implemented yet")
+    RbErr::new(class, format!("not implemented yet: {:?}", message))
 }
 
 #[cfg(feature = "datafusion")]
