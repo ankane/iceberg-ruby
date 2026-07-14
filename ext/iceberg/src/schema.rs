@@ -4,7 +4,9 @@ use arrow_schema::Schema as ArrowSchema;
 use arrow_schema::ffi::FFI_ArrowSchema;
 use iceberg::arrow::{arrow_schema_to_schema_auto_assign_ids, schema_to_arrow_schema};
 use iceberg::spec::{NestedField, PrimitiveType, Schema, Type};
-use magnus::{Error as RbErr, RArray, RHash, RString, Ruby, TryConvert, Value, prelude::*};
+use magnus::{
+    Error as RbErr, IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value, prelude::*,
+};
 
 use crate::RbResult;
 use crate::arrow::{RbArrowSchema, RbArrowType};
@@ -202,13 +204,24 @@ impl RbNestedField {
             .transpose()
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
-        format!(
-            "#<Iceberg::NestedField id={}, name={}, required={}>",
-            self_.id(),
-            RbNestedField::name(ruby, self_).inspect(),
-            self_.required(),
-        )
+    pub fn inspect(ruby: &Ruby, self_: &Self) -> RbResult<String> {
+        Ok(format!(
+            "#<Iceberg::NestedField id={}, name={}, field_type={}, required={}, initial_default={}, write_default={}, doc={}>",
+            self_.id().into_value_with(ruby).inspect(),
+            Self::name(ruby, self_).inspect(),
+            Self::field_type(ruby, self_)?.inspect(),
+            self_.required().into_value_with(ruby).inspect(),
+            Self::initial_default(ruby, self_)?
+                .unwrap_or(ruby.qnil().as_value())
+                .inspect(),
+            Self::write_default(ruby, self_)?
+                .unwrap_or(ruby.qnil().as_value())
+                .inspect(),
+            Self::doc(ruby, self_)
+                .map(|v| v.as_value())
+                .unwrap_or(ruby.qnil().as_value())
+                .inspect(),
+        ))
     }
 
     pub fn to_h(ruby: &Ruby, self_: &Self) -> RbResult<RHash> {
