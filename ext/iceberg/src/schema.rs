@@ -5,8 +5,7 @@ use arrow_schema::ffi::FFI_ArrowSchema;
 use iceberg::arrow::{arrow_schema_to_schema_auto_assign_ids, schema_to_arrow_schema};
 use iceberg::spec::{NestedField, PrimitiveType, Schema, Type};
 use magnus::{
-    Error as RbErr, IntoValue, RArray, RClass, RHash, RModule, RString, Ruby, TryConvert, Value,
-    prelude::*,
+    Error as RbErr, IntoValue, RArray, RClass, RHash, RModule, Ruby, TryConvert, Value, prelude::*,
 };
 
 use crate::RbResult;
@@ -136,8 +135,8 @@ impl RbNestedField {
         self.field.id
     }
 
-    pub fn name(ruby: &Ruby, self_: &Self) -> RString {
-        ruby.str_new(&self_.field.name)
+    pub fn name(&self) -> &str {
+        &self.field.name
     }
 
     pub fn field_type(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
@@ -211,8 +210,8 @@ impl RbNestedField {
         self.field.required
     }
 
-    pub fn doc(ruby: &Ruby, self_: &Self) -> Option<RString> {
-        self_.field.doc.as_ref().map(|v| ruby.str_new(v))
+    pub fn doc(&self) -> Option<&str> {
+        self.field.doc.as_deref()
     }
 
     pub fn initial_default(ruby: &Ruby, self_: &Self) -> RbResult<Option<Value>> {
@@ -241,10 +240,10 @@ impl RbNestedField {
         Ok(format!(
             "#<Iceberg::NestedField field_id={}, name={}, field_type={}, required={}, doc={}, initial_default={}, write_default={}>",
             self_.field_id().into_value_with(ruby).inspect(),
-            Self::name(ruby, self_).inspect(),
+            self_.name().into_value_with(ruby).inspect(),
             Self::field_type(ruby, self_)?.inspect(),
             self_.required().into_value_with(ruby).inspect(),
-            Self::doc(ruby, self_).into_value_with(ruby).inspect(),
+            self_.doc().into_value_with(ruby).inspect(),
             Self::initial_default(ruby, self_)?
                 .into_value_with(ruby)
                 .inspect(),
