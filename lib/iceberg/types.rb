@@ -32,7 +32,7 @@ module Iceberg
     end
 
     def inspect
-      "#<#{self.class.name} precision=#{@precision.inspect} scale=#{@scale.inspect}>"
+      "#<#{self.class.name} precision=#{@precision.inspect}, scale=#{@scale.inspect}>"
     end
   end
 
