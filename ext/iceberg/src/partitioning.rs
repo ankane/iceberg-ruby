@@ -26,6 +26,10 @@ impl RbPartitionSpec {
             .build();
         Ok(Self { spec })
     }
+
+    pub fn spec_id(&self) -> Option<i32> {
+        self.spec.spec_id()
+    }
 }
 
 impl RbPartitionField {

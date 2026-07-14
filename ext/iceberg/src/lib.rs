@@ -227,6 +227,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("PartitionSpec", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbPartitionSpec::new, 1))?;
+    class.define_method("spec_id", method!(RbPartitionSpec::spec_id, 0))?;
 
     let class = module.define_class("PartitionField", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbPartitionField::new, 1))?;
