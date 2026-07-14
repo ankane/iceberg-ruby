@@ -19,7 +19,7 @@ use crate::catalog::RbCatalog;
 use crate::catalog::RbSessionContext;
 use crate::scan::RbTableScan;
 use crate::schema::{RbNestedField, RbSchema};
-use crate::table::RbTable;
+use crate::table::{RbTable, RbTableMetadata};
 
 type RbResult<T> = Result<T, RbErr>;
 
@@ -65,78 +65,120 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("RbTable", ruby.class_object())?;
     class.define_method("scan", method!(RbTable::scan, 1))?;
     class.define_method("append", method!(RbTable::append, 2))?;
-    class.define_method("format_version", method!(RbTable::format_version, 0))?;
-    class.define_method("uuid", method!(RbTable::uuid, 0))?;
-    class.define_method("location", method!(RbTable::location, 0))?;
-    class.define_method(
-        "last_sequence_number",
-        method!(RbTable::last_sequence_number, 0),
-    )?;
-    class.define_method(
-        "next_sequence_number",
-        method!(RbTable::next_sequence_number, 0),
-    )?;
-    class.define_method("last_column_id", method!(RbTable::last_column_id, 0))?;
-    class.define_method("last_partition_id", method!(RbTable::last_partition_id, 0))?;
-    class.define_method("last_updated_ms", method!(RbTable::last_updated_ms, 0))?;
-    class.define_method("schemas", method!(RbTable::schemas, 0))?;
-    class.define_method("schema_by_id", method!(RbTable::schema_by_id, 1))?;
-    class.define_method("current_schema", method!(RbTable::current_schema, 0))?;
-    class.define_method("current_schema_id", method!(RbTable::current_schema_id, 0))?;
-    class.define_method("partition_specs", method!(RbTable::partition_specs, 0))?;
-    class.define_method(
-        "partition_spec_by_id",
-        method!(RbTable::partition_spec_by_id, 1),
-    )?;
-    class.define_method(
-        "default_partition_spec",
-        method!(RbTable::default_partition_spec, 0),
-    )?;
-    class.define_method(
-        "default_partition_spec_id",
-        method!(RbTable::default_partition_spec_id, 0),
-    )?;
-    class.define_method("snapshots", method!(RbTable::snapshots, 0))?;
-    class.define_method("snapshot_by_id", method!(RbTable::snapshot_by_id, 1))?;
-    class.define_method("history", method!(RbTable::history, 0))?;
-    class.define_method("metadata_log", method!(RbTable::metadata_log, 0))?;
-    class.define_method("current_snapshot", method!(RbTable::current_snapshot, 0))?;
-    class.define_method(
-        "current_snapshot_id",
-        method!(RbTable::current_snapshot_id, 0),
-    )?;
-    class.define_method("snapshot_for_ref", method!(RbTable::snapshot_for_ref, 1))?;
-    class.define_method("sort_orders", method!(RbTable::sort_orders, 0))?;
-    class.define_method("sort_order_by_id", method!(RbTable::sort_order_by_id, 1))?;
-    class.define_method(
-        "default_sort_order",
-        method!(RbTable::default_sort_order, 0),
-    )?;
-    class.define_method(
-        "default_sort_order_id",
-        method!(RbTable::default_sort_order_id, 0),
-    )?;
-    class.define_method("properties", method!(RbTable::properties, 0))?;
-    class.define_method("statistics", method!(RbTable::statistics, 0))?;
-    class.define_method(
-        "partition_statistics",
-        method!(RbTable::partition_statistics, 0),
-    )?;
-    class.define_method(
-        "statistics_for_snapshot",
-        method!(RbTable::statistics_for_snapshot, 1),
-    )?;
-    class.define_method(
-        "partition_statistics_for_snapshot",
-        method!(RbTable::partition_statistics_for_snapshot, 1),
-    )?;
-    class.define_method("encryption_keys", method!(RbTable::encryption_keys, 0))?;
-    class.define_method("encryption_key", method!(RbTable::encryption_key, 1))?;
-    class.define_method("next_row_id", method!(RbTable::next_row_id, 0))?;
+    class.define_method("metadata", method!(RbTable::metadata, 0))?;
     class.define_singleton_method(
         "from_metadata_file",
         function!(RbTable::from_metadata_file, 1),
     )?;
+
+    let class = module.define_class("TableMetadata", ruby.class_object())?;
+    class.define_method(
+        "format_version",
+        method!(RbTableMetadata::format_version, 0),
+    )?;
+    class.define_method("uuid", method!(RbTableMetadata::uuid, 0))?;
+    class.define_method("location", method!(RbTableMetadata::location, 0))?;
+    class.define_method(
+        "last_sequence_number",
+        method!(RbTableMetadata::last_sequence_number, 0),
+    )?;
+    class.define_method(
+        "next_sequence_number",
+        method!(RbTableMetadata::next_sequence_number, 0),
+    )?;
+    class.define_method(
+        "last_column_id",
+        method!(RbTableMetadata::last_column_id, 0),
+    )?;
+    class.define_method(
+        "last_partition_id",
+        method!(RbTableMetadata::last_partition_id, 0),
+    )?;
+    class.define_method(
+        "last_updated_ms",
+        method!(RbTableMetadata::last_updated_ms, 0),
+    )?;
+    class.define_method("schemas", method!(RbTableMetadata::schemas, 0))?;
+    class.define_method("schema_by_id", method!(RbTableMetadata::schema_by_id, 1))?;
+    class.define_method(
+        "current_schema",
+        method!(RbTableMetadata::current_schema, 0),
+    )?;
+    class.define_method(
+        "current_schema_id",
+        method!(RbTableMetadata::current_schema_id, 0),
+    )?;
+    class.define_method(
+        "partition_specs",
+        method!(RbTableMetadata::partition_specs, 0),
+    )?;
+    class.define_method(
+        "partition_spec_by_id",
+        method!(RbTableMetadata::partition_spec_by_id, 1),
+    )?;
+    class.define_method(
+        "default_partition_spec",
+        method!(RbTableMetadata::default_partition_spec, 0),
+    )?;
+    class.define_method(
+        "default_partition_spec_id",
+        method!(RbTableMetadata::default_partition_spec_id, 0),
+    )?;
+    class.define_method("snapshots", method!(RbTableMetadata::snapshots, 0))?;
+    class.define_method(
+        "snapshot_by_id",
+        method!(RbTableMetadata::snapshot_by_id, 1),
+    )?;
+    class.define_method("history", method!(RbTableMetadata::history, 0))?;
+    class.define_method("metadata_log", method!(RbTableMetadata::metadata_log, 0))?;
+    class.define_method(
+        "current_snapshot",
+        method!(RbTableMetadata::current_snapshot, 0),
+    )?;
+    class.define_method(
+        "current_snapshot_id",
+        method!(RbTableMetadata::current_snapshot_id, 0),
+    )?;
+    class.define_method(
+        "snapshot_for_ref",
+        method!(RbTableMetadata::snapshot_for_ref, 1),
+    )?;
+    class.define_method("sort_orders", method!(RbTableMetadata::sort_orders, 0))?;
+    class.define_method(
+        "sort_order_by_id",
+        method!(RbTableMetadata::sort_order_by_id, 1),
+    )?;
+    class.define_method(
+        "default_sort_order",
+        method!(RbTableMetadata::default_sort_order, 0),
+    )?;
+    class.define_method(
+        "default_sort_order_id",
+        method!(RbTableMetadata::default_sort_order_id, 0),
+    )?;
+    class.define_method("properties", method!(RbTableMetadata::properties, 0))?;
+    class.define_method("statistics", method!(RbTableMetadata::statistics, 0))?;
+    class.define_method(
+        "partition_statistics",
+        method!(RbTableMetadata::partition_statistics, 0),
+    )?;
+    class.define_method(
+        "statistics_for_snapshot",
+        method!(RbTableMetadata::statistics_for_snapshot, 1),
+    )?;
+    class.define_method(
+        "partition_statistics_for_snapshot",
+        method!(RbTableMetadata::partition_statistics_for_snapshot, 1),
+    )?;
+    class.define_method(
+        "encryption_keys",
+        method!(RbTableMetadata::encryption_keys, 0),
+    )?;
+    class.define_method(
+        "encryption_key",
+        method!(RbTableMetadata::encryption_key, 1),
+    )?;
+    class.define_method("next_row_id", method!(RbTableMetadata::next_row_id, 0))?;
 
     let class = module.define_class("RbTableScan", ruby.class_object())?;
     class.define_method("plan_files", method!(RbTableScan::plan_files, 0))?;

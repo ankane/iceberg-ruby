@@ -4,7 +4,7 @@ use arrow_cast::cast;
 use arrow_schema::{ArrowError, DataType, Field, Schema};
 use iceberg::TableIdent;
 use iceberg::io::FileIO;
-use iceberg::spec::FormatVersion;
+use iceberg::spec::{FormatVersion, TableMetadata};
 use iceberg::table::{StaticTable, Table};
 use iceberg::transaction::{ApplyTransactionAction, Transaction};
 use iceberg::writer::base_writer::data_file_writer::DataFileWriterBuilder;
@@ -110,346 +110,10 @@ impl RbTable {
         })
     }
 
-    pub fn format_version(&self) -> i32 {
-        match self.table.read().unwrap().metadata().format_version() {
-            FormatVersion::V1 => 1,
-            FormatVersion::V2 => 2,
-            FormatVersion::V3 => 3,
+    pub fn metadata(&self) -> RbTableMetadata {
+        RbTableMetadata {
+            metadata: self.table.read().unwrap().metadata().clone(),
         }
-    }
-
-    pub fn uuid(&self) -> String {
-        self.table.read().unwrap().metadata().uuid().to_string()
-    }
-
-    pub fn location(&self) -> String {
-        self.table.read().unwrap().metadata().location().to_string()
-    }
-
-    pub fn last_sequence_number(&self) -> i64 {
-        self.table.read().unwrap().metadata().last_sequence_number()
-    }
-
-    pub fn next_sequence_number(&self) -> i64 {
-        self.table.read().unwrap().metadata().next_sequence_number()
-    }
-
-    pub fn last_column_id(&self) -> i32 {
-        self.table.read().unwrap().metadata().last_column_id()
-    }
-
-    pub fn last_partition_id(&self) -> i32 {
-        self.table.read().unwrap().metadata().last_partition_id()
-    }
-
-    pub fn last_updated_ms(&self) -> i64 {
-        self.table.read().unwrap().metadata().last_updated_ms()
-    }
-
-    pub fn schemas(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let schemas = ruby.ary_new();
-        for s in rb_self.table.read().unwrap().metadata().schemas_iter() {
-            schemas.push(rb_schema(ruby, s)?)?;
-        }
-        Ok(schemas)
-    }
-
-    pub fn schema_by_id(ruby: &Ruby, rb_self: &Self, schema_id: i32) -> RbResult<Option<Value>> {
-        let schema = match rb_self
-            .table
-            .read()
-            .unwrap()
-            .metadata()
-            .schema_by_id(schema_id)
-        {
-            Some(s) => Some(rb_schema(ruby, s)?),
-            None => None,
-        };
-        Ok(schema)
-    }
-
-    pub fn current_schema(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
-        rb_schema(
-            ruby,
-            rb_self.table.read().unwrap().metadata().current_schema(),
-        )
-    }
-
-    pub fn current_schema_id(&self) -> i32 {
-        self.table.read().unwrap().metadata().current_schema_id()
-    }
-
-    pub fn partition_specs(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let partition_specs = ruby.ary_new();
-        for s in rb_self
-            .table
-            .read()
-            .unwrap()
-            .metadata()
-            .partition_specs_iter()
-        {
-            partition_specs.push(rb_partition_spec(ruby, s)?)?;
-        }
-        Ok(partition_specs)
-    }
-
-    pub fn partition_spec_by_id(
-        ruby: &Ruby,
-        rb_self: &Self,
-        partition_spec_id: i32,
-    ) -> RbResult<Option<Value>> {
-        let partition_spec = match rb_self
-            .table
-            .read()
-            .unwrap()
-            .metadata()
-            .partition_spec_by_id(partition_spec_id)
-        {
-            Some(s) => Some(rb_partition_spec(ruby, s)?),
-            None => None,
-        };
-        Ok(partition_spec)
-    }
-
-    pub fn default_partition_spec(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
-        rb_partition_spec(
-            ruby,
-            rb_self
-                .table
-                .read()
-                .unwrap()
-                .metadata()
-                .default_partition_spec(),
-        )
-    }
-
-    pub fn default_partition_spec_id(&self) -> i32 {
-        self.table
-            .read()
-            .unwrap()
-            .metadata()
-            .default_partition_spec_id()
-    }
-
-    pub fn snapshots(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let snapshots = ruby.ary_new();
-        for s in rb_self.table.read().unwrap().metadata().snapshots() {
-            snapshots.push(rb_snapshot(ruby, s)?)?;
-        }
-        Ok(snapshots)
-    }
-
-    pub fn snapshot_by_id(
-        ruby: &Ruby,
-        rb_self: &Self,
-        snapshot_id: i64,
-    ) -> RbResult<Option<Value>> {
-        let snapshot = match rb_self
-            .table
-            .read()
-            .unwrap()
-            .metadata()
-            .snapshot_by_id(snapshot_id)
-        {
-            Some(s) => Some(rb_snapshot(ruby, s)?),
-            None => None,
-        };
-        Ok(snapshot)
-    }
-
-    pub fn history(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let history = ruby.ary_new();
-        for s in rb_self.table.read().unwrap().metadata().history() {
-            let snapshot_log = ruby.hash_new();
-            snapshot_log.aset(ruby.to_symbol("snapshot_id"), s.snapshot_id)?;
-            // TODO timestamp
-            history.push(snapshot_log)?;
-        }
-        Ok(history)
-    }
-
-    pub fn metadata_log(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let metadata_logs = ruby.ary_new();
-        for s in rb_self.table.read().unwrap().metadata().metadata_log() {
-            let metadata_log = ruby.hash_new();
-            metadata_log.aset(
-                ruby.to_symbol("metadata_file"),
-                ruby.str_new(&s.metadata_file),
-            )?;
-            // TODO timestamp
-            metadata_logs.push(metadata_log)?;
-        }
-        Ok(metadata_logs)
-    }
-
-    pub fn current_snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<Value>> {
-        let snapshot = match rb_self.table.read().unwrap().metadata().current_snapshot() {
-            Some(s) => Some(rb_snapshot(ruby, s)?),
-            None => None,
-        };
-        Ok(snapshot)
-    }
-
-    pub fn current_snapshot_id(&self) -> Option<i64> {
-        self.table.read().unwrap().metadata().current_snapshot_id()
-    }
-
-    pub fn snapshot_for_ref(
-        ruby: &Ruby,
-        rb_self: &Self,
-        ref_name: String,
-    ) -> RbResult<Option<Value>> {
-        let snapshot = match rb_self
-            .table
-            .read()
-            .unwrap()
-            .metadata()
-            .snapshot_for_ref(&ref_name)
-        {
-            Some(s) => Some(rb_snapshot(ruby, s)?),
-            None => None,
-        };
-        Ok(snapshot)
-    }
-
-    pub fn sort_orders(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let sort_orders = ruby.ary_new();
-        for s in rb_self.table.read().unwrap().metadata().sort_orders_iter() {
-            sort_orders.push(rb_sort_order(ruby, s)?)?;
-        }
-        Ok(sort_orders)
-    }
-
-    pub fn sort_order_by_id(
-        ruby: &Ruby,
-        rb_self: &Self,
-        sort_order_id: i64,
-    ) -> RbResult<Option<Value>> {
-        let sort_order = match rb_self
-            .table
-            .read()
-            .unwrap()
-            .metadata()
-            .sort_order_by_id(sort_order_id)
-        {
-            Some(s) => Some(rb_sort_order(ruby, s)?),
-            None => None,
-        };
-        Ok(sort_order)
-    }
-
-    pub fn default_sort_order(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
-        rb_sort_order(
-            ruby,
-            rb_self
-                .table
-                .read()
-                .unwrap()
-                .metadata()
-                .default_sort_order(),
-        )
-    }
-
-    pub fn default_sort_order_id(&self) -> i64 {
-        self.table
-            .read()
-            .unwrap()
-            .metadata()
-            .default_sort_order_id()
-    }
-
-    pub fn properties(&self) -> HashMap<String, String> {
-        self.table.read().unwrap().metadata().properties().clone()
-    }
-
-    pub fn statistics(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let statistics = ruby.ary_new();
-        for s in rb_self.table.read().unwrap().metadata().statistics_iter() {
-            statistics.push(rb_statistics_file(ruby, s)?)?;
-        }
-        Ok(statistics)
-    }
-
-    pub fn partition_statistics(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let statistics = ruby.ary_new();
-        for s in rb_self
-            .table
-            .read()
-            .unwrap()
-            .metadata()
-            .partition_statistics_iter()
-        {
-            statistics.push(rb_partition_statistics_file(ruby, s)?)?;
-        }
-        Ok(statistics)
-    }
-
-    pub fn statistics_for_snapshot(
-        ruby: &Ruby,
-        rb_self: &Self,
-        snapshot_id: i64,
-    ) -> RbResult<Option<Value>> {
-        let statistics = match rb_self
-            .table
-            .read()
-            .unwrap()
-            .metadata()
-            .statistics_for_snapshot(snapshot_id)
-        {
-            Some(s) => Some(rb_statistics_file(ruby, s)?),
-            None => None,
-        };
-        Ok(statistics)
-    }
-
-    pub fn partition_statistics_for_snapshot(
-        ruby: &Ruby,
-        rb_self: &Self,
-        snapshot_id: i64,
-    ) -> RbResult<Option<Value>> {
-        let statistics = match rb_self
-            .table
-            .read()
-            .unwrap()
-            .metadata()
-            .partition_statistics_for_snapshot(snapshot_id)
-        {
-            Some(s) => Some(rb_partition_statistics_file(ruby, s)?),
-            None => None,
-        };
-        Ok(statistics)
-    }
-
-    pub fn encryption_keys(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let encryption_keys = ruby.ary_new();
-        for k in rb_self
-            .table
-            .read()
-            .unwrap()
-            .metadata()
-            .encryption_keys_iter()
-        {
-            encryption_keys.push(rb_encrypted_key(ruby, k)?)?;
-        }
-        Ok(encryption_keys)
-    }
-
-    pub fn encryption_key(ruby: &Ruby, rb_self: &Self, key_id: String) -> RbResult<Option<Value>> {
-        let key = match rb_self
-            .table
-            .read()
-            .unwrap()
-            .metadata()
-            .encryption_key(&key_id)
-        {
-            Some(k) => Some(rb_encrypted_key(ruby, k)?),
-            None => None,
-        };
-        Ok(key)
-    }
-
-    pub fn next_row_id(&self) -> u64 {
-        self.table.read().unwrap().metadata().next_row_id()
     }
 
     pub fn from_metadata_file(location: String) -> RbResult<Self> {
@@ -465,6 +129,265 @@ impl RbTable {
         Ok(Self {
             table: static_table.into_table().into(),
         })
+    }
+}
+
+#[magnus::wrap(class = "Iceberg::TableMetadata")]
+pub struct RbTableMetadata {
+    pub metadata: TableMetadata,
+}
+
+impl RbTableMetadata {
+    pub fn format_version(&self) -> i32 {
+        match self.metadata.format_version() {
+            FormatVersion::V1 => 1,
+            FormatVersion::V2 => 2,
+            FormatVersion::V3 => 3,
+        }
+    }
+
+    pub fn uuid(&self) -> String {
+        self.metadata.uuid().to_string()
+    }
+
+    pub fn location(&self) -> String {
+        self.metadata.location().to_string()
+    }
+
+    pub fn last_sequence_number(&self) -> i64 {
+        self.metadata.last_sequence_number()
+    }
+
+    pub fn next_sequence_number(&self) -> i64 {
+        self.metadata.next_sequence_number()
+    }
+
+    pub fn last_column_id(&self) -> i32 {
+        self.metadata.last_column_id()
+    }
+
+    pub fn last_partition_id(&self) -> i32 {
+        self.metadata.last_partition_id()
+    }
+
+    pub fn last_updated_ms(&self) -> i64 {
+        self.metadata.last_updated_ms()
+    }
+
+    pub fn schemas(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+        let schemas = ruby.ary_new();
+        for s in rb_self.metadata.schemas_iter() {
+            schemas.push(rb_schema(ruby, s)?)?;
+        }
+        Ok(schemas)
+    }
+
+    pub fn schema_by_id(ruby: &Ruby, rb_self: &Self, schema_id: i32) -> RbResult<Option<Value>> {
+        let schema = match rb_self.metadata.schema_by_id(schema_id) {
+            Some(s) => Some(rb_schema(ruby, s)?),
+            None => None,
+        };
+        Ok(schema)
+    }
+
+    pub fn current_schema(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+        rb_schema(ruby, rb_self.metadata.current_schema())
+    }
+
+    pub fn current_schema_id(&self) -> i32 {
+        self.metadata.current_schema_id()
+    }
+
+    pub fn partition_specs(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+        let partition_specs = ruby.ary_new();
+        for s in rb_self.metadata.partition_specs_iter() {
+            partition_specs.push(rb_partition_spec(ruby, s)?)?;
+        }
+        Ok(partition_specs)
+    }
+
+    pub fn partition_spec_by_id(
+        ruby: &Ruby,
+        rb_self: &Self,
+        partition_spec_id: i32,
+    ) -> RbResult<Option<Value>> {
+        let partition_spec = match rb_self.metadata.partition_spec_by_id(partition_spec_id) {
+            Some(s) => Some(rb_partition_spec(ruby, s)?),
+            None => None,
+        };
+        Ok(partition_spec)
+    }
+
+    pub fn default_partition_spec(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+        rb_partition_spec(ruby, rb_self.metadata.default_partition_spec())
+    }
+
+    pub fn default_partition_spec_id(&self) -> i32 {
+        self.metadata.default_partition_spec_id()
+    }
+
+    pub fn snapshots(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+        let snapshots = ruby.ary_new();
+        for s in rb_self.metadata.snapshots() {
+            snapshots.push(rb_snapshot(ruby, s)?)?;
+        }
+        Ok(snapshots)
+    }
+
+    pub fn snapshot_by_id(
+        ruby: &Ruby,
+        rb_self: &Self,
+        snapshot_id: i64,
+    ) -> RbResult<Option<Value>> {
+        let snapshot = match rb_self.metadata.snapshot_by_id(snapshot_id) {
+            Some(s) => Some(rb_snapshot(ruby, s)?),
+            None => None,
+        };
+        Ok(snapshot)
+    }
+
+    pub fn history(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+        let history = ruby.ary_new();
+        for s in rb_self.metadata.history() {
+            let snapshot_log = ruby.hash_new();
+            snapshot_log.aset(ruby.to_symbol("snapshot_id"), s.snapshot_id)?;
+            // TODO timestamp
+            history.push(snapshot_log)?;
+        }
+        Ok(history)
+    }
+
+    pub fn metadata_log(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+        let metadata_logs = ruby.ary_new();
+        for s in rb_self.metadata.metadata_log() {
+            let metadata_log = ruby.hash_new();
+            metadata_log.aset(
+                ruby.to_symbol("metadata_file"),
+                ruby.str_new(&s.metadata_file),
+            )?;
+            // TODO timestamp
+            metadata_logs.push(metadata_log)?;
+        }
+        Ok(metadata_logs)
+    }
+
+    pub fn current_snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<Value>> {
+        let snapshot = match rb_self.metadata.current_snapshot() {
+            Some(s) => Some(rb_snapshot(ruby, s)?),
+            None => None,
+        };
+        Ok(snapshot)
+    }
+
+    pub fn current_snapshot_id(&self) -> Option<i64> {
+        self.metadata.current_snapshot_id()
+    }
+
+    pub fn snapshot_for_ref(
+        ruby: &Ruby,
+        rb_self: &Self,
+        ref_name: String,
+    ) -> RbResult<Option<Value>> {
+        let snapshot = match rb_self.metadata.snapshot_for_ref(&ref_name) {
+            Some(s) => Some(rb_snapshot(ruby, s)?),
+            None => None,
+        };
+        Ok(snapshot)
+    }
+
+    pub fn sort_orders(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+        let sort_orders = ruby.ary_new();
+        for s in rb_self.metadata.sort_orders_iter() {
+            sort_orders.push(rb_sort_order(ruby, s)?)?;
+        }
+        Ok(sort_orders)
+    }
+
+    pub fn sort_order_by_id(
+        ruby: &Ruby,
+        rb_self: &Self,
+        sort_order_id: i64,
+    ) -> RbResult<Option<Value>> {
+        let sort_order = match rb_self.metadata.sort_order_by_id(sort_order_id) {
+            Some(s) => Some(rb_sort_order(ruby, s)?),
+            None => None,
+        };
+        Ok(sort_order)
+    }
+
+    pub fn default_sort_order(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+        rb_sort_order(ruby, rb_self.metadata.default_sort_order())
+    }
+
+    pub fn default_sort_order_id(&self) -> i64 {
+        self.metadata.default_sort_order_id()
+    }
+
+    pub fn properties(&self) -> HashMap<String, String> {
+        self.metadata.properties().clone()
+    }
+
+    pub fn statistics(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+        let statistics = ruby.ary_new();
+        for s in rb_self.metadata.statistics_iter() {
+            statistics.push(rb_statistics_file(ruby, s)?)?;
+        }
+        Ok(statistics)
+    }
+
+    pub fn partition_statistics(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+        let statistics = ruby.ary_new();
+        for s in rb_self.metadata.partition_statistics_iter() {
+            statistics.push(rb_partition_statistics_file(ruby, s)?)?;
+        }
+        Ok(statistics)
+    }
+
+    pub fn statistics_for_snapshot(
+        ruby: &Ruby,
+        rb_self: &Self,
+        snapshot_id: i64,
+    ) -> RbResult<Option<Value>> {
+        let statistics = match rb_self.metadata.statistics_for_snapshot(snapshot_id) {
+            Some(s) => Some(rb_statistics_file(ruby, s)?),
+            None => None,
+        };
+        Ok(statistics)
+    }
+
+    pub fn partition_statistics_for_snapshot(
+        ruby: &Ruby,
+        rb_self: &Self,
+        snapshot_id: i64,
+    ) -> RbResult<Option<Value>> {
+        let statistics = match rb_self
+            .metadata
+            .partition_statistics_for_snapshot(snapshot_id)
+        {
+            Some(s) => Some(rb_partition_statistics_file(ruby, s)?),
+            None => None,
+        };
+        Ok(statistics)
+    }
+
+    pub fn encryption_keys(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
+        let encryption_keys = ruby.ary_new();
+        for k in rb_self.metadata.encryption_keys_iter() {
+            encryption_keys.push(rb_encrypted_key(ruby, k)?)?;
+        }
+        Ok(encryption_keys)
+    }
+
+    pub fn encryption_key(ruby: &Ruby, rb_self: &Self, key_id: String) -> RbResult<Option<Value>> {
+        let key = match rb_self.metadata.encryption_key(&key_id) {
+            Some(k) => Some(rb_encrypted_key(ruby, k)?),
+            None => None,
+        };
+        Ok(key)
+    }
+
+    pub fn next_row_id(&self) -> u64 {
+        self.metadata.next_row_id()
     }
 }
 
