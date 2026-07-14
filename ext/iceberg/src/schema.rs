@@ -5,7 +5,8 @@ use arrow_schema::ffi::FFI_ArrowSchema;
 use iceberg::arrow::{arrow_schema_to_schema_auto_assign_ids, schema_to_arrow_schema};
 use iceberg::spec::{NestedField, PrimitiveType, Schema, Type};
 use magnus::{
-    Error as RbErr, IntoValue, RArray, RHash, RString, Ruby, TryConvert, Value, prelude::*,
+    Error as RbErr, IntoValue, RArray, RClass, RHash, RModule, RString, Ruby, TryConvert, Value,
+    prelude::*,
 };
 
 use crate::RbResult;
@@ -113,10 +114,37 @@ impl RbNestedField {
                 }
             }
         } else {
-            return Err(RbErr::new(
-                ruby.exception_arg_error(),
-                format!("Type not supported: {}", rb_type),
-            ));
+            match unsafe { rb_type.classname() }.to_string().as_str() {
+                "Iceberg::BooleanType" => Type::Primitive(PrimitiveType::Boolean),
+                "Iceberg::IntType" => Type::Primitive(PrimitiveType::Int),
+                "Iceberg::LongType" => Type::Primitive(PrimitiveType::Long),
+                "Iceberg::FloatType" => Type::Primitive(PrimitiveType::Float),
+                "Iceberg::DoubleType" => Type::Primitive(PrimitiveType::Double),
+                "Iceberg::DecimalType" => {
+                    let precision: u32 = rb_type.funcall("precision", ())?;
+                    let scale: u32 = rb_type.funcall("scale", ())?;
+                    Type::Primitive(PrimitiveType::Decimal { precision, scale })
+                }
+                "Iceberg::DateType" => Type::Primitive(PrimitiveType::Date),
+                "Iceberg::TimeType" => Type::Primitive(PrimitiveType::Time),
+                "Iceberg::TimestampType" => Type::Primitive(PrimitiveType::Timestamp),
+                "Iceberg::TimestamptzType" => Type::Primitive(PrimitiveType::Timestamptz),
+                "Iceberg::TimestampNanoType" => Type::Primitive(PrimitiveType::TimestampNs),
+                "Iceberg::TimestamptzNanoType" => Type::Primitive(PrimitiveType::TimestamptzNs),
+                "Iceberg::StringType" => Type::Primitive(PrimitiveType::String),
+                "Iceberg::UUIDType" => Type::Primitive(PrimitiveType::Uuid),
+                "Iceberg::FixedType" => {
+                    let length: u64 = rb_type.funcall("length", ())?;
+                    Type::Primitive(PrimitiveType::Fixed(length))
+                }
+                "Iceberg::BinaryType" => Type::Primitive(PrimitiveType::Binary),
+                _ => {
+                    return Err(RbErr::new(
+                        ruby.exception_arg_error(),
+                        format!("Type not supported: {}", rb_type),
+                    ));
+                }
+            }
         };
 
         let initial_default = rb_field.aref(ruby.to_symbol("initial_default"))?;
@@ -152,8 +180,67 @@ impl RbNestedField {
         self.field.required
     }
 
-    // TODO return objects
-    pub fn field_type(ruby: &Ruby, self_: &Self) -> RbResult<RString> {
+    pub fn field_type(ruby: &Ruby, self_: &Self) -> RbResult<Value> {
+        let iceberg = ruby.class_object().const_get::<_, RModule>("Iceberg")?;
+        let field_type = &*self_.field.field_type;
+        let v = match field_type {
+            Type::Primitive(ty) => match ty {
+                PrimitiveType::Boolean => iceberg
+                    .const_get::<_, RClass>("BooleanType")?
+                    .new_instance(())?,
+                PrimitiveType::Int => iceberg
+                    .const_get::<_, RClass>("IntType")?
+                    .new_instance(())?,
+                PrimitiveType::Long => iceberg
+                    .const_get::<_, RClass>("LongType")?
+                    .new_instance(())?,
+                PrimitiveType::Float => iceberg
+                    .const_get::<_, RClass>("FloatType")?
+                    .new_instance(())?,
+                PrimitiveType::Double => iceberg
+                    .const_get::<_, RClass>("DoubleType")?
+                    .new_instance(())?,
+                PrimitiveType::Decimal { precision, scale } => iceberg
+                    .const_get::<_, RClass>("DecimalType")?
+                    .new_instance((*precision, *scale))?,
+                PrimitiveType::Date => iceberg
+                    .const_get::<_, RClass>("DateType")?
+                    .new_instance(())?,
+                PrimitiveType::Time => iceberg
+                    .const_get::<_, RClass>("TimeType")?
+                    .new_instance(())?,
+                PrimitiveType::Timestamp => iceberg
+                    .const_get::<_, RClass>("TimestampType")?
+                    .new_instance(())?,
+                PrimitiveType::Timestamptz => iceberg
+                    .const_get::<_, RClass>("TimestamptzType")?
+                    .new_instance(())?,
+                PrimitiveType::TimestampNs => iceberg
+                    .const_get::<_, RClass>("TimestampNanoType")?
+                    .new_instance(())?,
+                PrimitiveType::TimestamptzNs => iceberg
+                    .const_get::<_, RClass>("TimestamptzNanoType")?
+                    .new_instance(())?,
+                PrimitiveType::String => iceberg
+                    .const_get::<_, RClass>("StringType")?
+                    .new_instance(())?,
+                PrimitiveType::Uuid => iceberg
+                    .const_get::<_, RClass>("UUIDType")?
+                    .new_instance(())?,
+                PrimitiveType::Fixed(length) => iceberg
+                    .const_get::<_, RClass>("FixedType")?
+                    .new_instance((*length,))?,
+                PrimitiveType::Binary => iceberg
+                    .const_get::<_, RClass>("BinaryType")?
+                    .new_instance(())?,
+            },
+            _ => return Err(todo_error(field_type)),
+        };
+        Ok(v)
+    }
+
+    // TODO remove in 0.12.0
+    pub fn field_type_str(ruby: &Ruby, self_: &Self) -> RbResult<RString> {
         let field_type = &*self_.field.field_type;
         let v = match field_type {
             Type::Primitive(ty) => match ty {
@@ -231,7 +318,7 @@ impl RbNestedField {
 
         field.aset(
             ruby.to_symbol("type"),
-            RbNestedField::field_type(ruby, self_)?,
+            RbNestedField::field_type_str(ruby, self_)?,
         )?;
 
         field.aset(ruby.to_symbol("required"), self_.required())?;
