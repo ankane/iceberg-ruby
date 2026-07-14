@@ -33,7 +33,6 @@ use crate::schema::RbSchema;
 use crate::snapshot::{RbMetadataLog, RbSnapshot, RbSnapshotLog};
 use crate::sorting::RbSortOrder;
 use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
-use crate::utils::*;
 
 #[magnus::wrap(class = "Iceberg::RbTable")]
 pub struct RbTable {
@@ -181,15 +180,15 @@ impl RbTableMetadata {
     }
 
     pub fn schemas(ruby: &Ruby, rb_self: &Self) -> RArray {
-        ruby.ary_from_iter(rb_self.metadata.schemas_iter().map(rb_schema))
+        ruby.ary_from_iter(rb_self.metadata.schemas_iter().map(RbSchema::from))
     }
 
     pub fn schema_by_id(&self, schema_id: i32) -> Option<RbSchema> {
-        self.metadata.schema_by_id(schema_id).map(rb_schema)
+        self.metadata.schema_by_id(schema_id).map(|v| v.into())
     }
 
     pub fn current_schema(&self) -> RbSchema {
-        rb_schema(self.metadata.current_schema())
+        self.metadata.current_schema().into()
     }
 
     pub fn current_schema_id(&self) -> i32 {
@@ -201,18 +200,18 @@ impl RbTableMetadata {
             rb_self
                 .metadata
                 .partition_specs_iter()
-                .map(rb_partition_spec),
+                .map(RbPartitionSpec::from),
         )
     }
 
     pub fn partition_spec_by_id(&self, partition_spec_id: i32) -> Option<RbPartitionSpec> {
         self.metadata
             .partition_spec_by_id(partition_spec_id)
-            .map(rb_partition_spec)
+            .map(|v| v.into())
     }
 
     pub fn default_partition_spec(&self) -> RbPartitionSpec {
-        rb_partition_spec(self.metadata.default_partition_spec())
+        self.metadata.default_partition_spec().into()
     }
 
     pub fn default_partition_spec_id(&self) -> i32 {
@@ -220,11 +219,11 @@ impl RbTableMetadata {
     }
 
     pub fn snapshots(ruby: &Ruby, rb_self: &Self) -> RArray {
-        ruby.ary_from_iter(rb_self.metadata.snapshots().map(rb_snapshot))
+        ruby.ary_from_iter(rb_self.metadata.snapshots().map(RbSnapshot::from))
     }
 
     pub fn snapshot_by_id(&self, snapshot_id: i64) -> Option<RbSnapshot> {
-        self.metadata.snapshot_by_id(snapshot_id).map(rb_snapshot)
+        self.metadata.snapshot_by_id(snapshot_id).map(|v| v.into())
     }
 
     pub fn history(ruby: &Ruby, rb_self: &Self) -> RArray {
@@ -232,7 +231,7 @@ impl RbTableMetadata {
             rb_self
                 .metadata
                 .history()
-                .into_iter()
+                .iter()
                 .map(|s| RbSnapshotLog { log: s.clone() }),
         )
     }
@@ -242,13 +241,13 @@ impl RbTableMetadata {
             rb_self
                 .metadata
                 .metadata_log()
-                .into_iter()
+                .iter()
                 .map(|s| RbMetadataLog { log: s.clone() }),
         )
     }
 
     pub fn current_snapshot(&self) -> Option<RbSnapshot> {
-        self.metadata.current_snapshot().map(rb_snapshot)
+        self.metadata.current_snapshot().map(|v| v.into())
     }
 
     pub fn current_snapshot_id(&self) -> Option<i64> {
@@ -256,21 +255,21 @@ impl RbTableMetadata {
     }
 
     pub fn snapshot_for_ref(&self, ref_name: String) -> Option<RbSnapshot> {
-        self.metadata.snapshot_for_ref(&ref_name).map(rb_snapshot)
+        self.metadata.snapshot_for_ref(&ref_name).map(|v| v.into())
     }
 
     pub fn sort_orders(ruby: &Ruby, rb_self: &Self) -> RArray {
-        ruby.ary_from_iter(rb_self.metadata.sort_orders_iter().map(rb_sort_order))
+        ruby.ary_from_iter(rb_self.metadata.sort_orders_iter().map(RbSortOrder::from))
     }
 
     pub fn sort_order_by_id(&self, sort_order_id: i64) -> Option<RbSortOrder> {
         self.metadata
             .sort_order_by_id(sort_order_id)
-            .map(rb_sort_order)
+            .map(|v| v.into())
     }
 
     pub fn default_sort_order(&self) -> RbSortOrder {
-        rb_sort_order(self.metadata.default_sort_order())
+        self.metadata.default_sort_order().into()
     }
 
     pub fn default_sort_order_id(&self) -> i64 {
@@ -282,7 +281,12 @@ impl RbTableMetadata {
     }
 
     pub fn statistics(ruby: &Ruby, rb_self: &Self) -> RArray {
-        ruby.ary_from_iter(rb_self.metadata.statistics_iter().map(rb_statistics_file))
+        ruby.ary_from_iter(
+            rb_self
+                .metadata
+                .statistics_iter()
+                .map(RbStatisticsFile::from),
+        )
     }
 
     pub fn partition_statistics(ruby: &Ruby, rb_self: &Self) -> RArray {
@@ -290,14 +294,14 @@ impl RbTableMetadata {
             rb_self
                 .metadata
                 .partition_statistics_iter()
-                .map(rb_partition_statistics_file),
+                .map(RbPartitionStatisticsFile::from),
         )
     }
 
     pub fn statistics_for_snapshot(&self, snapshot_id: i64) -> Option<RbStatisticsFile> {
         self.metadata
             .statistics_for_snapshot(snapshot_id)
-            .map(rb_statistics_file)
+            .map(|v| v.into())
     }
 
     pub fn partition_statistics_for_snapshot(
@@ -306,7 +310,7 @@ impl RbTableMetadata {
     ) -> Option<RbPartitionStatisticsFile> {
         self.metadata
             .partition_statistics_for_snapshot(snapshot_id)
-            .map(rb_partition_statistics_file)
+            .map(|v| v.into())
     }
 
     pub fn encryption_keys(ruby: &Ruby, rb_self: &Self) -> RArray {
@@ -314,12 +318,12 @@ impl RbTableMetadata {
             rb_self
                 .metadata
                 .encryption_keys_iter()
-                .map(rb_encrypted_key),
+                .map(RbEncryptedKey::from),
         )
     }
 
     pub fn encryption_key(&self, key_id: String) -> Option<RbEncryptedKey> {
-        self.metadata.encryption_key(&key_id).map(rb_encrypted_key)
+        self.metadata.encryption_key(&key_id).map(|v| v.into())
     }
 
     pub fn next_row_id(&self) -> u64 {

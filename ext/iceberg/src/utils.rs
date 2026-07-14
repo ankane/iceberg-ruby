@@ -108,47 +108,59 @@ pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> 
     Ok(Some(lit))
 }
 
-pub fn rb_schema(schema: &Arc<Schema>) -> RbSchema {
-    RbSchema {
-        schema: (**schema).clone(),
+impl From<&Arc<Schema>> for RbSchema {
+    fn from(schema: &Arc<Schema>) -> Self {
+        Self {
+            schema: (**schema).clone(),
+        }
     }
 }
 
-pub fn rb_snapshot(snapshot: &Arc<Snapshot>) -> RbSnapshot {
-    RbSnapshot {
-        snapshot: (**snapshot).clone(),
+impl From<&Arc<Snapshot>> for RbSnapshot {
+    fn from(snapshot: &Arc<Snapshot>) -> Self {
+        Self {
+            snapshot: (**snapshot).clone(),
+        }
     }
 }
 
-pub fn rb_partition_spec(partition_spec: &Arc<PartitionSpec>) -> RbPartitionSpec {
-    RbPartitionSpec {
-        spec: (**partition_spec).clone().into(),
+impl From<&Arc<PartitionSpec>> for RbPartitionSpec {
+    fn from(partition_spec: &Arc<PartitionSpec>) -> Self {
+        Self {
+            spec: (**partition_spec).clone().into(),
+        }
     }
 }
 
-pub fn rb_sort_order(sort_order: &Arc<SortOrder>) -> RbSortOrder {
-    RbSortOrder {
-        order: (**sort_order).clone(),
+impl From<&Arc<SortOrder>> for RbSortOrder {
+    fn from(sort_order: &Arc<SortOrder>) -> Self {
+        Self {
+            order: (**sort_order).clone(),
+        }
     }
 }
 
-pub fn rb_statistics_file(statistics_file: &StatisticsFile) -> RbStatisticsFile {
-    RbStatisticsFile {
-        file: statistics_file.clone(),
+impl From<&StatisticsFile> for RbStatisticsFile {
+    fn from(statistics_file: &StatisticsFile) -> Self {
+        Self {
+            file: statistics_file.clone(),
+        }
     }
 }
 
-pub fn rb_partition_statistics_file(
-    partition_statistics_file: &PartitionStatisticsFile,
-) -> RbPartitionStatisticsFile {
-    RbPartitionStatisticsFile {
-        file: partition_statistics_file.clone(),
+impl From<&PartitionStatisticsFile> for RbPartitionStatisticsFile {
+    fn from(partition_statistics_file: &PartitionStatisticsFile) -> Self {
+        Self {
+            file: partition_statistics_file.clone(),
+        }
     }
 }
 
-pub fn rb_encrypted_key(encrypted_key: &EncryptedKey) -> RbEncryptedKey {
-    RbEncryptedKey {
-        key: encrypted_key.clone(),
+impl From<&EncryptedKey> for RbEncryptedKey {
+    fn from(encrypted_key: &EncryptedKey) -> Self {
+        Self {
+            key: encrypted_key.clone(),
+        }
     }
 }
 
