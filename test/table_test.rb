@@ -92,16 +92,4 @@ class TableTest < Minitest::Test
     assert_equal table.inspect, table.to_s
     refute_match "@table", table.inspect
   end
-
-  private
-
-  def create_events
-    table = catalog.create_table("events", schema: {"a" => "int", "b" => "string"})
-    load_events(table)
-    table
-  end
-
-  def load_events(table)
-    table.append([{"a" => 1, "b" => "one"}, {"a" => 2, "b" => "two"}, {"a" => 3, "b" => "three"}])
-  end
 end

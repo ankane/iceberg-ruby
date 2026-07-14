@@ -101,16 +101,4 @@ class SqlTest < Minitest::Test
     assert_equal ["c"], result.columns
     assert_equal [[1], [2], [3]], result.rows
   end
-
-  private
-
-  def create_events
-    catalog.sql("CREATE TABLE events (a bigint, b text)")
-    load_events
-  end
-
-  def load_events
-    params = [1, "one", 2, "two", 3, "three"]
-    catalog.sql("INSERT INTO events VALUES ($1, $2), ($3, $4), ($5, $6)", params)
-  end
 end

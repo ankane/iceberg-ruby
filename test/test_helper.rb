@@ -93,6 +93,17 @@ class Minitest::Test
     catalog.is_a?(Iceberg::SqlCatalog)
   end
 
+  def create_events
+    table = catalog.create_table("events", schema: {"a" => "int", "b" => "string"})
+    load_events(table)
+    table
+  end
+
+  def load_events(table = nil)
+    table ||= catalog.load_table("events")
+    table.append([{"a" => 1, "b" => "one"}, {"a" => 2, "b" => "two"}, {"a" => 3, "b" => "three"}])
+  end
+
   def drop_namespace(namespace)
     return unless catalog.namespace_exists?(namespace)
 
