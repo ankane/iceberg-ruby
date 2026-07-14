@@ -265,11 +265,31 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("StatisticsFile", ruby.class_object())?;
     class.define_method("snapshot_id", method!(RbStatisticsFile::snapshot_id, 0))?;
+    class.define_method(
+        "statistics_path",
+        method!(RbStatisticsFile::statistics_path, 0),
+    )?;
+    class.define_method(
+        "file_size_in_bytes",
+        method!(RbStatisticsFile::file_size_in_bytes, 0),
+    )?;
+    class.define_method(
+        "file_footer_size_in_bytes",
+        method!(RbStatisticsFile::file_footer_size_in_bytes, 0),
+    )?;
 
     let class = module.define_class("PartitionStatisticsFile", ruby.class_object())?;
     class.define_method(
         "snapshot_id",
         method!(RbPartitionStatisticsFile::snapshot_id, 0),
+    )?;
+    class.define_method(
+        "statistics_path",
+        method!(RbPartitionStatisticsFile::statistics_path, 0),
+    )?;
+    class.define_method(
+        "file_size_in_bytes",
+        method!(RbPartitionStatisticsFile::file_size_in_bytes, 0),
     )?;
 
     Ok(())

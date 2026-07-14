@@ -1,5 +1,4 @@
 use iceberg::spec::Snapshot;
-use magnus::{RString, Ruby};
 
 #[magnus::wrap(class = "Iceberg::Snapshot")]
 pub struct RbSnapshot {
@@ -19,8 +18,8 @@ impl RbSnapshot {
         self.snapshot.sequence_number()
     }
 
-    pub fn manifest_list(ruby: &Ruby, self_: &Self) -> RString {
-        ruby.str_new(self_.snapshot.manifest_list())
+    pub fn manifest_list(&self) -> &str {
+        &self.snapshot.manifest_list()
     }
 
     pub fn schema_id(&self) -> Option<i32> {
