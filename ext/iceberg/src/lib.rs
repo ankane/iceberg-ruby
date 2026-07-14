@@ -262,6 +262,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("EncryptedKey", ruby.class_object())?;
     class.define_method("key_id", method!(RbEncryptedKey::key_id, 0))?;
+    class.define_method(
+        "encrypted_by_id",
+        method!(RbEncryptedKey::encrypted_by_id, 0),
+    )?;
+    class.define_method("properties", method!(RbEncryptedKey::properties, 0))?;
 
     let class = module.define_class("StatisticsFile", ruby.class_object())?;
     class.define_method("snapshot_id", method!(RbStatisticsFile::snapshot_id, 0))?;
