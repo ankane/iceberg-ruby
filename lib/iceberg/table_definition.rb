@@ -3,7 +3,7 @@ module Iceberg
     TYPES = %w[
       boolean int long float double decimal date time
       timestamp timestamptz timestamp_ns timestamptz_ns
-      string fixed uuid binary
+      string uuid fixed binary
     ]
 
     TYPE_ALIASES = {
@@ -24,19 +24,56 @@ module Iceberg
     end
 
     def column(name, type, null: true, default: nil, comment: nil, limit: nil, precision: nil, scale: nil)
-      type = type.to_s
-      @fields << {
+      unless type.is_a?(Type)
+        type = type.to_s
+        type =
+          case TYPE_ALIASES.fetch(type, type)
+          when "boolean"
+            BooleanType.new
+          when "int"
+            IntType.new
+          when "long"
+            LongType.new
+          when "float"
+            FloatType.new
+          when "double"
+            DoubleType.new
+          when "decimal"
+            DecimalType.new(precision, scale)
+          when "date"
+            DateType.new
+          when "time"
+            TimeType.new
+          when "timestamp"
+            TimestampType.new
+          when "timestamptz"
+            TimestamptzType.new
+          when "timestamp_ns"
+            TimestampNanoType.new
+          when "timestamptz_ns"
+            TimestamptzNanoType.new
+          when "string"
+            StringType.new
+          when "uuid"
+            UUIDType.new
+          when "fixed"
+            FixedType.new(limit)
+          when "binary"
+            BinaryType.new
+          else
+            type
+          end
+      end
+
+      @fields << NestedField.new(
         field_id: @fields.size + 1,
         name: name.to_s,
-        field_type: TYPE_ALIASES.fetch(type, type),
+        field_type: type,
         required: !null,
         doc: comment,
         # no need for initial default (and not supported until v3)
-        write_default: default,
-        limit: limit,
-        precision: precision,
-        scale: scale
-      }
+        write_default: default
+      )
     end
   end
 end

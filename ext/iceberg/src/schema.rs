@@ -25,7 +25,7 @@ pub struct RbNestedField {
 }
 
 impl RbSchema {
-    pub fn new(ruby: &Ruby, ob: Value) -> RbResult<Self> {
+    pub fn new(ob: Value) -> RbResult<Self> {
         let schema = if let Ok(arrow_schema) =
             ob.funcall::<_, _, RbArrowType<ArrowSchema>>("arrow_c_schema", ())
         {
@@ -34,12 +34,7 @@ impl RbSchema {
             let mut fields = Vec::new();
             let rb_fields = RArray::try_convert(ob)?;
             for rb_field in rb_fields {
-                let nested_field = if let Some(v) = RHash::from_value(rb_field) {
-                    &RbNestedField::new(ruby, v)?
-                } else {
-                    <&RbNestedField>::try_convert(rb_field)?
-                };
-                fields.push(nested_field.field.clone());
+                fields.push(<&RbNestedField>::try_convert(rb_field)?.field.clone());
             }
             Schema::builder()
                 .with_fields(fields)
@@ -89,69 +84,35 @@ impl RbSchema {
 impl RbNestedField {
     pub fn new(ruby: &Ruby, rb_field: RHash) -> RbResult<Self> {
         let rb_type: Value = rb_field.aref(ruby.to_symbol("field_type"))?;
-        let field_type = if let Ok(s) = String::try_convert(rb_type) {
-            match s.as_str() {
-                "boolean" => Type::Primitive(PrimitiveType::Boolean),
-                "int" => Type::Primitive(PrimitiveType::Int),
-                "long" => Type::Primitive(PrimitiveType::Long),
-                "float" => Type::Primitive(PrimitiveType::Float),
-                "double" => Type::Primitive(PrimitiveType::Double),
-                "decimal" => {
-                    let precision: u32 = rb_field.aref(ruby.to_symbol("precision"))?;
-                    let scale: u32 = rb_field.aref(ruby.to_symbol("scale"))?;
-                    Type::Primitive(PrimitiveType::Decimal { precision, scale })
-                }
-                "date" => Type::Primitive(PrimitiveType::Date),
-                "time" => Type::Primitive(PrimitiveType::Time),
-                "timestamp" => Type::Primitive(PrimitiveType::Timestamp),
-                "timestamptz" => Type::Primitive(PrimitiveType::Timestamptz),
-                "timestamp_ns" => Type::Primitive(PrimitiveType::TimestampNs),
-                "timestamptz_ns" => Type::Primitive(PrimitiveType::TimestamptzNs),
-                "string" => Type::Primitive(PrimitiveType::String),
-                "uuid" => Type::Primitive(PrimitiveType::Uuid),
-                "fixed" => {
-                    let limit: u64 = rb_field.aref(ruby.to_symbol("limit"))?;
-                    Type::Primitive(PrimitiveType::Fixed(limit))
-                }
-                "binary" => Type::Primitive(PrimitiveType::Binary),
-                _ => {
-                    return Err(RbErr::new(
-                        ruby.exception_arg_error(),
-                        format!("Type not supported: {}", s),
-                    ));
-                }
+        let field_type = match &*unsafe { rb_type.classname() } {
+            "Iceberg::BooleanType" => Type::Primitive(PrimitiveType::Boolean),
+            "Iceberg::IntType" => Type::Primitive(PrimitiveType::Int),
+            "Iceberg::LongType" => Type::Primitive(PrimitiveType::Long),
+            "Iceberg::FloatType" => Type::Primitive(PrimitiveType::Float),
+            "Iceberg::DoubleType" => Type::Primitive(PrimitiveType::Double),
+            "Iceberg::DecimalType" => {
+                let precision: u32 = rb_type.funcall("precision", ())?;
+                let scale: u32 = rb_type.funcall("scale", ())?;
+                Type::Primitive(PrimitiveType::Decimal { precision, scale })
             }
-        } else {
-            match unsafe { rb_type.classname() }.to_string().as_str() {
-                "Iceberg::BooleanType" => Type::Primitive(PrimitiveType::Boolean),
-                "Iceberg::IntType" => Type::Primitive(PrimitiveType::Int),
-                "Iceberg::LongType" => Type::Primitive(PrimitiveType::Long),
-                "Iceberg::FloatType" => Type::Primitive(PrimitiveType::Float),
-                "Iceberg::DoubleType" => Type::Primitive(PrimitiveType::Double),
-                "Iceberg::DecimalType" => {
-                    let precision: u32 = rb_type.funcall("precision", ())?;
-                    let scale: u32 = rb_type.funcall("scale", ())?;
-                    Type::Primitive(PrimitiveType::Decimal { precision, scale })
-                }
-                "Iceberg::DateType" => Type::Primitive(PrimitiveType::Date),
-                "Iceberg::TimeType" => Type::Primitive(PrimitiveType::Time),
-                "Iceberg::TimestampType" => Type::Primitive(PrimitiveType::Timestamp),
-                "Iceberg::TimestamptzType" => Type::Primitive(PrimitiveType::Timestamptz),
-                "Iceberg::TimestampNanoType" => Type::Primitive(PrimitiveType::TimestampNs),
-                "Iceberg::TimestamptzNanoType" => Type::Primitive(PrimitiveType::TimestamptzNs),
-                "Iceberg::StringType" => Type::Primitive(PrimitiveType::String),
-                "Iceberg::UUIDType" => Type::Primitive(PrimitiveType::Uuid),
-                "Iceberg::FixedType" => {
-                    let length: u64 = rb_type.funcall("length", ())?;
-                    Type::Primitive(PrimitiveType::Fixed(length))
-                }
-                "Iceberg::BinaryType" => Type::Primitive(PrimitiveType::Binary),
-                _ => {
-                    return Err(RbErr::new(
-                        ruby.exception_arg_error(),
-                        format!("Type not supported: {}", rb_type),
-                    ));
-                }
+            "Iceberg::DateType" => Type::Primitive(PrimitiveType::Date),
+            "Iceberg::TimeType" => Type::Primitive(PrimitiveType::Time),
+            "Iceberg::TimestampType" => Type::Primitive(PrimitiveType::Timestamp),
+            "Iceberg::TimestamptzType" => Type::Primitive(PrimitiveType::Timestamptz),
+            "Iceberg::TimestampNanoType" => Type::Primitive(PrimitiveType::TimestampNs),
+            "Iceberg::TimestamptzNanoType" => Type::Primitive(PrimitiveType::TimestamptzNs),
+            "Iceberg::StringType" => Type::Primitive(PrimitiveType::String),
+            "Iceberg::UUIDType" => Type::Primitive(PrimitiveType::Uuid),
+            "Iceberg::FixedType" => {
+                let length: u64 = rb_type.funcall("length", ())?;
+                Type::Primitive(PrimitiveType::Fixed(length))
+            }
+            "Iceberg::BinaryType" => Type::Primitive(PrimitiveType::Binary),
+            _ => {
+                return Err(RbErr::new(
+                    ruby.exception_arg_error(),
+                    format!("Type not supported: {}", rb_type),
+                ));
             }
         };
 
