@@ -1,6 +1,6 @@
 use iceberg::spec::{
     EncryptedKey, Literal, PartitionSpec, PartitionStatisticsFile, PrimitiveLiteral, PrimitiveType,
-    Schema, Snapshot, SortOrder, StatisticsFile, Type,
+    Schema, Snapshot, SortOrder, StatisticsFile, Transform, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
 use magnus::{
@@ -45,6 +45,26 @@ impl TryConvert for Wrap<TableIdent> {
             TableIdent::from_strs(String::try_convert(ob)?.split(".")).map_err(to_rb_err)?
         };
         Ok(Wrap(ident))
+    }
+}
+
+impl TryConvert for Wrap<Transform> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let s = RString::try_convert(ob)?;
+        let v = match unsafe { s.as_str() }? {
+            "identity" => Transform::Identity,
+            "year" => Transform::Year,
+            "month" => Transform::Month,
+            "day" => Transform::Day,
+            "hour" => Transform::Hour,
+            _ => {
+                return Err(RbErr::new(
+                    Ruby::get_with(ob).exception_arg_error(),
+                    "Unsupported transform",
+                ));
+            }
+        };
+        Ok(Wrap(v))
     }
 }
 

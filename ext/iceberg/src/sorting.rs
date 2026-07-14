@@ -1,8 +1,9 @@
 use iceberg::spec::{NullOrder, SortDirection, SortField, SortOrder, Transform};
-use magnus::{IntoValue, RArray, RHash, RString, Ruby, TryConvert, value::ReprValue};
+use magnus::{IntoValue, RArray, RHash, Ruby, TryConvert, value::ReprValue};
 
 use crate::RbResult;
-use crate::error::{to_rb_err, todo_error};
+use crate::error::to_rb_err;
+use crate::utils::Wrap;
 
 #[magnus::wrap(class = "Iceberg::SortOrder")]
 pub struct RbSortOrder {
@@ -51,14 +52,12 @@ impl RbSortOrder {
 
 impl RbSortField {
     pub fn new(ruby: &Ruby, ob: RHash) -> RbResult<Self> {
-        let transform = ob.aref::<_, RString>(ruby.to_symbol("transform"))?;
-        let transform = match unsafe { transform.as_str()? } {
-            "identity" => Transform::Identity,
-            _ => return Err(todo_error(transform)),
-        };
         let field = SortField::builder()
             .source_id(ob.aref(ruby.to_symbol("source_id"))?)
-            .transform(transform)
+            .transform(
+                ob.aref::<_, Wrap<Transform>>(ruby.to_symbol("transform"))?
+                    .0,
+            )
             // TODO improve
             .direction(SortDirection::Ascending)
             // TODO improve
