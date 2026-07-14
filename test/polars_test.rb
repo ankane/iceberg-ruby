@@ -39,11 +39,11 @@ class PolarsTest < Minitest::Test
   def test_append
     df =
       Polars::DataFrame.new([
+        Polars::Series.new("bool", [true, false, true], dtype: Polars::Boolean),
         Polars::Series.new("i32", [1, 2, 3], dtype: Polars::Int32),
         Polars::Series.new("i64", [1, 2, 3], dtype: Polars::Int64),
         Polars::Series.new("f32", [1, 2, 3], dtype: Polars::Float32),
-        Polars::Series.new("f64", [1, 2, 3], dtype: Polars::Float64),
-        Polars::Series.new("bool", [true, false, true], dtype: Polars::Boolean)
+        Polars::Series.new("f64", [1, 2, 3], dtype: Polars::Float64)
       ])
     table = catalog.create_table("events", schema: df.schema)
     assert_nil table.append(df)
