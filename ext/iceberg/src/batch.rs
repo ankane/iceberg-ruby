@@ -7,7 +7,7 @@ use arrow::array::{
 use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::ffi_stream::FFI_ArrowArrayStream;
 use arrow_array::{RecordBatch, RecordBatchIterator};
-use arrow_schema::{Field, Schema, TimeUnit};
+use arrow_schema::{Field as ArrowField, Schema as ArrowSchema, TimeUnit};
 use magnus::{RArray, RHash, RString, Ruby, TryConvert, Value, value::ReprValue};
 
 use crate::RbResult;
@@ -21,7 +21,7 @@ pub struct RbArrowRecordBatch {
 }
 
 impl RbArrowRecordBatch {
-    pub fn new(ruby: &Ruby, data: RArray, schema: RbArrowType<Schema>) -> RbResult<Self> {
+    pub fn new(ruby: &Ruby, data: RArray, schema: RbArrowType<ArrowSchema>) -> RbResult<Self> {
         let schema = Arc::new(schema.0);
         let mut columns = Vec::new();
         for field in &schema.fields {
@@ -55,7 +55,7 @@ impl RbArrowRecordBatch {
 
 macro_rules! new_array {
     ($name:ident, $builder:ty, $type:ty) => {
-        fn $name(ruby: &Ruby, data: RArray, field: &Arc<Field>) -> RbResult<Arc<dyn Array>> {
+        fn $name(ruby: &Ruby, data: RArray, field: &Arc<ArrowField>) -> RbResult<Arc<dyn Array>> {
             let name = ruby.str_new(field.name());
             let mut builder = <$builder>::new();
             for row in data.into_iter() {
@@ -79,7 +79,11 @@ new_array!(new_array_float32, Float32Builder, f32);
 new_array!(new_array_float64, Float64Builder, f64);
 new_array!(new_array_utf8, StringBuilder, String);
 
-fn new_array_date32(ruby: &Ruby, data: RArray, field: &Arc<Field>) -> RbResult<Arc<dyn Array>> {
+fn new_array_date32(
+    ruby: &Ruby,
+    data: RArray,
+    field: &Arc<ArrowField>,
+) -> RbResult<Arc<dyn Array>> {
     let name = ruby.str_new(field.name());
     let mut builder = Date32Builder::new();
     for row in data.into_iter() {
@@ -97,7 +101,7 @@ fn new_array_date32(ruby: &Ruby, data: RArray, field: &Arc<Field>) -> RbResult<A
 fn new_array_timestamp_us(
     ruby: &Ruby,
     data: RArray,
-    field: &Arc<Field>,
+    field: &Arc<ArrowField>,
 ) -> RbResult<Arc<dyn Array>> {
     let name = ruby.str_new(field.name());
     let mut builder = TimestampMicrosecondBuilder::new();
@@ -120,7 +124,7 @@ fn new_array_timestamp_us(
 fn new_array_large_binary(
     ruby: &Ruby,
     data: RArray,
-    field: &Arc<Field>,
+    field: &Arc<ArrowField>,
 ) -> RbResult<Arc<dyn Array>> {
     let name = ruby.str_new(field.name());
     let mut builder = LargeBinaryBuilder::new();
