@@ -234,12 +234,14 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("PartitionSpec", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbPartitionSpec::new, 1))?;
     class.define_method("spec_id", method!(RbPartitionSpec::spec_id, 0))?;
+    class.define_method("inspect", method!(RbPartitionSpec::inspect, 0))?;
 
     let class = module.define_class("PartitionField", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbPartitionField::new, 1))?;
     class.define_method("source_id", method!(RbPartitionField::source_id, 0))?;
     class.define_method("field_id", method!(RbPartitionField::field_id, 0))?;
     class.define_method("name", method!(RbPartitionField::name, 0))?;
+    class.define_method("inspect", method!(RbPartitionField::inspect, 0))?;
 
     let class = module.define_class("SortOrder", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbSortOrder::new, 1))?;
