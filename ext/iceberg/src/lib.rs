@@ -11,6 +11,7 @@ mod scan;
 mod schema;
 mod snapshot;
 mod sorting;
+mod statistics;
 mod table;
 mod utils;
 
@@ -27,6 +28,7 @@ use crate::scan::RbTableScan;
 use crate::schema::{RbNestedField, RbSchema};
 use crate::snapshot::RbSnapshot;
 use crate::sorting::{RbSortField, RbSortOrder};
+use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
 use crate::table::{RbTable, RbTableMetadata};
 
 type RbResult<T> = Result<T, RbErr>;
@@ -260,6 +262,15 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("EncryptedKey", ruby.class_object())?;
     class.define_method("key_id", method!(RbEncryptedKey::key_id, 0))?;
+
+    let class = module.define_class("StatisticsFile", ruby.class_object())?;
+    class.define_method("snapshot_id", method!(RbStatisticsFile::snapshot_id, 0))?;
+
+    let class = module.define_class("PartitionStatisticsFile", ruby.class_object())?;
+    class.define_method(
+        "snapshot_id",
+        method!(RbPartitionStatisticsFile::snapshot_id, 0),
+    )?;
 
     Ok(())
 }

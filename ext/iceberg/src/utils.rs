@@ -14,6 +14,7 @@ use crate::partitioning::RbPartitionSpec;
 use crate::schema::RbSchema;
 use crate::snapshot::RbSnapshot;
 use crate::sorting::RbSortOrder;
+use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
 
 pub struct Wrap<T>(pub T);
 
@@ -115,48 +116,20 @@ pub fn rb_sort_order(ruby: &Ruby, sort_order: &SortOrder) -> RbResult<Value> {
 }
 
 pub fn rb_statistics_file(ruby: &Ruby, statistics_file: &StatisticsFile) -> RbResult<Value> {
-    let rb_statistics_file = ruby.hash_new();
-    rb_statistics_file.aset(ruby.to_symbol("snapshot_id"), statistics_file.snapshot_id)?;
-    rb_statistics_file.aset(
-        ruby.to_symbol("statistics_path"),
-        ruby.str_new(&statistics_file.statistics_path),
-    )?;
-    rb_statistics_file.aset(
-        ruby.to_symbol("file_size_in_bytes"),
-        statistics_file.file_size_in_bytes,
-    )?;
-    rb_statistics_file.aset(
-        ruby.to_symbol("file_footer_size_in_bytes"),
-        statistics_file.file_footer_size_in_bytes,
-    )?;
-    rb_statistics_file.aset(
-        ruby.to_symbol("key_metadata"),
-        statistics_file
-            .key_metadata
-            .as_ref()
-            .map(|v| ruby.str_new(v)),
-    )?;
-    Ok(rb_statistics_file.as_value())
+    Ok(RbStatisticsFile {
+        file: statistics_file.clone(),
+    }
+    .into_value_with(ruby))
 }
 
 pub fn rb_partition_statistics_file(
     ruby: &Ruby,
     partition_statistics_file: &PartitionStatisticsFile,
 ) -> RbResult<Value> {
-    let rb_partition_statistics_file = ruby.hash_new();
-    rb_partition_statistics_file.aset(
-        ruby.to_symbol("snapshot_id"),
-        partition_statistics_file.snapshot_id,
-    )?;
-    rb_partition_statistics_file.aset(
-        ruby.to_symbol("statistics_path"),
-        ruby.str_new(&partition_statistics_file.statistics_path),
-    )?;
-    rb_partition_statistics_file.aset(
-        ruby.to_symbol("file_size_in_bytes"),
-        partition_statistics_file.file_size_in_bytes,
-    )?;
-    Ok(rb_partition_statistics_file.as_value())
+    Ok(RbPartitionStatisticsFile {
+        file: partition_statistics_file.clone(),
+    }
+    .into_value_with(ruby))
 }
 
 pub fn rb_encrypted_key(ruby: &Ruby, encrypted_key: &EncryptedKey) -> RbResult<Value> {
