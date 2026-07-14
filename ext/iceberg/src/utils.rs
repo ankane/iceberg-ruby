@@ -8,6 +8,7 @@ use magnus::{
 };
 
 use crate::RbResult;
+use crate::encryption::RbEncryptedKey;
 use crate::error::{to_rb_err, todo_error};
 use crate::partitioning::RbPartitionSpec;
 use crate::schema::RbSchema;
@@ -159,17 +160,10 @@ pub fn rb_partition_statistics_file(
 }
 
 pub fn rb_encrypted_key(ruby: &Ruby, encrypted_key: &EncryptedKey) -> RbResult<Value> {
-    let rb_encrypted_key = ruby.hash_new();
-    rb_encrypted_key.aset(ruby.to_symbol("key_id"), encrypted_key.key_id())?;
-    rb_encrypted_key.aset(
-        ruby.to_symbol("encrypted_by_id"),
-        encrypted_key.encrypted_by_id(),
-    )?;
-    rb_encrypted_key.aset(
-        ruby.to_symbol("properties"),
-        encrypted_key.properties().clone(),
-    )?;
-    Ok(rb_encrypted_key.as_value())
+    Ok(RbEncryptedKey {
+        key: encrypted_key.clone(),
+    }
+    .into_value_with(ruby))
 }
 
 pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> RbResult<Value> {
