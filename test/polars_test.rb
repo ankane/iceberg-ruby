@@ -44,6 +44,10 @@ class PolarsTest < Minitest::Test
         Polars::Series.new("i64", [1, 2, 3], dtype: Polars::Int64),
         Polars::Series.new("f32", [1.5, 2.5, 3.5], dtype: Polars::Float32),
         Polars::Series.new("f64", [1.5, 2.5, 3.5], dtype: Polars::Float64)
+        # Polars::Series.new("date", [Date.today, Date.today + 1, Date.today + 2], dtype: Polars::Date),
+        # Polars::Series.new("datetime[us]", [Time.at(0), Time.at(1), Time.at(2)], dtype: Polars::Datetime.new("us")),
+        # Polars::Series.new("str", ["one", "two", "three"], dtype: Polars::String),
+        # Polars::Series.new("binary", ["one".b, "two".b, "three".b], dtype: Polars::Binary)
       ])
     table = catalog.create_table("events", schema: df.schema)
     assert_nil table.append(df)
