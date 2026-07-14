@@ -3,7 +3,9 @@ use iceberg::spec::{
     Schema, Snapshot, SortOrder, StatisticsFile, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
-use magnus::{Error as RbErr, IntoValue, RClass, Ruby, TryConvert, Value, prelude::*, value::Lazy};
+use magnus::{
+    Error as RbErr, IntoValue, RClass, RString, Ruby, TryConvert, Value, prelude::*, value::Lazy,
+};
 
 use crate::RbResult;
 use crate::error::{to_rb_err, todo_error};
@@ -66,7 +68,10 @@ pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> 
                 PrimitiveType::String => PrimitiveLiteral::String(String::try_convert(ob)?),
                 PrimitiveType::Uuid => return Err(todo_error(field_type)),
                 PrimitiveType::Fixed(_) => return Err(todo_error(field_type)),
-                PrimitiveType::Binary => return Err(todo_error(field_type)),
+                PrimitiveType::Binary => {
+                    let s = RString::try_convert(ob)?;
+                    PrimitiveLiteral::Binary(unsafe { s.as_slice() }.to_vec())
+                }
             };
             Literal::Primitive(pl)
         }
