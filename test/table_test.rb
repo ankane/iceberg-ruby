@@ -54,20 +54,20 @@ class TableTest < Minitest::Test
   def test_append
     table =
       catalog.create_table("events") do |t|
+        t.boolean "boolean"
         t.int "int"
         t.long "long"
         t.float "float"
         t.double "double"
-        t.boolean "boolean"
-        t.string "string"
-        t.binary "binary"
         t.date "date"
         t.timestamp "timestamp"
+        t.string "string"
+        t.binary "binary"
       end
     data = [
-      {"int" => 1, "long" => 1, "float" => 1, "double" => 1, "boolean" => true, "string" => "one", "binary" => "one".b, "date" => Date.today, "timestamp" => Time.at(0)},
-      {"int" => 2, "long" => 2, "float" => 2, "double" => 2, "boolean" => false, "string" => "two", "binary" => "two".b, "date" => Date.today + 1, "timestamp" => Time.at(1)},
-      {"int" => 3, "long" => 3, "float" => 3, "double" => 3, "boolean" => true, "string" => "three", "binary" => "three".b, "date" => Date.today + 2, "timestamp" => Time.at(2)}
+      {"boolean" => true, "int" => 1, "long" => 1, "float" => 1, "double" => 1, "date" => Date.today, "timestamp" => Time.at(0), "string" => "one", "binary" => "one".b},
+      {"boolean" => false, "int" => 2, "long" => 2, "float" => 2, "double" => 2, "date" => Date.today + 1, "timestamp" => Time.at(1), "string" => "two", "binary" => "two".b},
+      {"boolean" => true, "int" => 3, "long" => 3, "float" => 3, "double" => 3, "date" => Date.today + 2, "timestamp" => Time.at(2), "string" => "three", "binary" => "three".b}
     ]
     assert_nil table.append(data)
     assert_equal data, table.to_a
