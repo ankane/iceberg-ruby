@@ -180,12 +180,8 @@ impl RbTableMetadata {
         self.metadata.last_updated_ms()
     }
 
-    pub fn schemas(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let schemas = ruby.ary_new();
-        for s in rb_self.metadata.schemas_iter() {
-            schemas.push(rb_schema(s))?;
-        }
-        Ok(schemas)
+    pub fn schemas(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(rb_self.metadata.schemas_iter().map(|s| rb_schema(s)))
     }
 
     pub fn schema_by_id(&self, schema_id: i32) -> Option<RbSchema> {
@@ -200,12 +196,13 @@ impl RbTableMetadata {
         self.metadata.current_schema_id()
     }
 
-    pub fn partition_specs(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let partition_specs = ruby.ary_new();
-        for s in rb_self.metadata.partition_specs_iter() {
-            partition_specs.push(rb_partition_spec(s))?;
-        }
-        Ok(partition_specs)
+    pub fn partition_specs(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(
+            rb_self
+                .metadata
+                .partition_specs_iter()
+                .map(|s| rb_partition_spec(s)),
+        )
     }
 
     pub fn partition_spec_by_id(&self, partition_spec_id: i32) -> Option<RbPartitionSpec> {
@@ -222,12 +219,8 @@ impl RbTableMetadata {
         self.metadata.default_partition_spec_id()
     }
 
-    pub fn snapshots(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let snapshots = ruby.ary_new();
-        for s in rb_self.metadata.snapshots() {
-            snapshots.push(rb_snapshot(s))?;
-        }
-        Ok(snapshots)
+    pub fn snapshots(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(rb_self.metadata.snapshots().map(|s| rb_snapshot(s)))
     }
 
     pub fn snapshot_by_id(&self, snapshot_id: i64) -> Option<RbSnapshot> {
@@ -275,12 +268,13 @@ impl RbTableMetadata {
             .map(|s| rb_snapshot(s))
     }
 
-    pub fn sort_orders(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let sort_orders = ruby.ary_new();
-        for s in rb_self.metadata.sort_orders_iter() {
-            sort_orders.push(rb_sort_order(s))?;
-        }
-        Ok(sort_orders)
+    pub fn sort_orders(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(
+            rb_self
+                .metadata
+                .sort_orders_iter()
+                .map(|s| rb_sort_order(s)),
+        )
     }
 
     pub fn sort_order_by_id(&self, sort_order_id: i64) -> Option<RbSortOrder> {
@@ -301,20 +295,22 @@ impl RbTableMetadata {
         self.metadata.properties().clone()
     }
 
-    pub fn statistics(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let statistics = ruby.ary_new();
-        for s in rb_self.metadata.statistics_iter() {
-            statistics.push(rb_statistics_file(s))?;
-        }
-        Ok(statistics)
+    pub fn statistics(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(
+            rb_self
+                .metadata
+                .statistics_iter()
+                .map(|s| rb_statistics_file(s)),
+        )
     }
 
-    pub fn partition_statistics(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let statistics = ruby.ary_new();
-        for s in rb_self.metadata.partition_statistics_iter() {
-            statistics.push(rb_partition_statistics_file(s))?;
-        }
-        Ok(statistics)
+    pub fn partition_statistics(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(
+            rb_self
+                .metadata
+                .partition_statistics_iter()
+                .map(|s| rb_partition_statistics_file(s)),
+        )
     }
 
     pub fn statistics_for_snapshot(&self, snapshot_id: i64) -> Option<RbStatisticsFile> {
@@ -332,12 +328,13 @@ impl RbTableMetadata {
             .map(|s| rb_partition_statistics_file(s))
     }
 
-    pub fn encryption_keys(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let encryption_keys = ruby.ary_new();
-        for k in rb_self.metadata.encryption_keys_iter() {
-            encryption_keys.push(rb_encrypted_key(k))?;
-        }
-        Ok(encryption_keys)
+    pub fn encryption_keys(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(
+            rb_self
+                .metadata
+                .encryption_keys_iter()
+                .map(|k| rb_encrypted_key(k)),
+        )
     }
 
     pub fn encryption_key(&self, key_id: String) -> Option<RbEncryptedKey> {
