@@ -9,6 +9,7 @@ use magnus::{
 
 use crate::RbResult;
 use crate::error::{to_rb_err, todo_error};
+use crate::partitioning::RbPartitionSpec;
 use crate::schema::RbSchema;
 
 pub struct Wrap<T>(pub T);
@@ -105,15 +106,11 @@ pub fn rb_snapshot(ruby: &Ruby, snapshot: &Snapshot) -> RbResult<Value> {
     Ok(rb_snapshot.as_value())
 }
 
-// TODO add more fields
 pub fn rb_partition_spec(ruby: &Ruby, partition_spec: &PartitionSpec) -> RbResult<Value> {
-    let rb_partition_spec = ruby.hash_new();
-    rb_partition_spec.aset(ruby.to_symbol("spec_id"), partition_spec.spec_id())?;
-    rb_partition_spec.aset(
-        ruby.to_symbol("highest_field_id"),
-        partition_spec.highest_field_id(),
-    )?;
-    Ok(rb_partition_spec.as_value())
+    Ok(RbPartitionSpec {
+        spec: partition_spec.clone().into(),
+    }
+    .into_value_with(ruby))
 }
 
 // TODO add more fields

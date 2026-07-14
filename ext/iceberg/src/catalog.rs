@@ -38,7 +38,7 @@ use crate::runtime::runtime;
 use crate::utils::Wrap;
 #[cfg(feature = "datafusion")]
 use crate::utils::date_to_i32;
-use crate::{RbResult, RbSchema, RbTable};
+use crate::{RbPartitionSpec, RbResult, RbSchema, RbTable};
 
 pub enum RbCatalogType {
     #[cfg(feature = "glue")]
@@ -295,11 +295,13 @@ impl RbCatalog {
         name: Wrap<TableIdent>,
         schema: &RbSchema,
         location: Option<String>,
+        partition_spec: Option<&RbPartitionSpec>,
     ) -> RbResult<RbTable> {
         let creation = TableCreation::builder()
             .name(name.0.name)
             .schema(schema.schema.clone())
             .location_opt(location)
+            .partition_spec_opt(partition_spec.map(|v| v.spec.clone()))
             .build();
         let table = runtime()
             .block_on(

@@ -2,6 +2,7 @@ mod arrow;
 mod batch;
 mod catalog;
 mod error;
+mod partitioning;
 mod result;
 mod ruby;
 mod runtime;
@@ -17,6 +18,7 @@ use crate::batch::RbArrowRecordBatch;
 use crate::catalog::RbCatalog;
 #[cfg(feature = "datafusion")]
 use crate::catalog::RbSessionContext;
+use crate::partitioning::{RbPartitionField, RbPartitionSpec};
 use crate::scan::RbTableScan;
 use crate::schema::{RbNestedField, RbSchema};
 use crate::table::{RbTable, RbTableMetadata};
@@ -47,7 +49,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("update_namespace", method!(RbCatalog::update_namespace, 2))?;
     class.define_method("drop_namespace", method!(RbCatalog::drop_namespace, 1))?;
     class.define_method("list_tables", method!(RbCatalog::list_tables, 1))?;
-    class.define_method("create_table", method!(RbCatalog::create_table, 3))?;
+    class.define_method("create_table", method!(RbCatalog::create_table, 4))?;
     class.define_method("load_table", method!(RbCatalog::load_table, 1))?;
     class.define_method("drop_table", method!(RbCatalog::drop_table, 1))?;
     class.define_method("table_exists?", method!(RbCatalog::table_exists, 1))?;
@@ -220,6 +222,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "arrow_c_stream",
         method!(RbArrowRecordBatch::arrow_c_stream, 0),
     )?;
+
+    let class = module.define_class("PartitionSpec", ruby.class_object())?;
+    class.define_singleton_method("new", function!(RbPartitionSpec::new, 1))?;
+
+    let class = module.define_class("PartitionField", ruby.class_object())?;
+    class.define_singleton_method("new", function!(RbPartitionField::new, 1))?;
 
     Ok(())
 }

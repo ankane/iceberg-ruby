@@ -113,6 +113,13 @@ class CreateTableTest < Minitest::Test
     assert_equal "Must pass schema or block", error.message
   end
 
+  def test_partitioning
+    skip if rest? # no spec_id
+
+    partition_spec = Iceberg::PartitionSpec.new([Iceberg::PartitionField.new(source_id: 1, field_id: 1000, transform: "day", name: "created_on")])
+    catalog.create_table("events", schema: {"created_at" => "timestamp"}, partition_spec: partition_spec)
+  end
+
   def test_already_exists
     catalog.create_table("events")
     error = assert_raises(Iceberg::Error) do
