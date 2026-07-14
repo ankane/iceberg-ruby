@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use arrow::array::{
     Array, BooleanArray, Date32Array, Float32Array, Float64Array, Int8Array, Int16Array,
-    Int32Array, Int64Array, StringArray, TimestampNanosecondArray, UInt8Array, UInt16Array,
-    UInt32Array, UInt64Array,
+    Int32Array, Int64Array, StringArray, TimestampMicrosecondArray, TimestampNanosecondArray,
+    UInt8Array, UInt16Array, UInt32Array, UInt64Array,
 };
 use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::RecordBatch;
@@ -44,6 +44,9 @@ pub fn collect_batches(ruby: &Ruby, batches: Vec<RecordBatch>) -> RbResult<Value
                 ArrowDataType::Float32 => collect_column_float32(ruby, column, rows)?,
                 ArrowDataType::Float64 => collect_column_float64(ruby, column, rows)?,
                 ArrowDataType::Date32 => collect_column_date32(ruby, column, rows)?,
+                ArrowDataType::Timestamp(TimeUnit::Microsecond, None) => {
+                    collect_column_timestamp_us(ruby, column, rows)?
+                }
                 ArrowDataType::Timestamp(TimeUnit::Nanosecond, None) => {
                     collect_column_timestamp_ns(ruby, column, rows)?
                 }
@@ -102,6 +105,31 @@ pub fn collect_column_date32(ruby: &Ruby, column: &Arc<dyn Array>, rows: RArray)
                 .map(|v| epoch.funcall::<_, _, Value>("+", (v,)))
                 .transpose()?,
         )?;
+    }
+    Ok(())
+}
+
+pub fn collect_column_timestamp_us(
+    ruby: &Ruby,
+    column: &Arc<dyn Array>,
+    rows: RArray,
+) -> RbResult<()> {
+    let time_class = ruby.class_object().const_get::<_, Value>("Time")?;
+    let time_unit = ruby.to_symbol("usec");
+    let array = column
+        .as_any()
+        .downcast_ref::<TimestampMicrosecondArray>()
+        .unwrap();
+    for (i, value) in array.iter().enumerate() {
+        let value: Option<Value> = match value {
+            Some(v) => {
+                let sec = v / 1_000_000;
+                let usec = v % 1_000_000;
+                Some(time_class.funcall("at", (sec, usec, time_unit))?)
+            }
+            None => None,
+        };
+        rows.entry::<RArray>(i.try_into().unwrap())?.push(value)?;
     }
     Ok(())
 }

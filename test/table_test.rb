@@ -61,11 +61,12 @@ class TableTest < Minitest::Test
         t.boolean "boolean"
         t.string "string"
         t.date "date"
+        t.timestamp "timestamp"
       end
     data = [
-      {"int" => 1, "long" => 1, "float" => 1, "double" => 1, "boolean" => true, "string" => "one", "date" => Date.today},
-      {"int" => 2, "long" => 2, "float" => 2, "double" => 2, "boolean" => false, "string" => "two", "date" => Date.today + 1},
-      {"int" => 3, "long" => 3, "float" => 3, "double" => 3, "boolean" => true, "string" => "three", "date" => Date.today + 2}
+      {"int" => 1, "long" => 1, "float" => 1, "double" => 1, "boolean" => true, "string" => "one", "date" => Date.today, "timestamp" => Time.at(0)},
+      {"int" => 2, "long" => 2, "float" => 2, "double" => 2, "boolean" => false, "string" => "two", "date" => Date.today + 1, "timestamp" => Time.at(1)},
+      {"int" => 3, "long" => 3, "float" => 3, "double" => 3, "boolean" => true, "string" => "three", "date" => Date.today + 2, "timestamp" => Time.at(2)}
     ]
     assert_nil table.append(data)
     assert_equal data, table.to_a
