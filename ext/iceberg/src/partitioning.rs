@@ -79,8 +79,13 @@ impl RbPartitionField {
 
     pub fn transform(&self) -> RbResult<&str> {
         let transform = &self.field.transform;
+        // TODO move
         let v = match transform {
+            Transform::Identity => "identity",
+            Transform::Year => "year",
+            Transform::Month => "month",
             Transform::Day => "day",
+            Transform::Hour => "hour",
             _ => return Err(todo_error(transform)),
         };
         Ok(v)
