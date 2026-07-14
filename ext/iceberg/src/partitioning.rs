@@ -43,4 +43,16 @@ impl RbPartitionField {
             .build();
         Ok(Self { field })
     }
+
+    pub fn source_id(&self) -> i32 {
+        self.field.source_id
+    }
+
+    pub fn field_id(&self) -> Option<i32> {
+        self.field.field_id
+    }
+
+    pub fn name(ruby: &Ruby, self_: &Self) -> RString {
+        ruby.str_new(&self_.field.name)
+    }
 }
