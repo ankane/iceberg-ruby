@@ -26,6 +26,20 @@ impl RbSortOrder {
             .map_err(to_rb_err)?;
         Ok(Self { order })
     }
+
+    pub fn order_id(&self) -> i64 {
+        self.order.order_id
+    }
+
+    pub fn fields(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(
+            rb_self
+                .order
+                .fields
+                .iter()
+                .map(|v| RbSortField { field: v.clone() }),
+        )
+    }
 }
 
 impl RbSortField {
@@ -44,5 +58,9 @@ impl RbSortField {
             .null_order(NullOrder::First)
             .build();
         Ok(Self { field })
+    }
+
+    pub fn source_id(&self) -> i32 {
+        self.field.source_id
     }
 }
