@@ -28,9 +28,13 @@ impl RbStatisticsFile {
         self.file.file_footer_size_in_bytes
     }
 
+    pub fn key_metadata(&self) -> Option<&str> {
+        self.file.key_metadata.as_deref()
+    }
+
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
-            "#<Iceberg::StatisticsFile snapshot_id={}, statistics_path={}, file_size_in_bytes={}, file_footer_size_in_bytes={}>",
+            "#<Iceberg::StatisticsFile snapshot_id={}, statistics_path={}, file_size_in_bytes={}, file_footer_size_in_bytes={}, key_metadata={}>",
             rb_self.snapshot_id().into_value_with(ruby).inspect(),
             rb_self.statistics_path().into_value_with(ruby).inspect(),
             rb_self.file_size_in_bytes().into_value_with(ruby).inspect(),
@@ -38,6 +42,7 @@ impl RbStatisticsFile {
                 .file_footer_size_in_bytes()
                 .into_value_with(ruby)
                 .inspect(),
+            rb_self.key_metadata().into_value_with(ruby).inspect(),
         )
     }
 }

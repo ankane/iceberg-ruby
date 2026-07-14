@@ -299,6 +299,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "file_footer_size_in_bytes",
         method!(RbStatisticsFile::file_footer_size_in_bytes, 0),
     )?;
+    class.define_method("key_metadata", method!(RbStatisticsFile::key_metadata, 0))?;
     class.define_method("inspect", method!(RbStatisticsFile::inspect, 0))?;
 
     let class = module.define_class("PartitionStatisticsFile", ruby.class_object())?;
