@@ -413,9 +413,9 @@ impl RbSessionContext {
         for param in rb_params.into_iter() {
             if param.is_nil() {
                 params.push(ScalarValue::Null);
-            } else if let Some(_) = Qtrue::from_value(param) {
+            } else if Qtrue::from_value(param).is_some() {
                 params.push(ScalarValue::from(true));
-            } else if let Some(_) = Qfalse::from_value(param) {
+            } else if Qfalse::from_value(param).is_some() {
                 params.push(ScalarValue::from(false));
             } else if let Some(v) = Integer::from_value(param) {
                 params.push(ScalarValue::from(v.to_i64()?));
