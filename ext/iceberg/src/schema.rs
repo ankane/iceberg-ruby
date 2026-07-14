@@ -327,6 +327,7 @@ impl RbNestedField {
         ))
     }
 
+    // TODO remove in 0.12.0
     pub fn to_h(ruby: &Ruby, self_: &Self) -> RbResult<RHash> {
         let field = ruby.hash_new();
         field.aset(ruby.to_symbol("id"), self_.id())?;
