@@ -65,9 +65,9 @@ class TableTest < Minitest::Test
         t.binary "binary"
       end
     data = [
-      {"boolean" => true, "int" => 1, "long" => 1, "float" => 1, "double" => 1, "date" => Date.today, "timestamp" => Time.at(0), "string" => "one", "binary" => "one".b},
-      {"boolean" => false, "int" => 2, "long" => 2, "float" => 2, "double" => 2, "date" => Date.today + 1, "timestamp" => Time.at(1), "string" => "two", "binary" => "two".b},
-      {"boolean" => true, "int" => 3, "long" => 3, "float" => 3, "double" => 3, "date" => Date.today + 2, "timestamp" => Time.at(2), "string" => "three", "binary" => "three".b}
+      {"boolean" => true, "int" => 1, "long" => 1, "float" => 1.5, "double" => 1.5, "date" => Date.today, "timestamp" => Time.at(0), "string" => "one", "binary" => "one".b},
+      {"boolean" => false, "int" => 2, "long" => 2, "float" => 2.5, "double" => 2.5, "date" => Date.today + 1, "timestamp" => Time.at(1), "string" => "two", "binary" => "two".b},
+      {"boolean" => true, "int" => 3, "long" => 3, "float" => 3.5, "double" => 3.5, "date" => Date.today + 2, "timestamp" => Time.at(2), "string" => "three", "binary" => "three".b}
     ]
     assert_nil table.append(data)
     assert_equal data, table.to_a
