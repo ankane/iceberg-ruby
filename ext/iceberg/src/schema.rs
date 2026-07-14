@@ -66,6 +66,13 @@ impl RbSchema {
         let schema = FFI_ArrowSchema::try_from(&schema).unwrap();
         Ok(RbArrowSchema { schema })
     }
+
+    pub fn inspect(ruby: &Ruby, self_: &Self) -> RbResult<String> {
+        Ok(format!(
+            "#<Iceberg::Schema fields={}>",
+            Self::fields(ruby, self_)?.inspect()
+        ))
+    }
 }
 
 impl RbNestedField {
