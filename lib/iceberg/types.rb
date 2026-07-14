@@ -1,20 +1,26 @@
 module Iceberg
-  class BooleanType
+  class Type
   end
 
-  class IntType
+  class PrimitiveType < Type
   end
 
-  class LongType
+  class BooleanType < PrimitiveType
   end
 
-  class FloatType
+  class IntType < PrimitiveType
   end
 
-  class DoubleType
+  class LongType < PrimitiveType
   end
 
-  class DecimalType
+  class FloatType < PrimitiveType
+  end
+
+  class DoubleType < PrimitiveType
+  end
+
+  class DecimalType < PrimitiveType
     attr_reader :precision, :scale
 
     def initialize(precision, scale)
@@ -23,31 +29,31 @@ module Iceberg
     end
   end
 
-  class DateType
+  class DateType < PrimitiveType
   end
 
-  class TimeType
+  class TimeType < PrimitiveType
   end
 
-  class TimestampType
+  class TimestampType < PrimitiveType
   end
 
-  class TimestamptzType
+  class TimestamptzType < PrimitiveType
   end
 
-  class TimestampNanoType
+  class TimestampNanoType < PrimitiveType
   end
 
-  class TimestamptzNanoType
+  class TimestamptzNanoType < PrimitiveType
   end
 
-  class StringType
+  class StringType < PrimitiveType
   end
 
-  class UUIDType
+  class UUIDType < PrimitiveType
   end
 
-  class FixedType
+  class FixedType < PrimitiveType
     attr_reader :length
 
     def initialize(length)
@@ -55,6 +61,6 @@ module Iceberg
     end
   end
 
-  class BinaryType
+  class BinaryType < PrimitiveType
   end
 end
