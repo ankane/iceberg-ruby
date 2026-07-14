@@ -245,10 +245,12 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_singleton_method("new", function!(RbSortOrder::new, 1))?;
     class.define_method("order_id", method!(RbSortOrder::order_id, 0))?;
     class.define_method("fields", method!(RbSortOrder::fields, 0))?;
+    class.define_method("inspect", method!(RbSortOrder::inspect, 0))?;
 
     let class = module.define_class("SortField", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbSortField::new, 1))?;
     class.define_method("source_id", method!(RbSortField::source_id, 0))?;
+    class.define_method("inspect", method!(RbSortField::inspect, 0))?;
 
     let class = module.define_class("Snapshot", ruby.class_object())?;
     class.define_method("snapshot_id", method!(RbSnapshot::snapshot_id, 0))?;
@@ -268,6 +270,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         method!(RbEncryptedKey::encrypted_by_id, 0),
     )?;
     class.define_method("properties", method!(RbEncryptedKey::properties, 0))?;
+    class.define_method("inspect", method!(RbEncryptedKey::inspect, 0))?;
 
     let class = module.define_class("StatisticsFile", ruby.class_object())?;
     class.define_method("snapshot_id", method!(RbStatisticsFile::snapshot_id, 0))?;

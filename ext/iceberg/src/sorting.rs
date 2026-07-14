@@ -1,5 +1,5 @@
 use iceberg::spec::{NullOrder, SortDirection, SortField, SortOrder, Transform};
-use magnus::{RArray, RHash, RString, Ruby, TryConvert};
+use magnus::{IntoValue, RArray, RHash, RString, Ruby, TryConvert, value::ReprValue};
 
 use crate::RbResult;
 use crate::error::{to_rb_err, todo_error};
@@ -40,6 +40,13 @@ impl RbSortOrder {
                 .map(|v| RbSortField { field: v.clone() }),
         )
     }
+
+    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+        format!(
+            "#<Iceberg::SortOrder order_id={}>",
+            self_.order_id().into_value_with(ruby).inspect(),
+        )
+    }
 }
 
 impl RbSortField {
@@ -62,5 +69,12 @@ impl RbSortField {
 
     pub fn source_id(&self) -> i32 {
         self.field.source_id
+    }
+
+    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
+        format!(
+            "#<Iceberg::SortField source_id={}>",
+            self_.source_id().into_value_with(ruby).inspect(),
+        )
     }
 }
