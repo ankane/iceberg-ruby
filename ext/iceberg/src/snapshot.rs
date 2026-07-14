@@ -53,10 +53,15 @@ impl RbSnapshotLog {
         self.log.snapshot_id
     }
 
+    pub fn timestamp_ms(&self) -> i64 {
+        self.log.timestamp_ms
+    }
+
     pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
         format!(
-            "#<Iceberg::SnapshotLog snapshot_id={}>",
+            "#<Iceberg::SnapshotLog snapshot_id={}, timestamp_ms={}>",
             self_.snapshot_id().into_value_with(ruby).inspect(),
+            self_.timestamp_ms().into_value_with(ruby).inspect(),
         )
     }
 }
@@ -66,10 +71,15 @@ impl RbMetadataLog {
         &self.log.metadata_file
     }
 
+    pub fn timestamp_ms(&self) -> i64 {
+        self.log.timestamp_ms
+    }
+
     pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
         format!(
-            "#<Iceberg::MetadataLog metadata_file={}>",
+            "#<Iceberg::MetadataLog metadata_file={}, timestamp_ms={}>",
             self_.metadata_file().into_value_with(ruby).inspect(),
+            self_.timestamp_ms().into_value_with(ruby).inspect(),
         )
     }
 }
