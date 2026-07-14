@@ -117,7 +117,8 @@ class CreateTableTest < Minitest::Test
     skip if rest? # no spec_id
 
     partition_spec = Iceberg::PartitionSpec.new([Iceberg::PartitionField.new(source_id: 1, field_id: 1000, transform: "day", name: "created_on")])
-    catalog.create_table("events", schema: {"created_at" => "timestamp"}, partition_spec: partition_spec)
+    table = catalog.create_table("events", schema: {"created_at" => "timestamp"}, partition_spec: partition_spec)
+    table.default_partition_spec
   end
 
   def test_sort_order

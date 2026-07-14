@@ -241,6 +241,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("source_id", method!(RbPartitionField::source_id, 0))?;
     class.define_method("field_id", method!(RbPartitionField::field_id, 0))?;
     class.define_method("name", method!(RbPartitionField::name, 0))?;
+    class.define_method("transform", method!(RbPartitionField::transform, 0))?;
     class.define_method("inspect", method!(RbPartitionField::inspect, 0))?;
 
     let class = module.define_class("SortOrder", ruby.class_object())?;

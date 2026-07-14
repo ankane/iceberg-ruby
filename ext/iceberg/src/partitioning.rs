@@ -31,10 +31,21 @@ impl RbPartitionSpec {
         self.spec.spec_id()
     }
 
+    pub fn fields(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(
+            rb_self
+                .spec
+                .fields()
+                .iter()
+                .map(|v| RbPartitionField { field: v.clone() }),
+        )
+    }
+
     pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
         format!(
-            "#<Iceberg::PartitionSpec spec_id={}>",
+            "#<Iceberg::PartitionSpec spec_id={}, fields={}>",
             self_.spec_id().into_value_with(ruby).inspect(),
+            Self::fields(ruby, self_).inspect(),
         )
     }
 }
@@ -67,12 +78,22 @@ impl RbPartitionField {
         &self.field.name
     }
 
-    pub fn inspect(ruby: &Ruby, self_: &Self) -> String {
-        format!(
-            "#<Iceberg::PartitionField source_id={}, field_id={}, name={}>",
+    pub fn transform(&self) -> RbResult<&str> {
+        let transform = &self.field.transform;
+        let v = match transform {
+            Transform::Day => "day",
+            _ => return Err(todo_error(transform)),
+        };
+        Ok(v)
+    }
+
+    pub fn inspect(ruby: &Ruby, self_: &Self) -> RbResult<String> {
+        Ok(format!(
+            "#<Iceberg::PartitionField source_id={}, field_id={}, name={}, transform={}>",
             self_.source_id().into_value_with(ruby).inspect(),
             self_.field_id().into_value_with(ruby).inspect(),
             self_.name().into_value_with(ruby).inspect(),
-        )
+            self_.transform()?.into_value_with(ruby).inspect(),
+        ))
     }
 }

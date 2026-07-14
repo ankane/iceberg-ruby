@@ -56,6 +56,18 @@ module Iceberg
     end
     alias_method :schema_id, :current_schema_id
 
+    def partition_specs
+      metadata.partition_specs
+    end
+
+    def partition_spec_by_id(partition_spec_id)
+      metadata.partition_spec_by_id(partition_spec_id)
+    end
+
+    def default_partition_spec
+      metadata.default_partition_spec
+    end
+
     def default_partition_spec_id
       metadata.default_partition_spec_id
     end
