@@ -181,11 +181,11 @@ impl RbTableMetadata {
     }
 
     pub fn schemas(ruby: &Ruby, rb_self: &Self) -> RArray {
-        ruby.ary_from_iter(rb_self.metadata.schemas_iter().map(|s| rb_schema(s)))
+        ruby.ary_from_iter(rb_self.metadata.schemas_iter().map(rb_schema))
     }
 
     pub fn schema_by_id(&self, schema_id: i32) -> Option<RbSchema> {
-        self.metadata.schema_by_id(schema_id).map(|s| rb_schema(s))
+        self.metadata.schema_by_id(schema_id).map(rb_schema)
     }
 
     pub fn current_schema(&self) -> RbSchema {
@@ -201,14 +201,14 @@ impl RbTableMetadata {
             rb_self
                 .metadata
                 .partition_specs_iter()
-                .map(|s| rb_partition_spec(s)),
+                .map(rb_partition_spec),
         )
     }
 
     pub fn partition_spec_by_id(&self, partition_spec_id: i32) -> Option<RbPartitionSpec> {
         self.metadata
             .partition_spec_by_id(partition_spec_id)
-            .map(|s| rb_partition_spec(s))
+            .map(rb_partition_spec)
     }
 
     pub fn default_partition_spec(&self) -> RbPartitionSpec {
@@ -220,13 +220,11 @@ impl RbTableMetadata {
     }
 
     pub fn snapshots(ruby: &Ruby, rb_self: &Self) -> RArray {
-        ruby.ary_from_iter(rb_self.metadata.snapshots().map(|s| rb_snapshot(s)))
+        ruby.ary_from_iter(rb_self.metadata.snapshots().map(rb_snapshot))
     }
 
     pub fn snapshot_by_id(&self, snapshot_id: i64) -> Option<RbSnapshot> {
-        self.metadata
-            .snapshot_by_id(snapshot_id)
-            .map(|s| rb_snapshot(s))
+        self.metadata.snapshot_by_id(snapshot_id).map(rb_snapshot)
     }
 
     pub fn history(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
@@ -255,7 +253,7 @@ impl RbTableMetadata {
     }
 
     pub fn current_snapshot(&self) -> Option<RbSnapshot> {
-        self.metadata.current_snapshot().map(|s| rb_snapshot(s))
+        self.metadata.current_snapshot().map(rb_snapshot)
     }
 
     pub fn current_snapshot_id(&self) -> Option<i64> {
@@ -263,24 +261,17 @@ impl RbTableMetadata {
     }
 
     pub fn snapshot_for_ref(&self, ref_name: String) -> Option<RbSnapshot> {
-        self.metadata
-            .snapshot_for_ref(&ref_name)
-            .map(|s| rb_snapshot(s))
+        self.metadata.snapshot_for_ref(&ref_name).map(rb_snapshot)
     }
 
     pub fn sort_orders(ruby: &Ruby, rb_self: &Self) -> RArray {
-        ruby.ary_from_iter(
-            rb_self
-                .metadata
-                .sort_orders_iter()
-                .map(|s| rb_sort_order(s)),
-        )
+        ruby.ary_from_iter(rb_self.metadata.sort_orders_iter().map(rb_sort_order))
     }
 
     pub fn sort_order_by_id(&self, sort_order_id: i64) -> Option<RbSortOrder> {
         self.metadata
             .sort_order_by_id(sort_order_id)
-            .map(|s| rb_sort_order(s))
+            .map(rb_sort_order)
     }
 
     pub fn default_sort_order(&self) -> RbSortOrder {

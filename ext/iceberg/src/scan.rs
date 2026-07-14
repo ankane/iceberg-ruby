@@ -53,7 +53,7 @@ impl RbTableScan {
     }
 
     pub fn snapshot(&self) -> Option<RbSnapshot> {
-        self.scan.read().unwrap().snapshot().map(|s| rb_snapshot(s))
+        self.scan.read().unwrap().snapshot().map(rb_snapshot)
     }
 
     pub fn collect(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {

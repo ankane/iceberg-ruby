@@ -6,6 +6,7 @@ use iceberg::{NamespaceIdent, TableIdent};
 use magnus::{
     Error as RbErr, IntoValue, RClass, RString, Ruby, TryConvert, Value, prelude::*, value::Lazy,
 };
+use std::sync::Arc;
 
 use crate::RbResult;
 use crate::encryption::RbEncryptedKey;
@@ -87,27 +88,27 @@ pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> 
     Ok(Some(lit))
 }
 
-pub fn rb_schema(schema: &Schema) -> RbSchema {
+pub fn rb_schema(schema: &Arc<Schema>) -> RbSchema {
     RbSchema {
-        schema: schema.clone(),
+        schema: (**schema).clone(),
     }
 }
 
-pub fn rb_snapshot(snapshot: &Snapshot) -> RbSnapshot {
+pub fn rb_snapshot(snapshot: &Arc<Snapshot>) -> RbSnapshot {
     RbSnapshot {
-        snapshot: snapshot.clone(),
+        snapshot: (**snapshot).clone(),
     }
 }
 
-pub fn rb_partition_spec(partition_spec: &PartitionSpec) -> RbPartitionSpec {
+pub fn rb_partition_spec(partition_spec: &Arc<PartitionSpec>) -> RbPartitionSpec {
     RbPartitionSpec {
-        spec: partition_spec.clone().into(),
+        spec: (**partition_spec).clone().into(),
     }
 }
 
-pub fn rb_sort_order(sort_order: &SortOrder) -> RbSortOrder {
+pub fn rb_sort_order(sort_order: &Arc<SortOrder>) -> RbSortOrder {
     RbSortOrder {
-        order: sort_order.clone(),
+        order: (**sort_order).clone(),
     }
 }
 
