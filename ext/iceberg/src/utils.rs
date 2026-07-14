@@ -87,38 +87,37 @@ pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> 
     Ok(Some(lit))
 }
 
-pub fn rb_schema(_ruby: &Ruby, schema: &Schema) -> RbSchema {
+pub fn rb_schema(schema: &Schema) -> RbSchema {
     RbSchema {
         schema: schema.clone(),
     }
 }
 
-pub fn rb_snapshot(_ruby: &Ruby, snapshot: &Snapshot) -> RbSnapshot {
+pub fn rb_snapshot(snapshot: &Snapshot) -> RbSnapshot {
     RbSnapshot {
         snapshot: snapshot.clone(),
     }
 }
 
-pub fn rb_partition_spec(_ruby: &Ruby, partition_spec: &PartitionSpec) -> RbPartitionSpec {
+pub fn rb_partition_spec(partition_spec: &PartitionSpec) -> RbPartitionSpec {
     RbPartitionSpec {
         spec: partition_spec.clone().into(),
     }
 }
 
-pub fn rb_sort_order(_ruby: &Ruby, sort_order: &SortOrder) -> RbSortOrder {
+pub fn rb_sort_order(sort_order: &SortOrder) -> RbSortOrder {
     RbSortOrder {
         order: sort_order.clone(),
     }
 }
 
-pub fn rb_statistics_file(_ruby: &Ruby, statistics_file: &StatisticsFile) -> RbStatisticsFile {
+pub fn rb_statistics_file(statistics_file: &StatisticsFile) -> RbStatisticsFile {
     RbStatisticsFile {
         file: statistics_file.clone(),
     }
 }
 
 pub fn rb_partition_statistics_file(
-    _ruby: &Ruby,
     partition_statistics_file: &PartitionStatisticsFile,
 ) -> RbPartitionStatisticsFile {
     RbPartitionStatisticsFile {
@@ -126,7 +125,7 @@ pub fn rb_partition_statistics_file(
     }
 }
 
-pub fn rb_encrypted_key(_ruby: &Ruby, encrypted_key: &EncryptedKey) -> RbEncryptedKey {
+pub fn rb_encrypted_key(encrypted_key: &EncryptedKey) -> RbEncryptedKey {
     RbEncryptedKey {
         key: encrypted_key.clone(),
     }

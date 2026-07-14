@@ -52,11 +52,8 @@ impl RbTableScan {
         Ok(files)
     }
 
-    pub fn snapshot(ruby: &Ruby, rb_self: &Self) -> RbResult<Option<RbSnapshot>> {
-        match rb_self.scan.read().unwrap().snapshot() {
-            Some(s) => Ok(Some(rb_snapshot(ruby, s))),
-            None => Ok(None),
-        }
+    pub fn snapshot(&self) -> Option<RbSnapshot> {
+        self.scan.read().unwrap().snapshot().map(|s| rb_snapshot(s))
     }
 
     pub fn collect(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
