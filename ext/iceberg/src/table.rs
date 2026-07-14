@@ -296,12 +296,7 @@ impl RbTableMetadata {
     }
 
     pub fn statistics(ruby: &Ruby, rb_self: &Self) -> RArray {
-        ruby.ary_from_iter(
-            rb_self
-                .metadata
-                .statistics_iter()
-                .map(|s| rb_statistics_file(s)),
-        )
+        ruby.ary_from_iter(rb_self.metadata.statistics_iter().map(rb_statistics_file))
     }
 
     pub fn partition_statistics(ruby: &Ruby, rb_self: &Self) -> RArray {
@@ -309,14 +304,14 @@ impl RbTableMetadata {
             rb_self
                 .metadata
                 .partition_statistics_iter()
-                .map(|s| rb_partition_statistics_file(s)),
+                .map(rb_partition_statistics_file),
         )
     }
 
     pub fn statistics_for_snapshot(&self, snapshot_id: i64) -> Option<RbStatisticsFile> {
         self.metadata
             .statistics_for_snapshot(snapshot_id)
-            .map(|s| rb_statistics_file(s))
+            .map(rb_statistics_file)
     }
 
     pub fn partition_statistics_for_snapshot(
@@ -325,7 +320,7 @@ impl RbTableMetadata {
     ) -> Option<RbPartitionStatisticsFile> {
         self.metadata
             .partition_statistics_for_snapshot(snapshot_id)
-            .map(|s| rb_partition_statistics_file(s))
+            .map(rb_partition_statistics_file)
     }
 
     pub fn encryption_keys(ruby: &Ruby, rb_self: &Self) -> RArray {
@@ -333,14 +328,12 @@ impl RbTableMetadata {
             rb_self
                 .metadata
                 .encryption_keys_iter()
-                .map(|k| rb_encrypted_key(k)),
+                .map(rb_encrypted_key),
         )
     }
 
     pub fn encryption_key(&self, key_id: String) -> Option<RbEncryptedKey> {
-        self.metadata
-            .encryption_key(&key_id)
-            .map(|k| rb_encrypted_key(k))
+        self.metadata.encryption_key(&key_id).map(rb_encrypted_key)
     }
 
     pub fn next_row_id(&self) -> u64 {
