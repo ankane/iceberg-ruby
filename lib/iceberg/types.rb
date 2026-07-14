@@ -1,5 +1,8 @@
 module Iceberg
   class Type
+    def inspect
+      "#<#{self.class.name}>"
+    end
   end
 
   class PrimitiveType < Type
@@ -26,6 +29,10 @@ module Iceberg
     def initialize(precision, scale)
       @precision = precision
       @scale = scale
+    end
+
+    def inspect
+      "#<#{self.class.name} precision=#{@precision.inspect} scale=#{@scale.inspect}>"
     end
   end
 
@@ -58,6 +65,10 @@ module Iceberg
 
     def initialize(length)
       @length = length
+    end
+
+    def inspect
+      "#<#{self.class.name} length=#{@length.inspect}>"
     end
   end
 
