@@ -19,6 +19,7 @@ class SqlTest < Minitest::Test
     assert_kind_of TrueClass, catalog.sql("SELECT true").rows[0][0]
     assert_kind_of FalseClass, catalog.sql("SELECT false").rows[0][0]
     assert_kind_of NilClass, catalog.sql("SELECT NULL").rows[0][0]
+    assert_kind_of String, catalog.sql("SELECT 'hello'").rows[0][0]
   end
 
   def test_params
@@ -29,6 +30,7 @@ class SqlTest < Minitest::Test
     assert_kind_of TrueClass, catalog.sql("SELECT $1", [true]).rows[0][0]
     assert_kind_of FalseClass, catalog.sql("SELECT $1", [false]).rows[0][0]
     assert_kind_of NilClass, catalog.sql("SELECT $1", [nil]).rows[0][0]
+    assert_kind_of String, catalog.sql("SELECT $1", ["hello"]).rows[0][0]
   end
 
   def test_extra_params
