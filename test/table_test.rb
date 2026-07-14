@@ -73,6 +73,20 @@ class TableTest < Minitest::Test
     assert_equal data, table.to_a
   end
 
+  def test_append_type_mismatch
+    table = catalog.create_table("events", schema: {"a" => "int"})
+    error = assert_raises(TypeError) do
+      table.append([{"a" => "one"}])
+    end
+    assert_equal "no implicit conversion of String into Integer", error.message
+  end
+
+  def test_append_missing_column
+    table = catalog.create_table("events", schema: {"a" => "int", "b" => "string"})
+    table.append([{"a" => 1}, {"a" => 2}, {"a" => 3}])
+    assert_equal [{"a" => 1, "b" => nil}, {"a" => 2, "b" => nil}, {"a" => 3, "b" => nil}], table.to_a
+  end
+
   def test_inspect
     table = create_events
     assert_equal table.inspect, table.to_s
