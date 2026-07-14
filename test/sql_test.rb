@@ -92,6 +92,16 @@ class SqlTest < Minitest::Test
     assert_match "Projections require unique expression names", error.message
   end
 
+  def test_schema_changes
+    skip unless ENV["TEST_PYTHON"] && rest?
+
+    system "python3", "test/support/schema_changes.py", exception: true
+
+    result = catalog.sql("SELECT * FROM events ORDER BY 1")
+    assert_equal ["c"], result.columns
+    assert_equal [[1], [2], [3]], result.rows
+  end
+
   private
 
   def create_events
