@@ -253,6 +253,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("SortField", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbSortField::new, 1))?;
     class.define_method("source_id", method!(RbSortField::source_id, 0))?;
+    class.define_method("transform", method!(RbSortField::transform, 0))?;
+    class.define_method("direction", method!(RbSortField::direction, 0))?;
+    class.define_method("null_order", method!(RbSortField::null_order, 0))?;
     class.define_method("inspect", method!(RbSortField::inspect, 0))?;
 
     let class = module.define_class("Snapshot", ruby.class_object())?;

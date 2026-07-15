@@ -2,7 +2,7 @@ use iceberg::spec::{NullOrder, SortDirection, SortField, SortOrder, Transform};
 use magnus::{IntoValue, RArray, RHash, Ruby, TryConvert, value::ReprValue};
 
 use crate::RbResult;
-use crate::error::to_rb_err;
+use crate::error::{to_rb_err, todo_error};
 use crate::utils::Wrap;
 
 #[magnus::wrap(class = "Iceberg::SortOrder")]
@@ -83,10 +83,41 @@ impl RbSortField {
         self.field.source_id
     }
 
-    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
-        format!(
-            "#<Iceberg::SortField source_id={}>",
+    pub fn transform(&self) -> RbResult<&str> {
+        let transform = &self.field.transform;
+        // TODO move / DRY
+        let v = match transform {
+            Transform::Identity => "identity",
+            Transform::Year => "year",
+            Transform::Month => "month",
+            Transform::Day => "day",
+            Transform::Hour => "hour",
+            _ => return Err(todo_error(transform)),
+        };
+        Ok(v)
+    }
+
+    pub fn direction(&self) -> &str {
+        match self.field.direction {
+            SortDirection::Ascending => "asc",
+            SortDirection::Descending => "desc",
+        }
+    }
+
+    pub fn null_order(&self) -> &str {
+        match self.field.null_order {
+            NullOrder::First => "first",
+            NullOrder::Last => "last",
+        }
+    }
+
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> RbResult<String> {
+        Ok(format!(
+            "#<Iceberg::SortField source_id={}, transform={}, direction={}, null_order={}>",
             rb_self.source_id().into_value_with(ruby).inspect(),
-        )
+            rb_self.transform()?.into_value_with(ruby).inspect(),
+            rb_self.direction().into_value_with(ruby).inspect(),
+            rb_self.null_order().into_value_with(ruby).inspect(),
+        ))
     }
 }
