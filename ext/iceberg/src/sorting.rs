@@ -57,8 +57,9 @@ impl RbSortField {
             .0;
 
         let direction = ob
-            .aref::<_, Wrap<SortDirection>>(ruby.to_symbol("direction"))?
-            .0;
+            .aref::<_, Option<Wrap<SortDirection>>>(ruby.to_symbol("direction"))?
+            .map(|v| v.0)
+            .unwrap_or(SortDirection::Ascending);
 
         let null_order = ob
             .aref::<_, Option<Wrap<NullOrder>>>(ruby.to_symbol("null_order"))?
