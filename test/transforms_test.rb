@@ -55,6 +55,6 @@ class TransformsTest < Minitest::Test
     error = assert_raises(Iceberg::InvalidDataError) do
       catalog.create_table("events", schema: {"a" => field_type}, partition_spec:)
     end
-    assert_match /Invalid source type: \S+ for transform/, error.message
+    assert_match(/Invalid source type: \S+ for transform/, error.message)
   end
 end
