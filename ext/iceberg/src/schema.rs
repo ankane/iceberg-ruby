@@ -105,9 +105,10 @@ impl RbNestedField {
             "Iceberg::StructType" => {
                 let fields = rb_type
                     .funcall::<_, _, RArray>("fields", ())?
+                    .typecheck::<&RbNestedField>()?
                     .into_iter()
-                    .map(|v| <&RbNestedField>::try_convert(v).map(|f| f.field.clone()))
-                    .collect::<RbResult<Vec<_>>>()?;
+                    .map(|v| v.field.clone())
+                    .collect::<Vec<_>>();
                 Type::Struct(StructType::new(fields))
             }
             "Iceberg::ListType" => {
