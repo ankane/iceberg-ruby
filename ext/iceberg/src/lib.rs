@@ -73,6 +73,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     }
 
     let class = module.define_class("RbTable", ruby.class_object())?;
+    class.define_method("identifier", method!(RbTable::identifier, 0))?;
     class.define_method("scan", method!(RbTable::scan, 1))?;
     class.define_method("append", method!(RbTable::append, 2))?;
     class.define_method("metadata", method!(RbTable::metadata, 0))?;

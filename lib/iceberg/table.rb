@@ -5,6 +5,10 @@ module Iceberg
       @catalog = catalog
     end
 
+    def refresh
+      @table = @catalog.load_table(@table.identifier)
+    end
+
     def format_version
       metadata.format_version
     end

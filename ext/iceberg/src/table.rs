@@ -40,6 +40,14 @@ pub struct RbTable {
 }
 
 impl RbTable {
+    pub fn identifier(&self) -> Vec<String> {
+        let table = self.table.read().unwrap();
+        let ident = table.identifier();
+        let mut vec = ident.namespace.clone().inner();
+        vec.push(ident.name.clone());
+        vec
+    }
+
     pub fn scan(&self, snapshot_id: Option<i64>) -> RbResult<RbTableScan> {
         let table = self.table.read().unwrap();
         let mut builder = table.scan();
