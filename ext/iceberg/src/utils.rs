@@ -52,18 +52,37 @@ impl TryConvert for Wrap<TableIdent> {
 
 impl TryConvert for Wrap<Transform> {
     fn try_convert(ob: Value) -> RbResult<Self> {
-        let s = RString::try_convert(ob)?;
-        let v = match unsafe { s.as_str() }? {
-            "identity" => Transform::Identity,
-            "year" => Transform::Year,
-            "month" => Transform::Month,
-            "day" => Transform::Day,
-            "hour" => Transform::Hour,
-            _ => {
-                return Err(RbErr::new(
-                    Ruby::get_with(ob).exception_arg_error(),
-                    "Unsupported transform",
-                ));
+        let v = if let Ok(s) = RString::try_convert(ob) {
+            match unsafe { s.as_str() }? {
+                "identity" => Transform::Identity,
+                "year" => Transform::Year,
+                "month" => Transform::Month,
+                "day" => Transform::Day,
+                "hour" => Transform::Hour,
+                _ => {
+                    return Err(RbErr::new(
+                        Ruby::get_with(ob).exception_arg_error(),
+                        "Unsupported transform",
+                    ));
+                }
+            }
+        } else {
+            match &*unsafe { ob.classname() } {
+                "Iceberg::IdentityTransform" => Transform::Identity,
+                "Iceberg::BucketTransform" => Transform::Bucket(ob.funcall("num_buckets", ())?),
+                "Iceberg::TruncateTransform" => Transform::Truncate(ob.funcall("width", ())?),
+                "Iceberg::YearTransform" => Transform::Year,
+                "Iceberg::MonthTransform" => Transform::Month,
+                "Iceberg::DayTransform" => Transform::Day,
+                "Iceberg::HourTransform" => Transform::Hour,
+                "Iceberg::VoidTransform" => Transform::Void,
+                "Iceberg::UnknownTransform" => Transform::Unknown,
+                _ => {
+                    return Err(RbErr::new(
+                        Ruby::get_with(ob).exception_arg_error(),
+                        format!("Transform not supported: {}", ob),
+                    ));
+                }
             }
         };
         Ok(Wrap(v))
