@@ -40,6 +40,7 @@ class SqlTest < Minitest::Test
 
   def test_insert
     catalog.sql("CREATE TABLE events (a int, b bigint)")
+    catalog.sql("INSERT INTO events VALUES (CAST($1 AS int), $2)", [1, 2])
     # TODO fix
     error = assert_raises(Iceberg::Error) do
       catalog.sql("INSERT INTO events VALUES ($1, $2)", [1, 2])
