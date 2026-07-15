@@ -203,9 +203,13 @@ impl RbNestedField {
                     .const_get::<_, RClass>("BinaryType")?
                     .new_instance(())?,
             },
-            Type::Struct(_) => iceberg
+            Type::Struct(s) => iceberg
                 .const_get::<_, RClass>("StructType")?
-                .new_instance(())?,
+                .new_instance((ruby.ary_from_iter(
+                    s.fields()
+                        .iter()
+                        .map(|f| RbNestedField { field: f.clone() }),
+                ),))?,
             Type::List(_) => iceberg
                 .const_get::<_, RClass>("ListType")?
                 .new_instance(())?,
