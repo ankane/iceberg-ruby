@@ -292,6 +292,7 @@ impl RbCatalog {
             .collect())
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn create_table(
         ruby: &Ruby,
         rb_self: &Self,

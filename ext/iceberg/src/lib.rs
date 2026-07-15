@@ -24,7 +24,7 @@ use crate::catalog::RbCatalog;
 use crate::catalog::RbSessionContext;
 use crate::encryption::RbEncryptedKey;
 use crate::partitioning::{RbPartitionField, RbPartitionSpec};
-use crate::scan::RbTableScan;
+use crate::scan::{RbDataFile, RbFileScanTask, RbTableScan};
 use crate::schema::{RbNestedField, RbSchema};
 use crate::snapshot::{RbMetadataLogEntry, RbSnapshot, RbSnapshotLogEntry};
 use crate::sorting::{RbSortField, RbSortOrder};
@@ -195,6 +195,15 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("plan_files", method!(RbTableScan::plan_files, 0))?;
     class.define_method("snapshot", method!(RbTableScan::snapshot, 0))?;
     class.define_method("collect", method!(RbTableScan::collect, 0))?;
+
+    let class = module.define_class("FileScanTask", ruby.class_object())?;
+    class.define_method("file", method!(RbFileScanTask::file, 0))?;
+    class.define_method("inspect", method!(RbFileScanTask::inspect, 0))?;
+
+    let class = module.define_class("DataFile", ruby.class_object())?;
+    class.define_method("file_path", method!(RbDataFile::file_path, 0))?;
+    class.define_method("record_count", method!(RbDataFile::record_count, 0))?;
+    class.define_method("inspect", method!(RbDataFile::inspect, 0))?;
 
     let class = module.define_class("Schema", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbSchema::new, -1))?;

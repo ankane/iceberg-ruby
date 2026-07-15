@@ -1,8 +1,8 @@
 use std::sync::RwLock;
 
 use futures::TryStreamExt;
-use iceberg::scan::TableScan;
-use magnus::{RArray, Ruby, Value};
+use iceberg::scan::{FileScanTask, TableScan};
+use magnus::{IntoValue, RArray, Ruby, Value, value::ReprValue};
 
 use crate::RbResult;
 use crate::error::to_rb_err;
@@ -14,6 +14,17 @@ use crate::snapshot::RbSnapshot;
 #[magnus::wrap(class = "Iceberg::RbTableScan")]
 pub struct RbTableScan {
     pub scan: RwLock<TableScan>,
+}
+
+#[magnus::wrap(class = "Iceberg::FileScanTask")]
+pub struct RbFileScanTask {
+    pub scan: FileScanTask,
+}
+
+#[magnus::wrap(class = "Iceberg::DataFile")]
+pub struct RbDataFile {
+    pub file_path: String,
+    pub record_count: Option<u64>,
 }
 
 impl RbTableScan {
@@ -29,24 +40,7 @@ impl RbTableScan {
 
         let files = ruby.ary_new();
         for v in plan_files {
-            let file = ruby.hash_new();
-            file.aset(ruby.to_symbol("start"), v.start)?;
-            file.aset(ruby.to_symbol("length"), v.length)?;
-            file.aset(ruby.to_symbol("record_count"), v.record_count)?;
-            file.aset(ruby.to_symbol("data_file_path"), v.data_file_path)?;
-            file.aset(ruby.to_symbol("project_field_ids"), v.project_field_ids)?;
-
-            let deletes = ruby.ary_new();
-            for d in v.deletes {
-                let delete = ruby.hash_new();
-                delete.aset(ruby.to_symbol("file_path"), d.file_path)?;
-                delete.aset(ruby.to_symbol("partition_spec_id"), d.partition_spec_id)?;
-                delete.aset(ruby.to_symbol("equality_ids"), d.equality_ids)?;
-                deletes.push(delete)?;
-            }
-            file.aset(ruby.to_symbol("deletes"), deletes)?;
-
-            files.push(file)?;
+            files.push(RbFileScanTask { scan: v })?;
         }
         Ok(files)
     }
@@ -61,5 +55,39 @@ impl RbTableScan {
         let stream = runtime.block_on(scan.to_arrow()).map_err(to_rb_err)?;
         let batches: Vec<_> = runtime.block_on(stream.try_collect()).map_err(to_rb_err)?;
         collect_batches(ruby, batches)
+    }
+}
+
+impl RbFileScanTask {
+    pub fn file(&self) -> RbDataFile {
+        RbDataFile {
+            file_path: self.scan.data_file_path.clone(),
+            record_count: self.scan.record_count,
+        }
+    }
+
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
+        format!(
+            "#<Iceberg::FileScanTask file={}>",
+            rb_self.file().into_value_with(ruby).inspect(),
+        )
+    }
+}
+
+impl RbDataFile {
+    pub fn file_path(&self) -> &str {
+        &self.file_path
+    }
+
+    pub fn record_count(&self) -> Option<u64> {
+        self.record_count
+    }
+
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
+        format!(
+            "#<Iceberg::DataFile file_path={}, record_count={}>",
+            rb_self.file_path().into_value_with(ruby).inspect(),
+            rb_self.record_count().into_value_with(ruby).inspect(),
+        )
     }
 }
