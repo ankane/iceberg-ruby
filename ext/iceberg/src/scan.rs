@@ -25,6 +25,7 @@ pub struct RbFileScanTask {
 pub struct RbDataFile {
     pub file_path: String,
     pub record_count: Option<u64>,
+    pub file_size_in_bytes: u64,
 }
 
 impl RbTableScan {
@@ -63,6 +64,7 @@ impl RbFileScanTask {
         RbDataFile {
             file_path: self.scan.data_file_path.clone(),
             record_count: self.scan.record_count,
+            file_size_in_bytes: self.scan.file_size_in_bytes,
         }
     }
 
@@ -83,11 +85,16 @@ impl RbDataFile {
         self.record_count
     }
 
+    pub fn file_size_in_bytes(&self) -> u64 {
+        self.file_size_in_bytes
+    }
+
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
-            "#<Iceberg::DataFile file_path={}, record_count={}>",
+            "#<Iceberg::DataFile file_path={}, record_count={}, file_size_in_bytes={}>",
             rb_self.file_path().into_value_with(ruby).inspect(),
             rb_self.record_count().into_value_with(ruby).inspect(),
+            rb_self.file_size_in_bytes().into_value_with(ruby).inspect(),
         )
     }
 }
