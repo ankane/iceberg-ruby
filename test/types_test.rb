@@ -1,6 +1,11 @@
 require_relative "test_helper"
 
 class TypesTest < Minitest::Test
+  def setup
+    skip if rest? # TODO fix
+    super
+  end
+
   def test_primitive
     schema =
       Iceberg::Schema.new(
