@@ -11,6 +11,12 @@ class SchemaTest < Minitest::Test
     assert_equal 2, schema.highest_field_id
   end
 
+  def test_as_struct
+    struct = schema.as_struct
+    assert_kind_of Iceberg::StructType, struct
+    assert_equal schema.fields, struct.fields
+  end
+
   def test_inspect
     assert_match "#<Iceberg::Schema fields=[#<Iceberg::NestedField field_id=1", schema.inspect
   end

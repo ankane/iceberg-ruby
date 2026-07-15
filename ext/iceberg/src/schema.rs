@@ -66,6 +66,14 @@ impl RbSchema {
         self.schema.highest_field_id()
     }
 
+    pub fn as_struct(ruby: &Ruby, rb_self: &Self) -> RbResult<Value> {
+        let iceberg = ruby.class_object().const_get::<_, RModule>("Iceberg")?;
+        let fields = Self::fields(ruby, rb_self);
+        iceberg
+            .const_get::<_, RClass>("StructType")?
+            .new_instance(unsafe { fields.as_slice() })
+    }
+
     pub fn arrow_c_schema(&self) -> RbResult<RbArrowSchema> {
         let schema = schema_to_arrow_schema(&self.schema).map_err(to_rb_err)?;
         let schema = FFI_ArrowSchema::try_from(&schema).unwrap();
