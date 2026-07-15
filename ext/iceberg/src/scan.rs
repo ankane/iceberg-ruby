@@ -68,10 +68,21 @@ impl RbFileScanTask {
         }
     }
 
+    pub fn delete_files(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(rb_self.scan.deletes.iter().map(|v| RbDataFile {
+            file_path: v.file_path.clone(),
+            record_count: None,
+            file_size_in_bytes: v.file_size_in_bytes,
+        }))
+    }
+
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
-            "#<Iceberg::FileScanTask file={}>",
+            "#<Iceberg::FileScanTask file={}, delete_files={}>",
             rb_self.file().into_value_with(ruby).inspect(),
+            Self::delete_files(ruby, rb_self)
+                .into_value_with(ruby)
+                .inspect(),
         )
     }
 }

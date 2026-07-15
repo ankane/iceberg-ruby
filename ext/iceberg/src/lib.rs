@@ -198,6 +198,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
 
     let class = module.define_class("FileScanTask", ruby.class_object())?;
     class.define_method("file", method!(RbFileScanTask::file, 0))?;
+    class.define_method("delete_files", method!(RbFileScanTask::delete_files, 0))?;
     class.define_method("inspect", method!(RbFileScanTask::inspect, 0))?;
 
     let class = module.define_class("DataFile", ruby.class_object())?;
