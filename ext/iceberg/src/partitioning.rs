@@ -22,6 +22,7 @@ impl RbPartitionSpec {
             fields.push(<&RbPartitionField>::try_convert(*v)?.field.clone());
         }
         let spec = UnboundPartitionSpec::builder()
+            .with_spec_id(0)
             .add_partition_fields(fields)
             .map_err(to_rb_err)?
             .build();
