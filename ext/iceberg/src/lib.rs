@@ -204,6 +204,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
         "identifier_field_ids",
         method!(RbSchema::identifier_field_ids, 0),
     )?;
+    class.define_method("highest_field_id", method!(RbSchema::highest_field_id, 0))?;
     class.define_method("arrow_c_schema", method!(RbSchema::arrow_c_schema, 0))?;
     class.define_method("==", method!(RbSchema::eq, 1))?;
     class.define_method("inspect", method!(RbSchema::inspect, 0))?;

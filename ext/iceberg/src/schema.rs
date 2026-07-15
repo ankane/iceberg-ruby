@@ -62,6 +62,10 @@ impl RbSchema {
         self.schema.identifier_field_ids().collect()
     }
 
+    pub fn highest_field_id(&self) -> i32 {
+        self.schema.highest_field_id()
+    }
+
     pub fn arrow_c_schema(&self) -> RbResult<RbArrowSchema> {
         let schema = schema_to_arrow_schema(&self.schema).map_err(to_rb_err)?;
         let schema = FFI_ArrowSchema::try_from(&schema).unwrap();
