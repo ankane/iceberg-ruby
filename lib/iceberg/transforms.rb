@@ -1,5 +1,12 @@
 module Iceberg
   class Transform
+    def ==(other)
+      other.is_a?(self.class)
+    end
+
+    def inspect
+      "#<#{self.class.name}>"
+    end
   end
 
   class IdentityTransform < Transform
@@ -11,6 +18,14 @@ module Iceberg
     def initialize(num_buckets)
       @num_buckets = num_buckets
     end
+
+    def ==(other)
+      other.is_a?(self.class) && other.num_buckets == @num_buckets
+    end
+
+    def inspect
+      "#<#{self.class.name} num_buckets=#{@num_buckets.inspect}>"
+    end
   end
 
   class TruncateTransform < Transform
@@ -18,6 +33,14 @@ module Iceberg
 
     def initialize(width)
       @width = width
+    end
+
+    def ==(other)
+      other.is_a?(self.class) && other.width == @width
+    end
+
+    def inspect
+      "#<#{self.class.name} width=#{@width.inspect}>"
     end
   end
 
