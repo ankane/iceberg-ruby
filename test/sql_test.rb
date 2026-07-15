@@ -38,6 +38,15 @@ class SqlTest < Minitest::Test
     assert_equal [[1]], catalog.sql("SELECT $1", [1, 2]).rows
   end
 
+  def test_insert
+    catalog.sql("CREATE TABLE events (a int, b bigint)")
+    # TODO fix
+    error = assert_raises(Iceberg::Error) do
+      catalog.sql("INSERT INTO events VALUES ($1, $2)", [1, 2])
+    end
+    assert_match "Incompatible type", error.message
+  end
+
   def test_update
     create_events
     error = assert_raises(Iceberg::Error) do
