@@ -2,7 +2,7 @@ module Iceberg
   class TableDefinition
     TYPES = %w[
       boolean int long float double decimal date time
-      timestamp timestamptz timestamp_ns timestamptz_ns
+      timestamp timestamptz timestamp_nano timestamptz_nano
       string uuid fixed binary
     ]
 
@@ -48,9 +48,9 @@ module Iceberg
             TimestampType.new
           when "timestamptz"
             TimestamptzType.new
-          when "timestamp_ns"
+          when "timestamp_nano"
             TimestampNanoType.new
-          when "timestamptz_ns"
+          when "timestamptz_nano"
             TimestamptzNanoType.new
           when "string"
             StringType.new
