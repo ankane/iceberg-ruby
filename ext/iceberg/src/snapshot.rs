@@ -6,13 +6,13 @@ pub struct RbSnapshot {
     pub(crate) snapshot: Snapshot,
 }
 
-#[magnus::wrap(class = "Iceberg::SnapshotLog")]
-pub struct RbSnapshotLog {
+#[magnus::wrap(class = "Iceberg::SnapshotLogEntry")]
+pub struct RbSnapshotLogEntry {
     pub(crate) log: SnapshotLog,
 }
 
-#[magnus::wrap(class = "Iceberg::MetadataLog")]
-pub struct RbMetadataLog {
+#[magnus::wrap(class = "Iceberg::MetadataLogEntry")]
+pub struct RbMetadataLogEntry {
     pub(crate) log: MetadataLog,
 }
 
@@ -48,7 +48,7 @@ impl RbSnapshot {
     }
 }
 
-impl RbSnapshotLog {
+impl RbSnapshotLogEntry {
     pub fn snapshot_id(&self) -> i64 {
         self.log.snapshot_id
     }
@@ -59,14 +59,14 @@ impl RbSnapshotLog {
 
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
-            "#<Iceberg::SnapshotLog snapshot_id={}, timestamp_ms={}>",
+            "#<Iceberg::SnapshotLogEntry snapshot_id={}, timestamp_ms={}>",
             rb_self.snapshot_id().into_value_with(ruby).inspect(),
             rb_self.timestamp_ms().into_value_with(ruby).inspect(),
         )
     }
 }
 
-impl RbMetadataLog {
+impl RbMetadataLogEntry {
     pub fn metadata_file(&self) -> &str {
         &self.log.metadata_file
     }
@@ -77,7 +77,7 @@ impl RbMetadataLog {
 
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
-            "#<Iceberg::MetadataLog metadata_file={}, timestamp_ms={}>",
+            "#<Iceberg::MetadataLogEntry metadata_file={}, timestamp_ms={}>",
             rb_self.metadata_file().into_value_with(ruby).inspect(),
             rb_self.timestamp_ms().into_value_with(ruby).inspect(),
         )

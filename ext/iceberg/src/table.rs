@@ -29,7 +29,7 @@ use crate::ruby::GvlExt;
 use crate::runtime::runtime;
 use crate::scan::RbTableScan;
 use crate::schema::RbSchema;
-use crate::snapshot::{RbMetadataLog, RbSnapshot, RbSnapshotLog};
+use crate::snapshot::{RbMetadataLogEntry, RbSnapshot, RbSnapshotLogEntry};
 use crate::sorting::RbSortOrder;
 use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
 use crate::utils::Wrap;
@@ -227,7 +227,13 @@ impl RbTableMetadata {
     }
 
     pub fn history(ruby: &Ruby, rb_self: &Self) -> RArray {
-        ruby.ary_from_iter(rb_self.metadata.history().iter().map(RbSnapshotLog::from))
+        ruby.ary_from_iter(
+            rb_self
+                .metadata
+                .history()
+                .iter()
+                .map(RbSnapshotLogEntry::from),
+        )
     }
 
     pub fn metadata_log(ruby: &Ruby, rb_self: &Self) -> RArray {
@@ -236,7 +242,7 @@ impl RbTableMetadata {
                 .metadata
                 .metadata_log()
                 .iter()
-                .map(RbMetadataLog::from),
+                .map(RbMetadataLogEntry::from),
         )
     }
 

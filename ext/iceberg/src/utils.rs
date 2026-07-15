@@ -15,7 +15,7 @@ use crate::encryption::RbEncryptedKey;
 use crate::error::{to_rb_err, todo_error};
 use crate::partitioning::RbPartitionSpec;
 use crate::schema::RbSchema;
-use crate::snapshot::{RbMetadataLog, RbSnapshot, RbSnapshotLog};
+use crate::snapshot::{RbMetadataLogEntry, RbSnapshot, RbSnapshotLogEntry};
 use crate::sorting::RbSortOrder;
 use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
 
@@ -179,7 +179,7 @@ impl From<&Arc<Snapshot>> for RbSnapshot {
     }
 }
 
-impl From<&SnapshotLog> for RbSnapshotLog {
+impl From<&SnapshotLog> for RbSnapshotLogEntry {
     fn from(snapshot_log: &SnapshotLog) -> Self {
         Self {
             log: snapshot_log.clone(),
@@ -187,7 +187,7 @@ impl From<&SnapshotLog> for RbSnapshotLog {
     }
 }
 
-impl From<&MetadataLog> for RbMetadataLog {
+impl From<&MetadataLog> for RbMetadataLogEntry {
     fn from(metadata_log: &MetadataLog) -> Self {
         Self {
             log: metadata_log.clone(),

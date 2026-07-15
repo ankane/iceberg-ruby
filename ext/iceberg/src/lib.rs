@@ -26,7 +26,7 @@ use crate::encryption::RbEncryptedKey;
 use crate::partitioning::{RbPartitionField, RbPartitionSpec};
 use crate::scan::RbTableScan;
 use crate::schema::{RbNestedField, RbSchema};
-use crate::snapshot::{RbMetadataLog, RbSnapshot, RbSnapshotLog};
+use crate::snapshot::{RbMetadataLogEntry, RbSnapshot, RbSnapshotLogEntry};
 use crate::sorting::{RbSortField, RbSortOrder};
 use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
 use crate::table::{RbTable, RbTableMetadata};
@@ -269,15 +269,18 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("schema_id", method!(RbSnapshot::schema_id, 0))?;
     class.define_method("inspect", method!(RbSnapshot::inspect, 0))?;
 
-    let class = module.define_class("SnapshotLog", ruby.class_object())?;
-    class.define_method("snapshot_id", method!(RbSnapshotLog::snapshot_id, 0))?;
-    class.define_method("timestamp_ms", method!(RbSnapshotLog::timestamp_ms, 0))?;
-    class.define_method("inspect", method!(RbSnapshotLog::inspect, 0))?;
+    let class = module.define_class("SnapshotLogEntry", ruby.class_object())?;
+    class.define_method("snapshot_id", method!(RbSnapshotLogEntry::snapshot_id, 0))?;
+    class.define_method("timestamp_ms", method!(RbSnapshotLogEntry::timestamp_ms, 0))?;
+    class.define_method("inspect", method!(RbSnapshotLogEntry::inspect, 0))?;
 
-    let class = module.define_class("MetadataLog", ruby.class_object())?;
-    class.define_method("metadata_file", method!(RbMetadataLog::metadata_file, 0))?;
-    class.define_method("timestamp_ms", method!(RbMetadataLog::timestamp_ms, 0))?;
-    class.define_method("inspect", method!(RbMetadataLog::inspect, 0))?;
+    let class = module.define_class("MetadataLogEntry", ruby.class_object())?;
+    class.define_method(
+        "metadata_file",
+        method!(RbMetadataLogEntry::metadata_file, 0),
+    )?;
+    class.define_method("timestamp_ms", method!(RbMetadataLogEntry::timestamp_ms, 0))?;
+    class.define_method("inspect", method!(RbMetadataLogEntry::inspect, 0))?;
 
     let class = module.define_class("EncryptedKey", ruby.class_object())?;
     class.define_method("key_id", method!(RbEncryptedKey::key_id, 0))?;
