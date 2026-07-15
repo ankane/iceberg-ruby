@@ -204,6 +204,11 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     let class = module.define_class("DataFile", ruby.class_object())?;
     class.define_method("file_path", method!(RbDataFile::file_path, 0))?;
     class.define_method("record_count", method!(RbDataFile::record_count, 0))?;
+    class.define_method(
+        "file_size_in_bytes",
+        method!(RbDataFile::file_size_in_bytes, 0),
+    )?;
+    class.define_method("equality_ids", method!(RbDataFile::equality_ids, 0))?;
     class.define_method("inspect", method!(RbDataFile::inspect, 0))?;
 
     let class = module.define_class("Schema", ruby.class_object())?;

@@ -26,6 +26,7 @@ pub struct RbDataFile {
     pub file_path: String,
     pub record_count: Option<u64>,
     pub file_size_in_bytes: u64,
+    pub equality_ids: Option<Vec<i32>>,
 }
 
 impl RbTableScan {
@@ -65,6 +66,7 @@ impl RbFileScanTask {
             file_path: self.scan.data_file_path.clone(),
             record_count: self.scan.record_count,
             file_size_in_bytes: self.scan.file_size_in_bytes,
+            equality_ids: None,
         }
     }
 
@@ -73,6 +75,7 @@ impl RbFileScanTask {
             file_path: v.file_path.clone(),
             record_count: None,
             file_size_in_bytes: v.file_size_in_bytes,
+            equality_ids: v.equality_ids.clone(),
         }))
     }
 
@@ -100,12 +103,17 @@ impl RbDataFile {
         self.file_size_in_bytes
     }
 
+    pub fn equality_ids(&self) -> Option<Vec<i32>> {
+        self.equality_ids.clone()
+    }
+
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
-            "#<Iceberg::DataFile file_path={}, record_count={}, file_size_in_bytes={}>",
+            "#<Iceberg::DataFile file_path={}, record_count={}, file_size_in_bytes={}, equality_ids={}>",
             rb_self.file_path().into_value_with(ruby).inspect(),
             rb_self.record_count().into_value_with(ruby).inspect(),
             rb_self.file_size_in_bytes().into_value_with(ruby).inspect(),
+            rb_self.equality_ids().into_value_with(ruby).inspect(),
         )
     }
 }
