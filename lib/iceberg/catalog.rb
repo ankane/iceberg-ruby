@@ -53,7 +53,7 @@ module Iceberg
       if block_given?
         table_definition = TableDefinition.new
         yield table_definition
-        schema = Schema.new(table_definition.fields)
+        schema = Schema.new(*table_definition.fields)
       elsif schema.is_a?(Schema)
         # do nothing
       elsif schema.respond_to?(:arrow_c_schema)
@@ -63,9 +63,9 @@ module Iceberg
         schema.each do |k, v|
           table_definition.column(k, v)
         end
-        schema = Schema.new(table_definition.fields)
+        schema = Schema.new(*table_definition.fields)
       elsif schema.nil?
-        schema = Schema.new([])
+        schema = Schema.new
       end
 
       Table.new(@catalog.create_table(with_namespace(table_name), schema, location, partition_spec, sort_order), @catalog)

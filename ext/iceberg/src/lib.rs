@@ -196,7 +196,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("collect", method!(RbTableScan::collect, 0))?;
 
     let class = module.define_class("Schema", ruby.class_object())?;
-    class.define_singleton_method("new", function!(RbSchema::new, 1))?;
+    class.define_singleton_method("new", function!(RbSchema::new, -1))?;
     class.define_method("fields", method!(RbSchema::fields, 0))?;
     class.define_method("schema_id", method!(RbSchema::schema_id, 0))?;
     class.define_method("arrow_c_schema", method!(RbSchema::arrow_c_schema, 0))?;
@@ -232,7 +232,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     )?;
 
     let class = module.define_class("PartitionSpec", ruby.class_object())?;
-    class.define_singleton_method("new", function!(RbPartitionSpec::new, 1))?;
+    class.define_singleton_method("new", function!(RbPartitionSpec::new, -1))?;
     class.define_method("spec_id", method!(RbPartitionSpec::spec_id, 0))?;
     class.define_method("inspect", method!(RbPartitionSpec::inspect, 0))?;
 
@@ -245,7 +245,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("inspect", method!(RbPartitionField::inspect, 0))?;
 
     let class = module.define_class("SortOrder", ruby.class_object())?;
-    class.define_singleton_method("new", function!(RbSortOrder::new, 1))?;
+    class.define_singleton_method("new", function!(RbSortOrder::new, -1))?;
     class.define_method("order_id", method!(RbSortOrder::order_id, 0))?;
     class.define_method("fields", method!(RbSortOrder::fields, 0))?;
     class.define_method("inspect", method!(RbSortOrder::inspect, 0))?;

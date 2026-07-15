@@ -16,10 +16,10 @@ pub struct RbPartitionField {
 }
 
 impl RbPartitionSpec {
-    pub fn new(ob: RArray) -> RbResult<Self> {
+    pub fn new(args: &[Value]) -> RbResult<Self> {
         let mut fields = Vec::new();
-        for v in ob.into_iter() {
-            fields.push(<&RbPartitionField>::try_convert(v)?.field.clone());
+        for v in args {
+            fields.push(<&RbPartitionField>::try_convert(*v)?.field.clone());
         }
         let spec = UnboundPartitionSpec::builder()
             .add_partition_fields(fields)
