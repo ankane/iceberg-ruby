@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
+
 #[cfg(feature = "datafusion")]
 use datafusion::common::ScalarValue;
 #[cfg(feature = "datafusion")]
@@ -28,8 +31,6 @@ use magnus::{Error as RbErr, Ruby};
 use magnus::{
     Float, Integer, RArray, RString, Value, value::Qfalse, value::Qtrue, value::ReprValue,
 };
-use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
 
 use crate::error::to_rb_err;
 #[cfg(feature = "datafusion")]

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use iceberg::spec::{
     EncryptedKey, Literal, MetadataLog, NestedField, NullOrder, PartitionSpec,
     PartitionStatisticsFile, PrimitiveLiteral, PrimitiveType, Schema, Snapshot, SnapshotLog,
@@ -8,7 +10,6 @@ use magnus::{
     Error as RbErr, IntoValue, RClass, RModule, RString, Ruby, TryConvert, Value, prelude::*,
     value::Lazy,
 };
-use std::sync::Arc;
 
 use crate::RbResult;
 use crate::encryption::RbEncryptedKey;

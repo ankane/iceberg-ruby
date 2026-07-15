@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
+
 use arrow_array::RecordBatch;
 use arrow_array::ffi_stream::ArrowArrayStreamReader;
 use arrow_cast::cast;
@@ -16,8 +19,6 @@ use iceberg::writer::file_writer::rolling_writer::RollingFileWriterBuilder;
 use iceberg::writer::{IcebergWriter, IcebergWriterBuilder};
 use magnus::{RArray, Ruby};
 use parquet::file::properties::WriterProperties;
-use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
 use uuid::Uuid;
 
 use crate::RbResult;

@@ -1,6 +1,7 @@
+use std::collections::HashMap;
+
 use iceberg::spec::EncryptedKey;
 use magnus::{IntoValue, Ruby, value::ReprValue};
-use std::collections::HashMap;
 
 #[magnus::wrap(class = "Iceberg::EncryptedKey")]
 pub struct RbEncryptedKey {
