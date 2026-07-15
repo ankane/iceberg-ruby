@@ -245,6 +245,12 @@ pub fn rb_transform(transform: &Transform) -> RbResult<Value> {
         Transform::Identity => iceberg
             .const_get::<_, RClass>("IdentityTransform")?
             .new_instance(())?,
+        Transform::Bucket(num_buckets) => iceberg
+            .const_get::<_, RClass>("BucketTransform")?
+            .new_instance((*num_buckets,))?,
+        Transform::Truncate(width) => iceberg
+            .const_get::<_, RClass>("TruncateTransform")?
+            .new_instance((*width,))?,
         Transform::Year => iceberg
             .const_get::<_, RClass>("YearTransform")?
             .new_instance(())?,
@@ -257,7 +263,12 @@ pub fn rb_transform(transform: &Transform) -> RbResult<Value> {
         Transform::Hour => iceberg
             .const_get::<_, RClass>("HourTransform")?
             .new_instance(())?,
-        _ => return Err(todo_error(transform)),
+        Transform::Void => iceberg
+            .const_get::<_, RClass>("VoidTransform")?
+            .new_instance(())?,
+        Transform::Unknown => iceberg
+            .const_get::<_, RClass>("UnknownTransform")?
+            .new_instance(())?,
     };
     Ok(v)
 }
