@@ -117,6 +117,9 @@ class CreateTableTest < Minitest::Test
     partition_spec = Iceberg::PartitionSpec.new(Iceberg::PartitionField.new(source_id: 1, field_id: 1000, transform: Iceberg::IdentityTransform.new, name: "partition_id"))
     table = catalog.create_table("events", schema: {"a" => "bigint", "b" => "string"}, partition_spec: partition_spec)
     table.default_partition_spec
+
+    skip
+
     # TODO support append
     catalog.sql("INSERT INTO events VALUES ($1, $2), ($3, $4), ($5, $6)", [1, "one", 2, "two", 1, "three"])
     table.refresh

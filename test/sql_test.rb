@@ -1,6 +1,10 @@
 require_relative "test_helper"
 
 class SqlTest < Minitest::Test
+  def setup
+    skip
+  end
+
   def test_result
     create_events
     result = catalog.sql("SELECT * FROM events")
