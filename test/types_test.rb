@@ -1,7 +1,7 @@
 require_relative "test_helper"
 
 class TypesTest < Minitest::Test
-  def test_types
+  def test_primitive
     schema =
       Iceberg::Schema.new(
         Iceberg::NestedField.new(field_id: 1, name: "boolean", field_type: Iceberg::BooleanType.new),
@@ -20,6 +20,20 @@ class TypesTest < Minitest::Test
         Iceberg::NestedField.new(field_id: 14, name: "uuid", field_type: Iceberg::UUIDType.new),
         Iceberg::NestedField.new(field_id: 15, name: "fixed", field_type: Iceberg::FixedType.new(3)),
         Iceberg::NestedField.new(field_id: 16, name: "binary", field_type: Iceberg::BinaryType.new)
+      )
+    table = catalog.create_table("events", schema: schema)
+    assert_equal schema, table.schema
+  end
+
+  def test_struct
+    struct_type =
+      Iceberg::StructType.new(
+        Iceberg::NestedField.new(field_id: 2, name: "boolean", field_type: Iceberg::BooleanType.new),
+        Iceberg::NestedField.new(field_id: 3, name: "int", field_type: Iceberg::IntType.new)
+      )
+    schema =
+      Iceberg::Schema.new(
+        Iceberg::NestedField.new(field_id: 1, name: "struct", field_type: struct_type)
       )
     table = catalog.create_table("events", schema: schema)
     assert_equal schema, table.schema

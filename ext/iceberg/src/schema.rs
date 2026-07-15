@@ -3,14 +3,14 @@ use std::sync::Arc;
 use arrow_schema::Schema as ArrowSchema;
 use arrow_schema::ffi::FFI_ArrowSchema;
 use iceberg::arrow::{arrow_schema_to_schema_auto_assign_ids, schema_to_arrow_schema};
-use iceberg::spec::{NestedField, PrimitiveType, Schema, Type};
+use iceberg::spec::{NestedField, PrimitiveType, Schema, StructType, Type};
 use magnus::{
     Error as RbErr, IntoValue, RArray, RClass, RHash, RModule, Ruby, TryConvert, Value, prelude::*,
 };
 
 use crate::RbResult;
 use crate::arrow::RbArrowSchema;
-use crate::error::to_rb_err;
+use crate::error::{to_rb_err, todo_error};
 use crate::utils::{Wrap, default_value, rb_literal};
 
 #[magnus::wrap(class = "Iceberg::Schema")]
@@ -102,6 +102,16 @@ impl RbNestedField {
                 Type::Primitive(PrimitiveType::Fixed(length))
             }
             "Iceberg::BinaryType" => Type::Primitive(PrimitiveType::Binary),
+            "Iceberg::StructType" => {
+                let fields = rb_type
+                    .funcall::<_, _, RArray>("fields", ())?
+                    .into_iter()
+                    .map(|v| <&RbNestedField>::try_convert(v).map(|f| f.field.clone()))
+                    .collect::<RbResult<Vec<_>>>()?;
+                Type::Struct(StructType::new(fields))
+            }
+            "Iceberg::ListType" => return Err(todo_error(rb_type)),
+            "Iceberg::MapType" => return Err(todo_error(rb_type)),
             _ => {
                 return Err(RbErr::new(
                     ruby.exception_arg_error(),
