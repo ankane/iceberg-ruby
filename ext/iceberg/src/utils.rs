@@ -1,6 +1,7 @@
 use iceberg::spec::{
-    EncryptedKey, Literal, MetadataLog, PartitionSpec, PartitionStatisticsFile, PrimitiveLiteral,
-    PrimitiveType, Schema, Snapshot, SnapshotLog, SortOrder, StatisticsFile, Transform, Type,
+    EncryptedKey, Literal, MetadataLog, NullOrder, PartitionSpec, PartitionStatisticsFile,
+    PrimitiveLiteral, PrimitiveType, Schema, Snapshot, SnapshotLog, SortDirection, SortOrder,
+    StatisticsFile, Transform, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
 use magnus::{
@@ -61,6 +62,40 @@ impl TryConvert for Wrap<Transform> {
                 return Err(RbErr::new(
                     Ruby::get_with(ob).exception_arg_error(),
                     "Unsupported transform",
+                ));
+            }
+        };
+        Ok(Wrap(v))
+    }
+}
+
+impl TryConvert for Wrap<SortDirection> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let s = RString::try_convert(ob)?;
+        let v = match unsafe { s.as_str() }? {
+            "asc" => SortDirection::Ascending,
+            "desc" => SortDirection::Descending,
+            _ => {
+                return Err(RbErr::new(
+                    Ruby::get_with(ob).exception_arg_error(),
+                    "Unsupported sort direction",
+                ));
+            }
+        };
+        Ok(Wrap(v))
+    }
+}
+
+impl TryConvert for Wrap<NullOrder> {
+    fn try_convert(ob: Value) -> RbResult<Self> {
+        let s = RString::try_convert(ob)?;
+        let v = match unsafe { s.as_str() }? {
+            "first" => NullOrder::First,
+            "last" => NullOrder::Last,
+            _ => {
+                return Err(RbErr::new(
+                    Ruby::get_with(ob).exception_arg_error(),
+                    "Unsupported null order",
                 ));
             }
         };

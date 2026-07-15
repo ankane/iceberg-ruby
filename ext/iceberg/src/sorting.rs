@@ -52,16 +52,28 @@ impl RbSortOrder {
 
 impl RbSortField {
     pub fn new(ruby: &Ruby, ob: RHash) -> RbResult<Self> {
+        let transform = ob
+            .aref::<_, Wrap<Transform>>(ruby.to_symbol("transform"))?
+            .0;
+
+        let direction = ob
+            .aref::<_, Wrap<SortDirection>>(ruby.to_symbol("direction"))?
+            .0;
+
+        let null_order = ob
+            .aref::<_, Option<Wrap<NullOrder>>>(ruby.to_symbol("null_order"))?
+            .map(|v| v.0)
+            .unwrap_or(if direction == SortDirection::Ascending {
+                NullOrder::First
+            } else {
+                NullOrder::Last
+            });
+
         let field = SortField::builder()
             .source_id(ob.aref(ruby.to_symbol("source_id"))?)
-            .transform(
-                ob.aref::<_, Wrap<Transform>>(ruby.to_symbol("transform"))?
-                    .0,
-            )
-            // TODO improve
-            .direction(SortDirection::Ascending)
-            // TODO improve
-            .null_order(NullOrder::First)
+            .transform(transform)
+            .direction(direction)
+            .null_order(null_order)
             .build();
         Ok(Self { field })
     }
