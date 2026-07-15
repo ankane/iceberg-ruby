@@ -103,10 +103,35 @@ module Iceberg
   end
 
   class ListType < Type
-    # TODO improve
+    attr_reader :element_field
+
+    def initialize(element_field)
+      @element_field = element_field
+    end
+
+    def ==(other)
+      other.is_a?(self.class) && other.element_field == @element_field
+    end
+
+    def inspect
+      "#<#{self.class.name} element_field=#{@element_field.inspect}>"
+    end
   end
 
   class MapType < Type
-    # TODO improve
+    attr_reader :key_field, :value_field
+
+    def initialize(key_field, value_field)
+      @key_field = key_field
+      @value_field = value_field
+    end
+
+    def ==(other)
+      other.is_a?(self.class) && other.key_field == @key_field && other.value_field == @value_field
+    end
+
+    def inspect
+      "#<#{self.class.name} key_field=#{@key_field.inspect}, value_field=#{@value_field.inspect}>"
+    end
   end
 end

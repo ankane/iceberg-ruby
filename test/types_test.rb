@@ -38,4 +38,31 @@ class TypesTest < Minitest::Test
     table = catalog.create_table("events", schema: schema)
     assert_equal schema, table.schema
   end
+
+  def test_list
+    list_type =
+      Iceberg::ListType.new(
+        Iceberg::NestedField.new(field_id: 2, name: "boolean", field_type: Iceberg::BooleanType.new)
+      )
+    schema =
+      Iceberg::Schema.new(
+        Iceberg::NestedField.new(field_id: 1, name: "list", field_type: list_type)
+      )
+    table = catalog.create_table("events", schema: schema)
+    assert_equal schema, table.schema
+  end
+
+  def test_map
+    map_type =
+      Iceberg::MapType.new(
+        Iceberg::NestedField.new(field_id: 2, name: "boolean", field_type: Iceberg::BooleanType.new),
+        Iceberg::NestedField.new(field_id: 3, name: "int", field_type: Iceberg::IntType.new),
+      )
+    schema =
+      Iceberg::Schema.new(
+        Iceberg::NestedField.new(field_id: 1, name: "map", field_type: map_type)
+      )
+    table = catalog.create_table("events", schema: schema)
+    assert_equal schema, table.schema
+  end
 end

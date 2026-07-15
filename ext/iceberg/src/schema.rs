@@ -3,14 +3,14 @@ use std::sync::Arc;
 use arrow_schema::Schema as ArrowSchema;
 use arrow_schema::ffi::FFI_ArrowSchema;
 use iceberg::arrow::{arrow_schema_to_schema_auto_assign_ids, schema_to_arrow_schema};
-use iceberg::spec::{NestedField, PrimitiveType, Schema, StructType, Type};
+use iceberg::spec::{ListType, MapType, NestedField, PrimitiveType, Schema, StructType, Type};
 use magnus::{
     Error as RbErr, IntoValue, RArray, RClass, RHash, RModule, Ruby, TryConvert, Value, prelude::*,
 };
 
 use crate::RbResult;
 use crate::arrow::RbArrowSchema;
-use crate::error::{to_rb_err, todo_error};
+use crate::error::to_rb_err;
 use crate::utils::{Wrap, default_value, rb_literal};
 
 #[magnus::wrap(class = "Iceberg::Schema")]
@@ -110,8 +110,24 @@ impl RbNestedField {
                     .collect::<RbResult<Vec<_>>>()?;
                 Type::Struct(StructType::new(fields))
             }
-            "Iceberg::ListType" => return Err(todo_error(rb_type)),
-            "Iceberg::MapType" => return Err(todo_error(rb_type)),
+            "Iceberg::ListType" => {
+                let element_field = rb_type
+                    .funcall::<_, _, &RbNestedField>("element_field", ())?
+                    .field
+                    .clone();
+                Type::List(ListType::new(element_field))
+            }
+            "Iceberg::MapType" => {
+                let key_field = rb_type
+                    .funcall::<_, _, &RbNestedField>("key_field", ())?
+                    .field
+                    .clone();
+                let value_field = rb_type
+                    .funcall::<_, _, &RbNestedField>("value_field", ())?
+                    .field
+                    .clone();
+                Type::Map(MapType::new(key_field, value_field))
+            }
             _ => {
                 return Err(RbErr::new(
                     ruby.exception_arg_error(),
@@ -203,19 +219,28 @@ impl RbNestedField {
                     .const_get::<_, RClass>("BinaryType")?
                     .new_instance(())?,
             },
-            Type::Struct(s) => iceberg
+            Type::Struct(ty) => iceberg
                 .const_get::<_, RClass>("StructType")?
                 .new_instance((ruby.ary_from_iter(
-                    s.fields()
+                    ty.fields()
                         .iter()
                         .map(|f| RbNestedField { field: f.clone() }),
                 ),))?,
-            Type::List(_) => iceberg
-                .const_get::<_, RClass>("ListType")?
-                .new_instance(())?,
-            Type::Map(_) => iceberg
-                .const_get::<_, RClass>("MapType")?
-                .new_instance(())?,
+            Type::List(ty) => {
+                iceberg
+                    .const_get::<_, RClass>("ListType")?
+                    .new_instance((RbNestedField {
+                        field: ty.element_field.clone(),
+                    },))?
+            }
+            Type::Map(ty) => iceberg.const_get::<_, RClass>("MapType")?.new_instance((
+                RbNestedField {
+                    field: ty.key_field.clone(),
+                },
+                RbNestedField {
+                    field: ty.value_field.clone(),
+                },
+            ))?,
         };
         Ok(v)
     }
