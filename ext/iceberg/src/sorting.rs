@@ -44,8 +44,9 @@ impl RbSortOrder {
 
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
-            "#<Iceberg::SortOrder order_id={}>",
+            "#<Iceberg::SortOrder order_id={}, fields={}>",
             rb_self.order_id().into_value_with(ruby).inspect(),
+            Self::fields(ruby, rb_self).inspect(),
         )
     }
 }
