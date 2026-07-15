@@ -15,6 +15,7 @@ require_relative "iceberg/table"
 require_relative "iceberg/table_scan"
 require_relative "iceberg/static_table"
 require_relative "iceberg/table_definition"
+require_relative "iceberg/transforms"
 require_relative "iceberg/types"
 require_relative "iceberg/version"
 
