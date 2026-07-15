@@ -297,6 +297,7 @@ impl RbCatalog {
         location: Option<String>,
         partition_spec: Option<&RbPartitionSpec>,
         sort_order: Option<&RbSortOrder>,
+        properties: HashMap<String, String>,
     ) -> RbResult<RbTable> {
         let creation = TableCreation::builder()
             .name(name.0.name)
@@ -304,6 +305,7 @@ impl RbCatalog {
             .location_opt(location)
             .partition_spec_opt(partition_spec.map(|v| v.spec.clone()))
             .sort_order_opt(sort_order.map(|v| v.order.clone()))
+            .properties(properties)
             .build();
         let table = runtime()
             .block_on(

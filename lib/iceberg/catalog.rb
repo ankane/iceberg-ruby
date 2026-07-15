@@ -45,7 +45,7 @@ module Iceberg
       @catalog.list_tables(namespace || @default_namespace)
     end
 
-    def create_table(table_name, schema: nil, location: nil, partition_spec: nil, sort_order: nil)
+    def create_table(table_name, schema: nil, location: nil, partition_spec: nil, sort_order: nil, properties: {})
       if !schema.nil? && block_given?
         raise ArgumentError, "Must pass schema or block"
       end
@@ -68,7 +68,7 @@ module Iceberg
         schema = Schema.new
       end
 
-      Table.new(@catalog.create_table(with_namespace(table_name), schema, location, partition_spec, sort_order), @catalog)
+      Table.new(@catalog.create_table(with_namespace(table_name), schema, location, partition_spec, sort_order, properties), @catalog)
     end
 
     def load_table(table_name)
