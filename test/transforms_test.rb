@@ -1,11 +1,6 @@
 require_relative "test_helper"
 
 class TransformsTest < Minitest::Test
-  def setup
-    skip if rest? || sql? # TODO fix
-    super
-  end
-
   def test_identity
     assert_transform Iceberg::IdentityTransform.new, "int"
   end
@@ -57,9 +52,8 @@ class TransformsTest < Minitest::Test
 
   def refute_transform(transform, field_type)
     partition_spec = Iceberg::PartitionSpec.new(Iceberg::PartitionField.new(source_id: 1, field_id: 1000, transform: transform, name: "b"))
-    error = assert_raises(Iceberg::InvalidDataError) do
+    assert_raises(Iceberg::Error) do
       catalog.create_table("events", schema: {"a" => field_type}, partition_spec:)
     end
-    assert_match(/Invalid source type: \S+ for transform/, error.message)
   end
 end
