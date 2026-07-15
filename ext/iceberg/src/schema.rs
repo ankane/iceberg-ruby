@@ -58,6 +58,10 @@ impl RbSchema {
         self.schema.schema_id()
     }
 
+    pub fn identifier_field_ids(&self) -> Vec<i32> {
+        self.schema.identifier_field_ids().collect()
+    }
+
     pub fn arrow_c_schema(&self) -> RbResult<RbArrowSchema> {
         let schema = schema_to_arrow_schema(&self.schema).map_err(to_rb_err)?;
         let schema = FFI_ArrowSchema::try_from(&schema).unwrap();
@@ -70,8 +74,13 @@ impl RbSchema {
 
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
-            "#<Iceberg::Schema fields={}>",
-            Self::fields(ruby, rb_self).inspect()
+            "#<Iceberg::Schema fields={}, schema_id={}, identifier_field_ids={}>",
+            Self::fields(ruby, rb_self).inspect(),
+            rb_self.schema_id().into_value_with(ruby).inspect(),
+            rb_self
+                .identifier_field_ids()
+                .into_value_with(ruby)
+                .inspect(),
         )
     }
 }
