@@ -87,7 +87,19 @@ module Iceberg
   end
 
   class StructType < Type
-    # TODO improve
+    attr_reader :fields
+
+    def initialize(**fields)
+      @fields = fields
+    end
+
+    def ==(other)
+      other.is_a?(self.class) && other.fields == @fields
+    end
+
+    def inspect
+      "#<#{self.class.name} fields=#{@fields.inspect}>"
+    end
   end
 
   class ListType < Type
