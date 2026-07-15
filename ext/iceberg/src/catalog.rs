@@ -3,6 +3,7 @@ use datafusion::common::ScalarValue;
 #[cfg(feature = "datafusion")]
 use datafusion::execution::context::{SessionConfig, SessionContext};
 use iceberg::memory::{MEMORY_CATALOG_WAREHOUSE, MemoryCatalogBuilder};
+use iceberg::spec::FormatVersion;
 use iceberg::{Catalog, CatalogBuilder, MemoryCatalog, NamespaceIdent, TableCreation, TableIdent};
 #[cfg(feature = "glue")]
 use iceberg_catalog_glue::{GLUE_CATALOG_PROP_WAREHOUSE, GlueCatalog, GlueCatalogBuilder};
@@ -22,9 +23,10 @@ use iceberg_catalog_sql::{
 #[cfg(feature = "datafusion")]
 use iceberg_datafusion::IcebergCatalogProvider;
 use iceberg_storage_opendal::OpenDalStorageFactory;
+use magnus::{Error as RbErr, Ruby};
 #[cfg(feature = "datafusion")]
 use magnus::{
-    Float, Integer, RArray, RString, Ruby, Value, value::Qfalse, value::Qtrue, value::ReprValue,
+    Float, Integer, RArray, RString, Value, value::Qfalse, value::Qtrue, value::ReprValue,
 };
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -291,7 +293,8 @@ impl RbCatalog {
     }
 
     pub fn create_table(
-        &self,
+        ruby: &Ruby,
+        rb_self: &Self,
         name: Wrap<TableIdent>,
         schema: &RbSchema,
         location: Option<String>,
@@ -299,6 +302,21 @@ impl RbCatalog {
         sort_order: Option<&RbSortOrder>,
         properties: HashMap<String, String>,
     ) -> RbResult<RbTable> {
+        let format_version = if let Some(v) = properties.get("format-version") {
+            match v.as_str() {
+                "1" => FormatVersion::V1,
+                "2" => FormatVersion::V2,
+                "3" => FormatVersion::V3,
+                _ => {
+                    return Err(RbErr::new(
+                        ruby.exception_arg_error(),
+                        "Unsupported format version",
+                    ));
+                }
+            }
+        } else {
+            FormatVersion::V2
+        };
         let creation = TableCreation::builder()
             .name(name.0.name)
             .schema(schema.schema.clone())
@@ -306,10 +324,12 @@ impl RbCatalog {
             .partition_spec_opt(partition_spec.map(|v| v.spec.clone()))
             .sort_order_opt(sort_order.map(|v| v.order.clone()))
             .properties(properties)
+            .format_version(format_version)
             .build();
         let table = runtime()
             .block_on(
-                self.catalog
+                rb_self
+                    .catalog
                     .read()
                     .unwrap()
                     .as_catalog()

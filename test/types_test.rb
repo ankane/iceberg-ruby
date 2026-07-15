@@ -1,11 +1,6 @@
 require_relative "test_helper"
 
 class TypesTest < Minitest::Test
-  def setup
-    skip if rest? # TODO fix
-    super
-  end
-
   def test_primitive
     schema =
       Iceberg::Schema.new(
@@ -26,7 +21,7 @@ class TypesTest < Minitest::Test
         Iceberg::NestedField.new(field_id: 15, name: "fixed", field_type: Iceberg::FixedType.new(3)),
         Iceberg::NestedField.new(field_id: 16, name: "binary", field_type: Iceberg::BinaryType.new)
       )
-    table = catalog.create_table("events", schema: schema)
+    table = catalog.create_table("events", schema: schema, properties: properties)
     assert_equal schema, table.schema
   end
 
@@ -40,34 +35,40 @@ class TypesTest < Minitest::Test
       Iceberg::Schema.new(
         Iceberg::NestedField.new(field_id: 1, name: "struct", field_type: struct_type)
       )
-    table = catalog.create_table("events", schema: schema)
+    table = catalog.create_table("events", schema: schema, properties: properties)
     assert_equal schema, table.schema
   end
 
   def test_list
     list_type =
       Iceberg::ListType.new(
-        Iceberg::NestedField.new(field_id: 2, name: "boolean", field_type: Iceberg::BooleanType.new)
+        Iceberg::NestedField.new(field_id: 2, name: rest? ? "element" : "boolean", field_type: Iceberg::BooleanType.new)
       )
     schema =
       Iceberg::Schema.new(
         Iceberg::NestedField.new(field_id: 1, name: "list", field_type: list_type)
       )
-    table = catalog.create_table("events", schema: schema)
+    table = catalog.create_table("events", schema: schema, properties: properties)
     assert_equal schema, table.schema
   end
 
   def test_map
     map_type =
       Iceberg::MapType.new(
-        Iceberg::NestedField.new(field_id: 2, name: "boolean", field_type: Iceberg::BooleanType.new),
-        Iceberg::NestedField.new(field_id: 3, name: "int", field_type: Iceberg::IntType.new),
+        Iceberg::NestedField.new(field_id: 2, name: rest? ? "key" : "boolean", field_type: Iceberg::BooleanType.new, required: true),
+        Iceberg::NestedField.new(field_id: 3, name: rest? ? "value" : "int", field_type: Iceberg::IntType.new, required: true),
       )
     schema =
       Iceberg::Schema.new(
         Iceberg::NestedField.new(field_id: 1, name: "map", field_type: map_type)
       )
-    table = catalog.create_table("events", schema: schema)
+    table = catalog.create_table("events", schema: schema, properties: properties)
     assert_equal schema, table.schema
+  end
+
+  private
+
+  def properties
+    rest? ? {"format-version" => "3"} : {}
   end
 end
