@@ -89,7 +89,7 @@ module Iceberg
   class StructType < Type
     attr_reader :fields
 
-    def initialize(**fields)
+    def initialize(*fields)
       @fields = fields
     end
 
