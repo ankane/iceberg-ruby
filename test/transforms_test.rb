@@ -2,8 +2,46 @@ require_relative "test_helper"
 
 class TransformsTest < Minitest::Test
   def test_identity
-    partition_spec = Iceberg::PartitionSpec.new(Iceberg::PartitionField.new(source_id: 1, field_id: 1000, transform: Iceberg::IdentityTransform.new, name: "b"))
-    table = catalog.create_table("events", schema: {"a" => "int"}, partition_spec:)
+    assert_transform Iceberg::IdentityTransform.new, "int"
+  end
+
+  def test_bucket
+    assert_transform Iceberg::BucketTransform.new(3), "int"
+  end
+
+  def test_truncate
+    assert_transform Iceberg::TruncateTransform.new(3), "string"
+  end
+
+  def test_year
+    assert_transform Iceberg::YearTransform.new, "timestamp"
+  end
+
+  def test_month
+    assert_transform Iceberg::MonthTransform.new, "timestamp"
+  end
+
+  def test_day
+    assert_transform Iceberg::DayTransform.new, "timestamp"
+  end
+
+  def test_hour
+    assert_transform Iceberg::HourTransform.new, "timestamp"
+  end
+
+  def test_void
+    assert_transform Iceberg::VoidTransform.new, "int"
+  end
+
+  def test_unknown
+    assert_transform Iceberg::UnknownTransform.new, "int"
+  end
+
+  private
+
+  def assert_transform(transform, field_type)
+    partition_spec = Iceberg::PartitionSpec.new(Iceberg::PartitionField.new(source_id: 1, field_id: 1000, transform: transform, name: "b"))
+    table = catalog.create_table("events", schema: {"a" => field_type}, partition_spec:)
     assert_equal partition_spec, table.default_partition_spec
   end
 end
