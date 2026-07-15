@@ -5,7 +5,8 @@ use iceberg::spec::{
 };
 use iceberg::{NamespaceIdent, TableIdent};
 use magnus::{
-    Error as RbErr, IntoValue, RClass, RString, Ruby, TryConvert, Value, prelude::*, value::Lazy,
+    Error as RbErr, IntoValue, RClass, RModule, RString, Ruby, TryConvert, Value, prelude::*,
+    value::Lazy,
 };
 use std::sync::Arc;
 
@@ -233,6 +234,30 @@ pub fn rb_literal(ruby: &Ruby, literal: &Literal) -> RbResult<Value> {
         Literal::Struct(_) => return Err(todo_error(literal)),
         Literal::List(_) => return Err(todo_error(literal)),
         Literal::Map(_) => return Err(todo_error(literal)),
+    };
+    Ok(v)
+}
+
+pub fn rb_transform(transform: &Transform) -> RbResult<Value> {
+    let ruby = Ruby::get().unwrap();
+    let iceberg = ruby.class_object().const_get::<_, RModule>("Iceberg")?;
+    let v = match transform {
+        Transform::Identity => iceberg
+            .const_get::<_, RClass>("IdentityTransform")?
+            .new_instance(())?,
+        Transform::Year => iceberg
+            .const_get::<_, RClass>("YearTransform")?
+            .new_instance(())?,
+        Transform::Month => iceberg
+            .const_get::<_, RClass>("MonthTransform")?
+            .new_instance(())?,
+        Transform::Day => iceberg
+            .const_get::<_, RClass>("DayTransform")?
+            .new_instance(())?,
+        Transform::Hour => iceberg
+            .const_get::<_, RClass>("HourTransform")?
+            .new_instance(())?,
+        _ => return Err(todo_error(transform)),
     };
     Ok(v)
 }
