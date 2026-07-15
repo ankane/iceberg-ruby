@@ -1,7 +1,7 @@
 use iceberg::spec::{
-    EncryptedKey, Literal, MetadataLog, NullOrder, PartitionSpec, PartitionStatisticsFile,
-    PrimitiveLiteral, PrimitiveType, Schema, Snapshot, SnapshotLog, SortDirection, SortOrder,
-    StatisticsFile, Transform, Type,
+    EncryptedKey, Literal, MetadataLog, NestedField, NullOrder, PartitionSpec,
+    PartitionStatisticsFile, PrimitiveLiteral, PrimitiveType, Schema, Snapshot, SnapshotLog,
+    SortDirection, SortOrder, StatisticsFile, Transform, Type,
 };
 use iceberg::{NamespaceIdent, TableIdent};
 use magnus::{
@@ -14,7 +14,7 @@ use crate::RbResult;
 use crate::encryption::RbEncryptedKey;
 use crate::error::{to_rb_err, todo_error};
 use crate::partitioning::RbPartitionSpec;
-use crate::schema::RbSchema;
+use crate::schema::{RbNestedField, RbSchema};
 use crate::snapshot::{RbMetadataLogEntry, RbSnapshot, RbSnapshotLogEntry};
 use crate::sorting::RbSortOrder;
 use crate::statistics::{RbPartitionStatisticsFile, RbStatisticsFile};
@@ -167,6 +167,14 @@ impl From<&Arc<Schema>> for RbSchema {
     fn from(schema: &Arc<Schema>) -> Self {
         Self {
             schema: (**schema).clone(),
+        }
+    }
+}
+
+impl From<&Arc<NestedField>> for RbNestedField {
+    fn from(field: &Arc<NestedField>) -> Self {
+        Self {
+            field: field.clone(),
         }
     }
 }

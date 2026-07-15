@@ -43,14 +43,15 @@ impl RbSchema {
         Ok(Self { schema })
     }
 
-    pub fn fields(ruby: &Ruby, rb_self: &Self) -> RbResult<RArray> {
-        let fields = ruby.ary_new();
-        for field in rb_self.schema.as_struct().fields() {
-            fields.push(RbNestedField {
-                field: field.clone(),
-            })?;
-        }
-        Ok(fields)
+    pub fn fields(ruby: &Ruby, rb_self: &Self) -> RArray {
+        ruby.ary_from_iter(
+            rb_self
+                .schema
+                .as_struct()
+                .fields()
+                .iter()
+                .map(RbNestedField::from),
+        )
     }
 
     pub fn schema_id(&self) -> i32 {
@@ -67,11 +68,11 @@ impl RbSchema {
         self.schema == other.schema
     }
 
-    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> RbResult<String> {
-        Ok(format!(
+    pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
+        format!(
             "#<Iceberg::Schema fields={}>",
-            Self::fields(ruby, rb_self)?.inspect()
-        ))
+            Self::fields(ruby, rb_self).inspect()
+        )
     }
 }
 
@@ -222,25 +223,13 @@ impl RbNestedField {
             },
             Type::Struct(ty) => iceberg
                 .const_get::<_, RClass>("StructType")?
-                .new_instance((ruby.ary_from_iter(
-                    ty.fields()
-                        .iter()
-                        .map(|f| RbNestedField { field: f.clone() }),
-                ),))?,
-            Type::List(ty) => {
-                iceberg
-                    .const_get::<_, RClass>("ListType")?
-                    .new_instance((RbNestedField {
-                        field: ty.element_field.clone(),
-                    },))?
-            }
+                .new_instance((ruby.ary_from_iter(ty.fields().iter().map(RbNestedField::from)),))?,
+            Type::List(ty) => iceberg
+                .const_get::<_, RClass>("ListType")?
+                .new_instance((RbNestedField::from(&ty.element_field),))?,
             Type::Map(ty) => iceberg.const_get::<_, RClass>("MapType")?.new_instance((
-                RbNestedField {
-                    field: ty.key_field.clone(),
-                },
-                RbNestedField {
-                    field: ty.value_field.clone(),
-                },
+                RbNestedField::from(&ty.key_field),
+                RbNestedField::from(&ty.value_field),
             ))?,
         };
         Ok(v)
