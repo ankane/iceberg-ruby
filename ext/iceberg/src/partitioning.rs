@@ -43,6 +43,10 @@ impl RbPartitionSpec {
         )
     }
 
+    pub fn eq(&self, other: &Self) -> bool {
+        self.spec == other.spec
+    }
+
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
             "#<Iceberg::PartitionSpec spec_id={}, fields={}>",
@@ -80,6 +84,10 @@ impl RbPartitionField {
 
     pub fn transform(&self) -> RbResult<Value> {
         rb_transform(&self.field.transform)
+    }
+
+    pub fn eq(&self, other: &Self) -> bool {
+        self.field == other.field
     }
 
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> RbResult<String> {

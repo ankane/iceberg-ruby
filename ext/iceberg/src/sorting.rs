@@ -42,6 +42,10 @@ impl RbSortOrder {
         )
     }
 
+    pub fn eq(&self, other: &Self) -> bool {
+        self.order == other.order
+    }
+
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> String {
         format!(
             "#<Iceberg::SortOrder order_id={}, fields={}>",
@@ -100,6 +104,10 @@ impl RbSortField {
             NullOrder::First => "first",
             NullOrder::Last => "last",
         }
+    }
+
+    pub fn eq(&self, other: &Self) -> bool {
+        self.field == other.field
     }
 
     pub fn inspect(ruby: &Ruby, rb_self: &Self) -> RbResult<String> {
