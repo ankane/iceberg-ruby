@@ -24,7 +24,7 @@ jobs:
       - uses: ankane/setup-postgres@v1
         with:
           database: iceberg_ruby_test
-      - run: bundle exec rake compile
+      - run: bundle exec rake compile:dev
       - run: bundle exec rake test:memory
       - run: bundle exec rake test:rest
       - run: bundle exec rake test:sql

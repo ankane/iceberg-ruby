@@ -2,5 +2,12 @@
 members = ["ext/iceberg"]
 resolver = "3"
 
+[profile.dev]
+strip = true
+opt-level = 2 # compiles faster
+
 [profile.release]
 strip = true
+opt-level = "s"
+lto = true
+codegen-units = 1

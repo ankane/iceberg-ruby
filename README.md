@@ -196,7 +196,7 @@ To get started with development:
 git clone https://github.com/ankane/iceberg-ruby.git
 cd iceberg-ruby
 bundle install
-bundle exec rake compile
+bundle exec rake compile:dev
 
 # memory catalog
 bundle exec rake test:memory

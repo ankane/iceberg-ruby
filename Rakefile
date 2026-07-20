@@ -47,6 +47,13 @@ Rake::ExtensionTask.new("iceberg", gemspec) do |ext|
   end
 end
 
+namespace :compile do
+  task :dev do
+    ENV["RB_SYS_CARGO_PROFILE"] = "dev"
+    Rake::Task["compile"].invoke
+  end
+end
+
 task :remove_ext do
   Dir["lib/iceberg/iceberg.{bundle,so}"].each do |path|
     File.unlink(path)
