@@ -1,10 +1,13 @@
 use std::sync::RwLock;
 
+use arrow_array::RecordBatchIterator;
+use arrow_array::ffi_stream::FFI_ArrowArrayStream;
 use futures::TryStreamExt;
 use iceberg::scan::{FileScanTask, TableScan};
 use magnus::{IntoValue, RArray, Ruby, Value, value::ReprValue};
 
 use crate::RbResult;
+use crate::arrow::RbArrowArrayStream;
 use crate::error::to_rb_err;
 use crate::result::collect_batches;
 use crate::ruby::GvlExt;
@@ -57,6 +60,22 @@ impl RbTableScan {
         let stream = runtime.block_on(scan.to_arrow()).map_err(to_rb_err)?;
         let batches: Vec<_> = runtime.block_on(stream.try_collect()).map_err(to_rb_err)?;
         collect_batches(ruby, batches)
+    }
+
+    pub fn arrow_c_stream(&self) -> RbResult<RbArrowArrayStream> {
+        let runtime = runtime();
+        let scan = self.scan.read().unwrap();
+        let stream = runtime.block_on(scan.to_arrow()).map_err(to_rb_err)?;
+        let batches: Vec<_> = runtime.block_on(stream.try_collect()).map_err(to_rb_err)?;
+        let stream = if batches.is_empty() {
+            // TODO fix schema
+            FFI_ArrowArrayStream::empty()
+        } else {
+            let schema = batches[0].schema();
+            let reader = RecordBatchIterator::new(batches.into_iter().map(Ok), schema);
+            FFI_ArrowArrayStream::new(Box::new(reader))
+        };
+        Ok(RbArrowArrayStream { stream })
     }
 }
 

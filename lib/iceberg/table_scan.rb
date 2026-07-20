@@ -22,5 +22,11 @@ module Iceberg
     def to_a
       collect.to_a
     end
+
+    def to_arrow
+      require "nanoarrow"
+
+      Nanoarrow::Array.new(@scan)
+    end
   end
 end

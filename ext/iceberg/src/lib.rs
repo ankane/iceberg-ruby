@@ -195,6 +195,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("plan_files", method!(RbTableScan::plan_files, 0))?;
     class.define_method("snapshot", method!(RbTableScan::snapshot, 0))?;
     class.define_method("collect", method!(RbTableScan::collect, 0))?;
+    class.define_method("arrow_c_stream", method!(RbTableScan::arrow_c_stream, 0))?;
 
     let class = module.define_class("FileScanTask", ruby.class_object())?;
     class.define_method("file", method!(RbFileScanTask::file, 0))?;
