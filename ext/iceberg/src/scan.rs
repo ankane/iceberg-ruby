@@ -7,7 +7,7 @@ use iceberg::scan::{FileScanTask, TableScan};
 use magnus::{IntoValue, RArray, Ruby, Value, value::ReprValue};
 
 use crate::RbResult;
-use crate::arrow::RbArrowArrayStream;
+use crate::capsule::RbCapsule;
 use crate::error::to_rb_err;
 use crate::result::collect_batches;
 use crate::ruby::GvlExt;
@@ -62,7 +62,7 @@ impl RbTableScan {
         collect_batches(ruby, batches)
     }
 
-    pub fn arrow_c_stream(&self) -> RbResult<RbArrowArrayStream> {
+    pub fn arrow_c_stream(&self) -> RbResult<RbCapsule> {
         let runtime = runtime();
         let scan = self.scan.read().unwrap();
         let stream = runtime.block_on(scan.to_arrow()).map_err(to_rb_err)?;
@@ -75,7 +75,7 @@ impl RbTableScan {
             let reader = RecordBatchIterator::new(batches.into_iter().map(Ok), schema);
             FFI_ArrowArrayStream::new(Box::new(reader))
         };
-        Ok(RbArrowArrayStream { stream })
+        Ok(RbCapsule::new(stream, Some("arrow_array_stream".into())))
     }
 }
 

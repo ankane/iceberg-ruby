@@ -9,7 +9,7 @@ use magnus::{
 };
 
 use crate::RbResult;
-use crate::arrow::RbArrowSchema;
+use crate::capsule::RbCapsule;
 use crate::error::to_rb_err;
 use crate::utils::{Wrap, default_value, rb_literal};
 
@@ -74,10 +74,10 @@ impl RbSchema {
             .new_instance(unsafe { fields.as_slice() })
     }
 
-    pub fn arrow_c_schema(&self) -> RbResult<RbArrowSchema> {
+    pub fn arrow_c_schema(&self) -> RbResult<RbCapsule> {
         let schema = schema_to_arrow_schema(&self.schema).map_err(to_rb_err)?;
         let schema = FFI_ArrowSchema::try_from(&schema).unwrap();
-        Ok(RbArrowSchema { schema })
+        Ok(RbCapsule::new(schema, Some("arrow_schema".into())))
     }
 
     pub fn eq(&self, other: &Self) -> bool {

@@ -11,7 +11,7 @@ use arrow_schema::{Field as ArrowField, Schema as ArrowSchema, TimeUnit};
 use magnus::{RArray, RHash, RString, Ruby, TryConvert, Value, value::ReprValue};
 
 use crate::RbResult;
-use crate::arrow::RbArrowArrayStream;
+use crate::capsule::RbCapsule;
 use crate::error::todo_error;
 use crate::utils::{Wrap, date_to_i32};
 
@@ -45,11 +45,11 @@ impl RbArrowRecordBatch {
         Ok(Self { batch })
     }
 
-    pub fn arrow_c_stream(&self) -> RbArrowArrayStream {
+    pub fn arrow_c_stream(&self) -> RbCapsule {
         let schema = self.batch.schema();
         let reader = RecordBatchIterator::new([Ok(self.batch.clone())].into_iter(), schema);
         let stream = FFI_ArrowArrayStream::new(Box::new(reader));
-        RbArrowArrayStream { stream }
+        RbCapsule::new(stream, Some("arrow_array_stream".into()))
     }
 }
 

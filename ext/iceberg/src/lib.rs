@@ -1,5 +1,6 @@
 mod arrow;
 mod batch;
+mod capsule;
 mod catalog;
 mod encryption;
 mod error;
@@ -17,8 +18,8 @@ mod utils;
 
 use magnus::{Error as RbErr, Ruby, function, method, prelude::*};
 
-use crate::arrow::{RbArrowArrayStream, RbArrowSchema};
 use crate::batch::RbArrowRecordBatch;
+use crate::capsule::RbCapsule;
 use crate::catalog::RbCatalog;
 #[cfg(feature = "datafusion")]
 use crate::catalog::RbSessionContext;
@@ -241,11 +242,9 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("==", method!(RbNestedField::eq, 1))?;
     class.define_method("inspect", method!(RbNestedField::inspect, 0))?;
 
-    let class = module.define_class("ArrowSchema", ruby.class_object())?;
-    class.define_method("to_i", method!(RbArrowSchema::to_i, 0))?;
-
-    let class = module.define_class("ArrowArrayStream", ruby.class_object())?;
-    class.define_method("to_i", method!(RbArrowArrayStream::to_i, 0))?;
+    let class = module.define_class("Capsule", ruby.class_object())?;
+    class.define_method("to_i", method!(RbCapsule::to_i, 0))?;
+    class.define_method("name", method!(RbCapsule::name, 0))?;
 
     let class = module.define_class("ArrowRecordBatch", ruby.class_object())?;
     class.define_singleton_method("new", function!(RbArrowRecordBatch::new, 2))?;
