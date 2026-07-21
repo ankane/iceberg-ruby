@@ -1,13 +1,14 @@
+use iceberg::{Error, ErrorKind};
 use magnus::{Error as RbErr, RModule, Ruby, prelude::*};
 
-pub fn to_rb_err(err: iceberg::Error) -> RbErr {
+pub fn to_rb_err(err: Error) -> RbErr {
     let class_name = match err.kind() {
-        iceberg::ErrorKind::NamespaceAlreadyExists => "NamespaceAlreadyExistsError",
-        iceberg::ErrorKind::NamespaceNotFound => "NamespaceNotFoundError",
-        iceberg::ErrorKind::TableAlreadyExists => "TableAlreadyExistsError",
-        iceberg::ErrorKind::TableNotFound => "TableNotFoundError",
-        iceberg::ErrorKind::FeatureUnsupported => "UnsupportedFeatureError",
-        iceberg::ErrorKind::DataInvalid => "InvalidDataError",
+        ErrorKind::NamespaceAlreadyExists => "NamespaceAlreadyExistsError",
+        ErrorKind::NamespaceNotFound => "NamespaceNotFoundError",
+        ErrorKind::TableAlreadyExists => "TableAlreadyExistsError",
+        ErrorKind::TableNotFound => "TableNotFoundError",
+        ErrorKind::FeatureUnsupported => "UnsupportedFeatureError",
+        ErrorKind::DataInvalid => "InvalidDataError",
         _ => "Error",
     };
 
