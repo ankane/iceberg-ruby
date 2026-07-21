@@ -60,15 +60,8 @@ class NamespaceTest < Minitest::Test
   end
 
   def test_create_namespace_already_exists
-    error = assert_raises(Iceberg::Error) do
+    assert_raises(Iceberg::NamespaceAlreadyExistsError) do
       catalog.create_namespace("iceberg_ruby_test")
-    end
-    if memory?
-      assert_match "Cannot create namespace", error.message
-    elsif sql? || s3tables? || glue?
-      assert_match "already exists", error.message
-    else
-      assert_equal "Tried to create a namespace that already exists", error.message
     end
   end
 
@@ -77,15 +70,8 @@ class NamespaceTest < Minitest::Test
   end
 
   def test_drop_namespace_missing
-    error = assert_raises(Iceberg::Error) do
+    assert_raises(Iceberg::NamespaceNotFoundError) do
       catalog.drop_namespace("iceberg_ruby_test2")
-    end
-    if memory? || sql?
-      assert_match "No such namespace", error.message
-    elsif s3tables? || glue?
-      assert_match "does not exist", error.message
-    else
-      assert_equal "Tried to drop a namespace that does not exist", error.message
     end
   end
 

@@ -11,9 +11,8 @@ module Iceberg
 
     def create_namespace(namespace, properties: {}, if_not_exists: nil)
       @catalog.create_namespace(namespace, properties)
-    rescue Error => e
-      # ideally all catalogs would use NamespaceAlreadyExistsError
-      if !if_not_exists || (!e.is_a?(NamespaceAlreadyExistsError) && e.message != "Cannot create namespace" && !e.message.include?("already exists"))
+    rescue NamespaceAlreadyExistsError => e
+      if !if_not_exists
         raise e
       end
       nil
@@ -33,9 +32,8 @@ module Iceberg
 
     def drop_namespace(namespace, if_exists: nil)
       @catalog.drop_namespace(namespace)
-    rescue Error => e
-      # ideally all catalogs would use NamespaceNotFoundError
-      if !if_exists || (!e.is_a?(NamespaceNotFoundError) && !e.message.include?("No such namespace") && !e.message.include?("The specified namespace does not exist") && !e.message.include?("not found"))
+    rescue NamespaceNotFoundError => e
+      if !if_exists
         raise e
       end
       nil
@@ -77,9 +75,8 @@ module Iceberg
 
     def drop_table(table_name, if_exists: nil)
       @catalog.drop_table(with_namespace(table_name))
-    rescue Error => e
-      # ideally all catalogs would use TableNotFoundError
-      if !if_exists || (!e.is_a?(TableNotFoundError) && !e.message.include?("No such table") && !e.message.include?("The specified table does not exist") && !e.message.include?("not found"))
+    rescue TableNotFoundError => e
+      if !if_exists
         raise e
       end
       nil
