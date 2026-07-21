@@ -1,6 +1,8 @@
 ## 0.12.0 (unreleased)
 
 - Updated Iceberg Rust to 0.10.0
+- Added support for S3 Tables
+- Added support for Glue
 - Added `purge_table` method
 - Added `default_namespace` option
 - Added support for more types to `append` method
