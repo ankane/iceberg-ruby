@@ -7,7 +7,9 @@ use datafusion::common::ScalarValue;
 use datafusion::execution::context::{SessionConfig, SessionContext};
 use iceberg::memory::{MEMORY_CATALOG_WAREHOUSE, MemoryCatalogBuilder};
 use iceberg::spec::FormatVersion;
-use iceberg::{Catalog, CatalogBuilder, MemoryCatalog, NamespaceIdent, TableCreation, TableIdent};
+use iceberg::{
+    Catalog, CatalogBuilder, MemoryCatalog, NamespaceIdent, Runtime, TableCreation, TableIdent,
+};
 #[cfg(feature = "glue")]
 use iceberg_catalog_glue::{GLUE_CATALOG_PROP_WAREHOUSE, GlueCatalog, GlueCatalogBuilder};
 #[cfg(feature = "rest")]
@@ -37,7 +39,7 @@ use crate::error::to_rb_err;
 use crate::error::{datafusion_error, todo_error};
 #[cfg(feature = "datafusion")]
 use crate::result::collect_batches;
-use crate::runtime::runtime;
+use crate::runtime::{runtime, tokio_runtime};
 use crate::utils::Wrap;
 #[cfg(feature = "datafusion")]
 use crate::utils::date_to_i32;
@@ -96,7 +98,11 @@ impl RbCatalog {
     pub fn new_glue(warehouse: String) -> RbResult<Self> {
         let props = HashMap::from([(GLUE_CATALOG_PROP_WAREHOUSE.to_string(), warehouse)]);
         let catalog = runtime()
-            .block_on(GlueCatalogBuilder::default().load("glue", props))
+            .block_on(
+                GlueCatalogBuilder::default()
+                    .with_runtime(Runtime::new(tokio_runtime()))
+                    .load("glue", props),
+            )
             .map_err(to_rb_err)?;
         Ok(Self {
             catalog: RbCatalogType::Glue(catalog.into()).into(),
@@ -111,6 +117,7 @@ impl RbCatalog {
         let catalog = runtime()
             .block_on(
                 MemoryCatalogBuilder::default()
+                    .with_runtime(Runtime::new(tokio_runtime()))
                     .with_storage_factory(Arc::new(storage_factory(warehouse)))
                     .load("memory", props),
             )
@@ -134,6 +141,7 @@ impl RbCatalog {
         let catalog = runtime()
             .block_on(
                 RestCatalogBuilder::default()
+                    .with_runtime(Runtime::new(tokio_runtime()))
                     .with_storage_factory(Arc::new(storage_factory(warehouse)))
                     .load("rest", props),
             )
@@ -148,7 +156,11 @@ impl RbCatalog {
         let mut props = HashMap::new();
         props.insert(S3TABLES_CATALOG_PROP_TABLE_BUCKET_ARN.to_string(), arn);
         let catalog = runtime()
-            .block_on(S3TablesCatalogBuilder::default().load("s3tables", props))
+            .block_on(
+                S3TablesCatalogBuilder::default()
+                    .with_runtime(Runtime::new(tokio_runtime()))
+                    .load("s3tables", props),
+            )
             .map_err(to_rb_err)?;
         Ok(Self {
             catalog: RbCatalogType::S3Tables(catalog.into()).into(),
@@ -172,6 +184,7 @@ impl RbCatalog {
         let catalog = runtime()
             .block_on(
                 SqlCatalogBuilder::default()
+                    .with_runtime(Runtime::new(tokio_runtime()))
                     .with_storage_factory(Arc::new(storage_factory(Some(warehouse))))
                     .load(name, props),
             )
@@ -486,7 +499,6 @@ fn storage_factory(warehouse: Option<String>) -> OpenDalStorageFactory {
         Some(ref v) => {
             if v.starts_with("s3://") {
                 OpenDalStorageFactory::S3 {
-                    configured_scheme: "s3".to_string(),
                     customized_credential_load: None,
                 }
             } else {

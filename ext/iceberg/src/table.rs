@@ -80,7 +80,7 @@ impl RbTable {
                         .unwrap(),
                 );
 
-                let location_generator = DefaultLocationGenerator::new(table.metadata().clone())?;
+                let location_generator = DefaultLocationGenerator::new(table.metadata())?;
                 let file_name_generator = DefaultFileNameGenerator::new(
                     // TODO move task id to suffix to match Python and Java
                     "0".to_string(),

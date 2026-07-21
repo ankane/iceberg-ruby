@@ -4,7 +4,7 @@ version = "0.11.2"
 license = "Apache-2.0"
 authors = ["Andrew Kane <andrew@ankane.org>"]
 edition = "2024"
-rust-version = "1.92"
+rust-version = "1.94"
 publish = false
 
 [lib]
@@ -12,21 +12,21 @@ name = "iceberg"
 crate-type = ["cdylib"]
 
 [dependencies]
-arrow = "57"
-arrow-array = { version = "57", features = ["ffi"] }
-arrow-cast = "57"
-arrow-schema = "57"
-datafusion = { version = "52", optional = true }
+arrow = "58"
+arrow-array = { version = "58", features = ["ffi"] }
+arrow-cast = "58"
+arrow-schema = "58"
+datafusion = { version = "53", optional = true }
 futures = "0.3"
-iceberg = "=0.9.1"
-iceberg-catalog-glue = { version = "=0.9.1", optional = true }
-iceberg-catalog-rest = { version = "=0.9.1", optional = true }
-iceberg-catalog-s3tables = { version = "=0.9.1", optional = true }
-iceberg-catalog-sql = { version = "=0.9.1", optional = true }
-iceberg-datafusion = { version = "=0.9.1", optional = true }
-iceberg-storage-opendal = "=0.9.1"
+iceberg = "=0.10.0"
+iceberg-catalog-glue = { version = "=0.10.0", optional = true }
+iceberg-catalog-rest = { version = "=0.10.0", optional = true }
+iceberg-catalog-s3tables = { version = "=0.10.0", optional = true }
+iceberg-catalog-sql = { version = "=0.10.0", optional = true }
+iceberg-datafusion = { version = "=0.10.0", optional = true }
+iceberg-storage-opendal = "=0.10.0"
 magnus = "0.8"
-parquet = "57"
+parquet = "58"
 rb-sys = "0.9"
 sqlx = { version = "0.8", features = ["postgres", "runtime-tokio", "sqlite"], default-features = false, optional = true }
 tokio = { version = "1", features = ["rt-multi-thread"] }

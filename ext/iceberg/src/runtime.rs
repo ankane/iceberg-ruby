@@ -26,8 +26,12 @@ pub fn runtime() -> Handle {
     match Handle::try_current() {
         Ok(h) => h.clone(),
         _ => {
-            let rt = RUNTIME.get_or_init(|| Runtime::new().unwrap());
+            let rt = tokio_runtime();
             rt.handle().clone()
         }
     }
+}
+
+pub fn tokio_runtime() -> &'static Runtime {
+    RUNTIME.get_or_init(|| Runtime::new().unwrap())
 }
