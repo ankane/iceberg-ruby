@@ -384,6 +384,19 @@ impl RbCatalog {
         Ok(())
     }
 
+    pub fn purge_table(&self, name: Wrap<TableIdent>) -> RbResult<()> {
+        runtime()
+            .block_on(
+                self.catalog
+                    .read()
+                    .unwrap()
+                    .as_catalog()
+                    .purge_table(&name.0),
+            )
+            .map_err(to_rb_err)?;
+        Ok(())
+    }
+
     pub fn table_exists(&self, name: Wrap<TableIdent>) -> RbResult<bool> {
         let exists = runtime()
             .block_on(

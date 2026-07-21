@@ -90,6 +90,14 @@ class CatalogTest < Minitest::Test
     end
   end
 
+  def test_purge_table
+    skip if rest?
+
+    create_events
+    catalog.purge_table("events")
+    assert_equal false, catalog.table_exists?("events")
+  end
+
   def test_load_table_missing
     error = assert_raises(Iceberg::Error) do
       catalog.load_table("events")

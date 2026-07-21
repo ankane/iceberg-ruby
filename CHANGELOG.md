@@ -1,6 +1,7 @@
 ## 0.12.0 (unreleased)
 
 - Updated Iceberg Rust to 0.10.0
+- Added `purge_table` method
 - Added `default_namespace` option
 - Added support for more types to `append` method
 - Dropped support for Polars < 0.26.1

@@ -85,6 +85,10 @@ module Iceberg
       nil
     end
 
+    def purge_table(table_name)
+      @catalog.purge_table(with_namespace(table_name))
+    end
+
     def table_exists?(table_name)
       @catalog.table_exists?(with_namespace(table_name))
     rescue NamespaceNotFoundError

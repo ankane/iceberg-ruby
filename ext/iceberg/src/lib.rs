@@ -61,6 +61,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("create_table", method!(RbCatalog::create_table, 6))?;
     class.define_method("load_table", method!(RbCatalog::load_table, 1))?;
     class.define_method("drop_table", method!(RbCatalog::drop_table, 1))?;
+    class.define_method("purge_table", method!(RbCatalog::purge_table, 1))?;
     class.define_method("table_exists?", method!(RbCatalog::table_exists, 1))?;
     class.define_method("rename_table", method!(RbCatalog::rename_table, 2))?;
     class.define_method("register_table", method!(RbCatalog::register_table, 2))?;
