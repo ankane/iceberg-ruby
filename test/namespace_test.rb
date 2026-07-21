@@ -83,7 +83,11 @@ class NamespaceTest < Minitest::Test
       error = assert_raises(Iceberg::Error) do
         catalog.drop_namespace("iceberg_ruby_test")
       end
-      assert_match "is not empty", error.message
+      if rest?
+        assert_equal "Received response with unexpected status code", error.message
+      else
+        assert_match "is not empty", error.message
+      end
     end
   end
 end

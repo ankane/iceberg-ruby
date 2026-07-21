@@ -22,12 +22,7 @@ pub fn to_rb_err(err: Error) -> RbErr {
 
     // no way to get context separately
     // https://github.com/apache/iceberg-rust/issues/1071
-    let mut message = err.to_string();
-    if class_name != "Error"
-        && let Some(index) = message.find(" => ")
-    {
-        message = message[(index + 4)..].to_string();
-    }
+    let message = err.message().to_string();
 
     RbErr::new(class, message)
 }
