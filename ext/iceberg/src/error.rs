@@ -16,9 +16,18 @@ pub fn to_rb_err(err: Error) -> RbErr {
     // https://github.com/apache/iceberg-rust/issues/1071
     let message = err.message().to_string();
 
-    // for Glue
-    if class_name == "Error" && err.to_string().contains("EntityNotFoundException") {
-        class_name = "TableNotFoundError";
+    if class_name == "Error" {
+        let s = err.to_string();
+        // for Glue
+        if s.contains("EntityNotFoundException") {
+            class_name = "TableNotFoundError";
+
+        // for Glue and S3 Tables
+        } else if s.contains("AlreadyExistsException")
+            || s.contains("A table with an identical name already exists in the namespace.")
+        {
+            class_name = "TableAlreadyExistsError";
+        }
     }
 
     let class = Ruby::get()
