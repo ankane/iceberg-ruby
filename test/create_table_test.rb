@@ -141,6 +141,10 @@ class CreateTableTest < Minitest::Test
     error = assert_raises(Iceberg::Error) do
       catalog.create_table("events")
     end
-    assert_match "already exists", error.message
+    if glue?
+      assert_equal "Operation failed for hitting aws sdk error", error.message
+    else
+      assert_match "already exists", error.message
+    end
   end
 end
