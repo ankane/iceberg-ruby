@@ -95,7 +95,11 @@ class CreateTableTest < Minitest::Test
       end
 
     schema = table.schema
-    catalog.drop_table("events")
+    if rest?
+      catalog.drop_table("events")
+    else
+      catalog.purge_table("events")
+    end
     table2 = catalog.create_table("events", schema: schema)
     assert_equal schema, table2.schema
     assert_equal schema.fields, table2.schema.fields

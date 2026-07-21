@@ -108,7 +108,11 @@ class Minitest::Test
     return unless catalog.namespace_exists?(namespace)
 
     catalog.list_tables(namespace).each do |t|
-      catalog.drop_table(t)
+      if rest?
+        catalog.drop_table(t)
+      else
+        catalog.purge_table(t)
+      end
     end
     catalog.drop_namespace(namespace)
   end

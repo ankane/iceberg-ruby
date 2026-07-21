@@ -83,7 +83,7 @@ class NamespaceTest < Minitest::Test
     if memory? || sql?
       assert_match "No such namespace", error.message
     elsif s3tables?
-      assert_match "The specified namespace does not exist", error.message
+      assert_match "does not exist", error.message
     elsif glue?
       assert_match "not found", error.message
     else

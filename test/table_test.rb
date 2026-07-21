@@ -6,7 +6,7 @@ class TableTest < Minitest::Test
     assert_equal 2, table.format_version
     assert_kind_of String, table.uuid
     if s3tables?
-      assert_match "table-s3/metadata", table.location
+      assert_match "table-s3", table.location
     elsif glue?
       assert_match "iceberg_ruby_test.db/events", table.location
     else

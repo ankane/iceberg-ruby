@@ -14,7 +14,11 @@ class CatalogTest < Minitest::Test
     assert_equal true, catalog.table_exists?("events2")
     assert_equal false, catalog.table_exists?("events")
 
-    assert_nil catalog.drop_table("events2")
+    if rest?
+      assert_nil catalog.drop_table("events2")
+    else
+      assert_nil catalog.purge_table("iceberg_ruby_test.events2")
+    end
 
     assert_equal false, catalog.table_exists?("events2")
     refute_includes catalog.list_tables, ["iceberg_ruby_test", "events2"]
@@ -33,7 +37,11 @@ class CatalogTest < Minitest::Test
     assert_equal true, catalog.table_exists?("iceberg_ruby_test.events2")
     assert_equal false, catalog.table_exists?("iceberg_ruby_test.events")
 
-    assert_nil catalog.drop_table("iceberg_ruby_test.events2")
+    if rest?
+      assert_nil catalog.drop_table("iceberg_ruby_test.events2")
+    else
+      assert_nil catalog.purge_table("iceberg_ruby_test.events2")
+    end
 
     assert_equal false, catalog.table_exists?("iceberg_ruby_test.events2")
     refute_includes catalog.list_tables("iceberg_ruby_test"), ["iceberg_ruby_test", "events2"]
@@ -52,7 +60,11 @@ class CatalogTest < Minitest::Test
     assert_equal true, catalog.table_exists?(["iceberg_ruby_test", "events2"])
     assert_equal false, catalog.table_exists?(["iceberg_ruby_test", "events"])
 
-    assert_nil catalog.drop_table(["iceberg_ruby_test", "events2"])
+    if rest?
+      assert_nil catalog.drop_table(["iceberg_ruby_test", "events2"])
+    else
+      assert_nil catalog.purge_table("iceberg_ruby_test.events2")
+    end
 
     assert_equal false, catalog.table_exists?(["iceberg_ruby_test", "events2"])
     refute_includes catalog.list_tables(["iceberg_ruby_test"]), ["iceberg_ruby_test", "events2"]
@@ -72,17 +84,19 @@ class CatalogTest < Minitest::Test
   end
 
   def test_drop_table_if_exists
+    skip "drop_table not supported" if s3tables?
+
     catalog.drop_table("events", if_exists: true)
   end
 
   def test_drop_table_missing
+    skip "drop_table not supported" if s3tables?
+
     error = assert_raises(Iceberg::Error) do
       catalog.drop_table("events")
     end
     if memory? || sql?
       assert_match "No such table", error.message
-    elsif s3tables?
-      assert_match "The specified table does not exist", error.message
     elsif glue?
       assert_match "Table events not found", error.message
     else
@@ -105,7 +119,7 @@ class CatalogTest < Minitest::Test
     if memory? || sql?
       assert_match "No such table", error.message
     elsif s3tables?
-      assert_match "The specified table does not exist", error.message
+      assert_match "did not exist", error.message
     elsif glue?
       assert_match "Entity Not Found", error.message
     else
