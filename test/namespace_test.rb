@@ -82,10 +82,8 @@ class NamespaceTest < Minitest::Test
     end
     if memory? || sql?
       assert_match "No such namespace", error.message
-    elsif s3tables?
+    elsif s3tables? || glue?
       assert_match "does not exist", error.message
-    elsif glue?
-      assert_match "not found", error.message
     else
       assert_equal "Tried to drop a namespace that does not exist", error.message
     end

@@ -2,6 +2,8 @@ require_relative "test_helper"
 
 class TypesTest < Minitest::Test
   def test_primitive
+    skip "timestamptz not supported" if glue?
+
     schema =
       Iceberg::Schema.new(
         Iceberg::NestedField.new(field_id: 1, name: "boolean", field_type: Iceberg::BooleanType.new),
