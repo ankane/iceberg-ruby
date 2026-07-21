@@ -67,6 +67,26 @@ Iceberg::RestCatalog.new(
 )
 ```
 
+### S3 Tables
+
+[unreleased]
+
+```ruby
+Iceberg::S3TablesCatalog.new(
+  arn: "arn:aws:s3tables:..."
+)
+```
+
+### Glue
+
+[unreleased]
+
+```ruby
+Iceberg::GlueCatalog.new(
+  warehouse: "s3://my-bucket"
+)
+```
+
 ### SQL
 
 ```ruby
