@@ -2,7 +2,7 @@ use iceberg::{Error, ErrorKind};
 use magnus::{Error as RbErr, RModule, Ruby, prelude::*};
 
 pub fn to_rb_err(err: Error) -> RbErr {
-    let class_name = match err.kind() {
+    let mut class_name = match err.kind() {
         ErrorKind::NamespaceAlreadyExists => "NamespaceAlreadyExistsError",
         ErrorKind::NamespaceNotFound => "NamespaceNotFoundError",
         ErrorKind::TableAlreadyExists => "TableAlreadyExistsError",
@@ -12,6 +12,15 @@ pub fn to_rb_err(err: Error) -> RbErr {
         _ => "Error",
     };
 
+    // no way to get context separately
+    // https://github.com/apache/iceberg-rust/issues/1071
+    let message = err.message().to_string();
+
+    // for Glue
+    if class_name == "Error" && err.to_string().contains("EntityNotFoundException") {
+        class_name = "TableNotFoundError";
+    }
+
     let class = Ruby::get()
         .unwrap()
         .class_object()
@@ -19,10 +28,6 @@ pub fn to_rb_err(err: Error) -> RbErr {
         .unwrap()
         .const_get(class_name)
         .unwrap();
-
-    // no way to get context separately
-    // https://github.com/apache/iceberg-rust/issues/1071
-    let message = err.message().to_string();
 
     RbErr::new(class, message)
 }
