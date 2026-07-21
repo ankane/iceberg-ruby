@@ -13,7 +13,7 @@ module Iceberg
       @catalog.create_namespace(namespace, properties)
     rescue Error => e
       # ideally all catalogs would use NamespaceAlreadyExistsError
-      if !if_not_exists || (e.message != "Cannot create namespace" && !e.message.include?("already exists"))
+      if !if_not_exists || (!e.is_a?(NamespaceNotFoundError) && e.message != "Cannot create namespace" && !e.message.include?("already exists"))
         raise e
       end
       nil
