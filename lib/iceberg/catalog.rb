@@ -35,7 +35,7 @@ module Iceberg
       @catalog.drop_namespace(namespace)
     rescue Error => e
       # ideally all catalogs would use NamespaceNotFoundError
-      if !if_exists || (e.message != "Tried to drop a namespace that does not exist" && !e.message.include?("No such namespace") && !e.message.include?("The specified namespace does not exist") && !e.message.include?("not found"))
+      if !if_exists || (!e.is_a?(NamespaceNotFoundError) && !e.message.include?("No such namespace") && !e.message.include?("The specified namespace does not exist") && !e.message.include?("not found"))
         raise e
       end
       nil
@@ -79,7 +79,7 @@ module Iceberg
       @catalog.drop_table(with_namespace(table_name))
     rescue Error => e
       # ideally all catalogs would use TableNotFoundError
-      if !if_exists || (e.message != "Tried to drop a table that does not exist" && !e.message.include?("No such table") && !e.message.include?("The specified table does not exist") && !e.message.include?("not found"))
+      if !if_exists || (!e.is_a?(TableNotFoundError) && !e.message.include?("No such table") && !e.message.include?("The specified table does not exist") && !e.message.include?("not found"))
         raise e
       end
       nil
