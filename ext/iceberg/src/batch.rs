@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use arrow::array::{
-    Array, BooleanBuilder, Date32Builder, Float32Builder, Float64Builder, Int32Builder,
-    Int64Builder, LargeBinaryBuilder, StringBuilder, TimestampMicrosecondBuilder,
+    Array, BooleanBuilder, Date32Builder, Decimal128Builder, Float32Builder, Float64Builder,
+    Int32Builder, Int64Builder, LargeBinaryBuilder, StringBuilder, TimestampMicrosecondBuilder,
 };
 use arrow::datatypes::DataType as ArrowDataType;
 use arrow_array::ffi_stream::FFI_ArrowArrayStream;
@@ -31,6 +31,9 @@ impl RbArrowRecordBatch {
                 ArrowDataType::Int64 => new_array_int64(ruby, data, field)?,
                 ArrowDataType::Float32 => new_array_float32(ruby, data, field)?,
                 ArrowDataType::Float64 => new_array_float64(ruby, data, field)?,
+                ArrowDataType::Decimal128(precision, scale) => {
+                    new_array_decimal128(ruby, data, field, *precision, *scale)?
+                }
                 ArrowDataType::Date32 => new_array_date32(ruby, data, field)?,
                 ArrowDataType::Timestamp(TimeUnit::Microsecond, None) => {
                     new_array_timestamp_us(ruby, data, field)?
@@ -78,6 +81,29 @@ new_array!(new_array_int64, Int64Builder, i64);
 new_array!(new_array_float32, Float32Builder, f32);
 new_array!(new_array_float64, Float64Builder, f64);
 new_array!(new_array_utf8, StringBuilder, String);
+
+fn new_array_decimal128(
+    ruby: &Ruby,
+    data: RArray,
+    field: &Arc<ArrowField>,
+    precision: u8,
+    scale: i8,
+) -> RbResult<Arc<dyn Array>> {
+    let name = ruby.str_new(field.name());
+    let mut builder = Decimal128Builder::new()
+        .with_precision_and_scale(precision, scale)
+        .unwrap();
+    for row in data.into_iter() {
+        let row = RHash::try_convert(row)?;
+        let value: Option<Value> = row.aref(name)?;
+        match value {
+            Some(_) => return Err(todo_error(field)),
+            None => builder.append_null(),
+        }
+    }
+    let array: Arc<dyn Array> = Arc::new(builder.finish());
+    Ok(array)
+}
 
 fn new_array_date32(
     ruby: &Ruby,
