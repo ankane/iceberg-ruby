@@ -31,8 +31,8 @@ module Iceberg
   class InvalidDataError < Error; end
   class NamespaceAlreadyExistsError < Error; end
   class NoSuchNamespaceError < Error; end
-  class TableAlreadyExistsError < Error; end
   class NoSuchTableError < Error; end
+  class TableAlreadyExistsError < Error; end
   class UnsupportedFeatureError < Error; end
 
   class Todo < Error
