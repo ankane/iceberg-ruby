@@ -5,8 +5,9 @@ use arrow::array::{
     Int16Array, Int32Array, Int64Array, LargeBinaryArray, StringArray, TimestampMicrosecondArray,
     TimestampNanosecondArray, UInt8Array, UInt16Array, UInt32Array, UInt64Array,
 };
-use arrow::datatypes::DataType as ArrowDataType;
+use arrow::datatypes::{DataType as ArrowDataType, Decimal128Type};
 use arrow_array::RecordBatch;
+use arrow_array::types::DecimalType;
 use arrow_schema::TimeUnit;
 use magnus::{Class, IntoValue, Module, RArray, RClass, RModule, Ruby, Value, value::ReprValue};
 
@@ -101,18 +102,16 @@ collect_column!(collect_column_float64, Float64Array);
 collect_column!(collect_column_utf8, StringArray);
 
 pub fn collect_column_decimal128(
-    _ruby: &Ruby,
+    ruby: &Ruby,
     column: &Arc<dyn Array>,
     rows: RArray,
-    _precision: u8,
-    _scale: i8,
+    precision: u8,
+    scale: i8,
 ) -> RbResult<()> {
     let array = column.as_any().downcast_ref::<Decimal128Array>().unwrap();
     for (i, value) in array.iter().enumerate() {
-        let value: Option<Value> = match value {
-            Some(_) => return Err(todo_error(column)),
-            None => None,
-        };
+        let value = value
+            .map(|v| Decimal128Type::format_decimal(v, precision, scale).into_value_with(ruby));
         rows.entry::<RArray>(i.try_into().unwrap())?.push(value)?;
     }
     Ok(())

@@ -4,9 +4,10 @@ use arrow::array::{
     Array, BooleanBuilder, Date32Builder, Decimal128Builder, Float32Builder, Float64Builder,
     Int32Builder, Int64Builder, LargeBinaryBuilder, StringBuilder, TimestampMicrosecondBuilder,
 };
-use arrow::datatypes::DataType as ArrowDataType;
+use arrow::datatypes::{DataType as ArrowDataType, Decimal128Type};
 use arrow_array::ffi_stream::FFI_ArrowArrayStream;
 use arrow_array::{RecordBatch, RecordBatchIterator};
+use arrow_cast::parse::parse_decimal;
 use arrow_schema::{Field as ArrowField, Schema as ArrowSchema, TimeUnit};
 use magnus::{RArray, RHash, RString, Ruby, TryConvert, Value, value::ReprValue};
 
@@ -97,7 +98,13 @@ fn new_array_decimal128(
         let row = RHash::try_convert(row)?;
         let value: Option<Value> = row.aref(name)?;
         match value {
-            Some(_) => return Err(todo_error(field)),
+            Some(v) => {
+                let s = v.to_r_string()?;
+                builder.append_value(
+                    parse_decimal::<Decimal128Type>(unsafe { s.as_str()? }, precision, scale)
+                        .unwrap(),
+                )
+            }
             None => builder.append_null(),
         }
     }
