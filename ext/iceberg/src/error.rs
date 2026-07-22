@@ -4,9 +4,9 @@ use magnus::{Error as RbErr, RModule, Ruby, prelude::*};
 pub fn to_rb_err(err: Error) -> RbErr {
     let mut class_name = match err.kind() {
         ErrorKind::NamespaceAlreadyExists => "NamespaceAlreadyExistsError",
-        ErrorKind::NamespaceNotFound => "NamespaceNotFoundError",
+        ErrorKind::NamespaceNotFound => "NoSuchNamespaceError",
         ErrorKind::TableAlreadyExists => "TableAlreadyExistsError",
-        ErrorKind::TableNotFound => "TableNotFoundError",
+        ErrorKind::TableNotFound => "NoSuchTableError",
         ErrorKind::FeatureUnsupported => "UnsupportedFeatureError",
         ErrorKind::DataInvalid => "InvalidDataError",
         _ => "Error",
@@ -20,7 +20,7 @@ pub fn to_rb_err(err: Error) -> RbErr {
         let s = err.to_string();
         // for Glue
         if s.contains("EntityNotFoundException") {
-            class_name = "TableNotFoundError";
+            class_name = "NoSuchTableError";
 
         // for Glue and S3 Tables
         } else if s.contains("AlreadyExistsException")

@@ -92,7 +92,7 @@ class CatalogTest < Minitest::Test
   def test_drop_table_missing
     skip "drop_table not supported" if s3tables?
 
-    assert_raises(Iceberg::TableNotFoundError) do
+    assert_raises(Iceberg::NoSuchTableError) do
       catalog.drop_table("events")
     end
   end
@@ -106,7 +106,7 @@ class CatalogTest < Minitest::Test
   end
 
   def test_load_table_missing
-    assert_raises(Iceberg::TableNotFoundError) do
+    assert_raises(Iceberg::NoSuchTableError) do
       catalog.load_table("events")
     end
   end

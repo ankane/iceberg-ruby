@@ -32,7 +32,7 @@ module Iceberg
 
     def drop_namespace(namespace, if_exists: nil)
       @catalog.drop_namespace(namespace)
-    rescue NamespaceNotFoundError => e
+    rescue NoSuchNamespaceError => e
       if !if_exists
         raise e
       end
@@ -75,7 +75,7 @@ module Iceberg
 
     def drop_table(table_name, if_exists: nil)
       @catalog.drop_table(with_namespace(table_name))
-    rescue TableNotFoundError => e
+    rescue NoSuchTableError => e
       if !if_exists
         raise e
       end
@@ -88,7 +88,7 @@ module Iceberg
 
     def table_exists?(table_name)
       @catalog.table_exists?(with_namespace(table_name))
-    rescue NamespaceNotFoundError
+    rescue NoSuchNamespaceError
       false
     end
 

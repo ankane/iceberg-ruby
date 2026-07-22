@@ -70,7 +70,7 @@ class NamespaceTest < Minitest::Test
   end
 
   def test_drop_namespace_missing
-    assert_raises(Iceberg::NamespaceNotFoundError) do
+    assert_raises(Iceberg::NoSuchNamespaceError) do
       catalog.drop_namespace("iceberg_ruby_test2")
     end
   end
