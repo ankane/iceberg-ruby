@@ -228,4 +228,10 @@ bundle exec rake test:rest
 # SQL catalog
 createdb iceberg_ruby_test
 bundle exec rake test:sql
+
+# S3 Tables catalog
+bundle exec rake test:s3tables
+
+# Glue catalog
+bundle exec rake test:glue
 ```
