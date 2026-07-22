@@ -3,11 +3,6 @@ require_relative "test_helper"
 class PolarsTest < Minitest::Test
   include Polars::Testing
 
-  # TODO remove in 0.12.0
-  def setup
-    skip
-  end
-
   def test_to_polars
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
     table = catalog.create_table("events", schema: df.schema)
@@ -69,19 +64,19 @@ class PolarsTest < Minitest::Test
   def test_append_type_mismatch
     df = Polars::DataFrame.new({"a" => [1, 2, 3]})
     table = catalog.create_table("events", schema: df.schema)
-    error = assert_raises(ArgumentError) do
+    error = assert_raises(Iceberg::Error) do
       table.append(df.cast(Polars::Float64))
     end
-    assert_match "target schema is not superset of current schema", error.message
+    assert_match "Arrow Schema Error", error.message
   end
 
   def test_append_missing_column
     df = Polars::DataFrame.new({"a" => [1, 2, 3], "b" => [4, 5, 6]})
     table = catalog.create_table("events", schema: df.schema)
-    error = assert_raises(ArgumentError) do
+    error = assert_raises(Iceberg::Error) do
       table.append(df.drop("a"))
     end
-    assert_match "target schema is not superset of current schema", error.message
+    assert_match "Arrow Schema Error", error.message
   end
 
   def test_static_table_to_polars
