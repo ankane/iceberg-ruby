@@ -1,4 +1,4 @@
-## 0.12.0 (unreleased)
+## 0.12.0 (2026-07-22)
 
 - Updated Iceberg Rust to 0.10.0
 - Added support for S3 Tables

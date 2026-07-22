@@ -19,10 +19,10 @@ gem "iceberg"
 Create a client for an Iceberg catalog
 
 ```ruby
-catalog = Iceberg::RestCatalog.new(uri: "http://localhost:8181")
+catalog = Iceberg::RestCatalog.new(uri: "http://localhost:8181", default_namespace: "main")
 ```
 
-Create a namespace
+Create a namespace if needed
 
 ```ruby
 catalog.create_namespace("main")
@@ -31,7 +31,7 @@ catalog.create_namespace("main")
 Create a table
 
 ```ruby
-catalog.create_table("main.events") do |t|
+catalog.create_table("events") do |t|
   t.bigint "id"
   t.float "value"
 end
@@ -41,14 +41,14 @@ Or with [Polars](https://github.com/ankane/ruby-polars)
 
 ```ruby
 df = Polars::DataFrame.new({"id" => [1, 2], "value" => [3.0, 4.0]})
-table = catalog.create_table("main.events", schema: df.schema)
+table = catalog.create_table("events", schema: df.schema)
 table.append(df)
 ```
 
 Load a table
 
 ```ruby
-table = catalog.load_table("main.events")
+table = catalog.load_table("events")
 ```
 
 Query a table
@@ -153,7 +153,7 @@ catalog.list_tables("main")
 Create a table
 
 ```ruby
-catalog.create_table("main.events") do |t|
+catalog.create_table("events") do |t|
   t.integer "id"
   t.float "value"
 end
@@ -162,31 +162,31 @@ end
 Load a table
 
 ```ruby
-catalog.load_table("main.events")
+catalog.load_table("events")
 ```
 
 Check if a table exists
 
 ```ruby
-catalog.table_exists?("main.events")
+catalog.table_exists?("events")
 ```
 
 Rename a table
 
 ```ruby
-catalog.rename_table("main.events", "main.events2")
+catalog.rename_table("events", "events2")
 ```
 
 Register a table
 
 ```ruby
-catalog.register_table("main.events", "metadata.json")
+catalog.register_table("events", "metadata.json")
 ```
 
 Drop a table
 
 ```ruby
-catalog.drop_table("main.events")
+catalog.drop_table("events")
 ```
 
 ## Static Tables
