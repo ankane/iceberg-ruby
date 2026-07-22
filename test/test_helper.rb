@@ -2,7 +2,7 @@ require "bundler/setup"
 Bundler.require(:default)
 require "minitest/autorun"
 
-$catalog = ENV["CATALOG"] || "rest"
+$catalog = ENV["CATALOG"] || "memory"
 puts "Using #{$catalog}"
 
 class Minitest::Test
