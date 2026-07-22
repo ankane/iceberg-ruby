@@ -108,6 +108,7 @@ pub fn collect_column_decimal128(
     precision: u8,
     scale: i8,
 ) -> RbResult<()> {
+    ruby.require("bigdecimal")?;
     let array = column.as_any().downcast_ref::<Decimal128Array>().unwrap();
     for (i, value) in array.iter().enumerate() {
         let value: Option<Value> = value
