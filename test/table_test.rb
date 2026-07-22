@@ -67,8 +67,8 @@ class TableTest < Minitest::Test
       end
     data = [
       {"boolean" => true, "int" => 1, "long" => 1, "float" => 1.5, "double" => 1.5, "decimal" => nil, "date" => Date.today, "timestamp" => Time.at(0), "string" => "one", "binary" => "one".b},
-      {"boolean" => false, "int" => 2, "long" => 2, "float" => 2.5, "double" => 2.5, "decimal" => nil, "date" => Date.today + 1, "timestamp" => Time.at(1), "string" => "two", "binary" => "two".b},
-      {"boolean" => true, "int" => 3, "long" => 3, "float" => 3.5, "double" => 3.5, "decimal" => nil, "date" => Date.today + 2, "timestamp" => Time.at(2), "string" => "three", "binary" => "three".b}
+      {"boolean" => nil, "int" => nil, "long" => nil, "float" => nil, "double" => nil, "decimal" => nil, "date" => nil, "timestamp" => nil, "string" => nil, "binary" => nil},
+      {"boolean" => false, "int" => 3, "long" => 3, "float" => 3.5, "double" => 3.5, "decimal" => nil, "date" => Date.today + 2, "timestamp" => Time.at(2), "string" => "three", "binary" => "three".b}
     ]
     assert_nil table.append(data)
     assert_equal data, table.to_a
