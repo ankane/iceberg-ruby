@@ -128,6 +128,8 @@ class CatalogTest < Minitest::Test
       assert_match "Registering a table is not supported yet", error.message
     elsif glue?
       assert_match "Failed to parse url", error.message
+    elsif s3_warehouse?
+      assert_match "Failed to parse url", error.message
     else
       assert_match "Failure in doing io operation", error.message
     end

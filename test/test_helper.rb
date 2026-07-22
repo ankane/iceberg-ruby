@@ -33,7 +33,7 @@ class Minitest::Test
         )
       when "memory"
         Iceberg::MemoryCatalog.new(
-          warehouse: ENV.key?("S3_BUCKET") ? "s3://#{s3_bucket}/memory_catalog" : "#{tmpdir}/memory_catalog",
+          warehouse: s3_warehouse? ? "s3://#{s3_bucket}/memory_catalog" : "#{tmpdir}/memory_catalog",
           **catalog_options
         )
       when "rest"
@@ -49,7 +49,7 @@ class Minitest::Test
       when "sql"
         Iceberg::SqlCatalog.new(
           uri: "postgres://localhost/iceberg_ruby_test",
-          warehouse: "#{tmpdir}/sql_catalog",
+          warehouse: s3_warehouse? ? "s3://#{s3_bucket}/sql_catalog" : "#{tmpdir}/sql_catalog",
           **catalog_options
         )
       else
@@ -71,6 +71,10 @@ class Minitest::Test
 
   def s3_bucket
     ENV.fetch("S3_BUCKET")
+  end
+
+  def s3_warehouse?
+    ENV.key?("S3_BUCKET")
   end
 
   def glue?
@@ -108,7 +112,7 @@ class Minitest::Test
     return unless catalog.namespace_exists?(namespace)
 
     catalog.list_tables(namespace).each do |t|
-      if rest?
+      if rest? || (sql? && s3_warehouse?)
         catalog.drop_table(t)
       else
         catalog.purge_table(t)
