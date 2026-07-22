@@ -6,6 +6,7 @@
 - Added `purge_table` method
 - Added `default_namespace` option
 - Added support for more types to `append` method
+- Improved error classes
 - Dropped support for Polars < 0.26.1
 
 ## 0.11.2 (2026-05-14)
