@@ -76,6 +76,15 @@ class TableTest < Minitest::Test
     assert_equal data, table.to_a
   end
 
+  def test_append_decimal
+    require "bigdecimal"
+
+    table = catalog.create_table("events", schema: {"a" => Iceberg::DecimalType.new(38, 8)})
+    assert_nil table.append([{"a" => 1000}, {"a" => -1.23456789}, {"a" => "-1.23456789"}])
+    expected = [{"a" => BigDecimal("1000")}, {"a" => BigDecimal("-1.23456789")}, {"a" => BigDecimal("-1.23456789")}]
+    assert_equal expected, table.to_a
+  end
+
   def test_append_type_mismatch
     table = catalog.create_table("events", schema: {"a" => "int"})
     error = assert_raises(TypeError) do
