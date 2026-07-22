@@ -110,8 +110,14 @@ pub fn collect_column_decimal128(
 ) -> RbResult<()> {
     let array = column.as_any().downcast_ref::<Decimal128Array>().unwrap();
     for (i, value) in array.iter().enumerate() {
-        let value = value
-            .map(|v| Decimal128Type::format_decimal(v, precision, scale).into_value_with(ruby));
+        let value: Option<Value> = value
+            .map(|v| {
+                ruby.class_object().funcall(
+                    "BigDecimal",
+                    (Decimal128Type::format_decimal(v, precision, scale).into_value_with(ruby),),
+                )
+            })
+            .transpose()?;
         rows.entry::<RArray>(i.try_into().unwrap())?.push(value)?;
     }
     Ok(())

@@ -52,6 +52,8 @@ class TableTest < Minitest::Test
   end
 
   def test_append
+    require "bigdecimal"
+
     table =
       catalog.create_table("events") do |t|
         t.boolean "boolean"
@@ -66,9 +68,9 @@ class TableTest < Minitest::Test
         t.binary "binary"
       end
     data = [
-      {"boolean" => true, "int" => 1, "long" => 1, "float" => 1.5, "double" => 1.5, "decimal" => "1000.00000000", "date" => Date.today, "timestamp" => Time.at(0), "string" => "one", "binary" => "one".b},
+      {"boolean" => true, "int" => 1, "long" => 1, "float" => 1.5, "double" => 1.5, "decimal" => BigDecimal("1000"), "date" => Date.today, "timestamp" => Time.at(0), "string" => "one", "binary" => "one".b},
       {"boolean" => nil, "int" => nil, "long" => nil, "float" => nil, "double" => nil, "decimal" => nil, "date" => nil, "timestamp" => nil, "string" => nil, "binary" => nil},
-      {"boolean" => false, "int" => 3, "long" => 3, "float" => 3.5, "double" => 3.5, "decimal" => "-1.23456789", "date" => Date.today + 2, "timestamp" => Time.at(2), "string" => "three", "binary" => "three".b}
+      {"boolean" => false, "int" => 3, "long" => 3, "float" => 3.5, "double" => 3.5, "decimal" => BigDecimal("-1.23456789"), "date" => Date.today + 2, "timestamp" => Time.at(2), "string" => "three", "binary" => "three".b}
     ]
     assert_nil table.append(data)
     assert_equal data, table.to_a
