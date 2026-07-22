@@ -33,7 +33,7 @@ class Minitest::Test
         )
       when "memory"
         Iceberg::MemoryCatalog.new(
-          warehouse: "#{tmpdir}/memory_catalog",
+          warehouse: ENV.key?("S3_BUCKET") ? "s3://#{s3_bucket}/memory_catalog" : "#{tmpdir}/memory_catalog",
           **catalog_options
         )
       when "rest"
