@@ -52,6 +52,18 @@ table = catalog.create_table("events", schema: df.schema)
 table.append(df)
 ```
 
+Or with [Nanoarrow](https://github.com/ankane/nanoarrow-ruby)
+
+```ruby
+arr =
+  Nanoarrow::Array.new(
+    [{"id" => 1, "value" => 3.0}, {"id" => 2, "value" => 4.0}],
+    Nanoarrow.struct({"a" => Nanoarrow.int64, "b" => Nanoarrow.string})
+  )
+table = catalog.create_table("events", schema: arr.schema)
+table.append(arr)
+```
+
 Load a table
 
 ```ruby
@@ -61,7 +73,11 @@ table = catalog.load_table("events")
 Query a table
 
 ```ruby
+table.to_a
+# or
 table.to_polars.collect
+# or
+table.scan.to_arrow
 ```
 
 ## Catalog Types
