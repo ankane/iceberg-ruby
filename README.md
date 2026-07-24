@@ -31,10 +31,17 @@ catalog.create_namespace("main")
 Create a table
 
 ```ruby
-catalog.create_table("events") do |t|
-  t.bigint "id"
-  t.float "value"
-end
+table =
+  catalog.create_table("events") do |t|
+    t.bigint "id"
+    t.float "value"
+  end
+```
+
+Append data
+
+```ruby
+table.append([{"id" => 1, "value" => 3.0}, {"id" => 2, "value" => 4.0}])
 ```
 
 Or with [Polars](https://github.com/ankane/ruby-polars)
