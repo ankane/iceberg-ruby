@@ -14,7 +14,19 @@ pub fn to_rb_err(err: Error) -> RbErr {
 
     // no way to get context separately
     // https://github.com/apache/iceberg-rust/issues/1071
-    let message = err.message().to_string();
+    let mut message = err.message().to_string();
+
+    // Display includes kind and context, so walk the source chain instead
+    // (causes often repeat their inner error in their own message)
+    let mut source = std::error::Error::source(&err);
+    while let Some(s) = source {
+        let s_message = s.to_string();
+        if !message.contains(&s_message) {
+            message.push_str(": ");
+            message.push_str(&s_message);
+        }
+        source = s.source();
+    }
 
     if class_name == "Error" {
         let s = err.to_string();

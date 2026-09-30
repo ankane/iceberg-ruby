@@ -24,7 +24,16 @@ jobs:
       - uses: ankane/setup-postgres@v1
         with:
           database: iceberg_ruby_test
+      - run: |
+          docker run -d --name postgres-tls -e POSTGRES_PASSWORD=postgres -p 5433:5432 postgres:16 \
+            -c ssl=on \
+            -c ssl_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem \
+            -c ssl_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
       - run: bundle exec rake compile:dev
       - run: bundle exec rake test:memory
       - run: bundle exec rake test:rest
-      - run: bundle exec rake test:sql
+      - run: |
+          until docker exec postgres-tls pg_isready -h 127.0.0.1; do sleep 1; done
+          bundle exec rake test:sql
+        env:
+          TEST_SQL_TLS_URI: postgres://postgres:postgres@localhost:5433/postgres
