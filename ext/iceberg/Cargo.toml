@@ -28,7 +28,7 @@ iceberg-storage-opendal = "=0.10.1"
 magnus = "0.9"
 parquet = "58"
 rb-sys = "0.9"
-sqlx = { version = "0.8", features = ["postgres", "runtime-tokio", "sqlite"], default-features = false, optional = true }
+sqlx = { version = "0.8", features = ["postgres", "runtime-tokio", "sqlite", "tls-rustls-aws-lc-rs"], default-features = false, optional = true }
 tokio = { version = "1", features = ["rt-multi-thread"] }
 uuid = { version = "1", features = ["v4"] }
 
