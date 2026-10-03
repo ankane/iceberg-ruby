@@ -1,3 +1,5 @@
+use std::error::Error as _;
+
 use iceberg::{Error, ErrorKind};
 use magnus::{Error as RbErr, RModule, Ruby, prelude::*};
 
@@ -14,7 +16,18 @@ pub fn to_rb_err(err: Error) -> RbErr {
 
     // no way to get context separately
     // https://github.com/apache/iceberg-rust/issues/1071
-    let message = err.message().to_string();
+    let mut message = err.message().to_string();
+
+    let mut source = err.source();
+    while let Some(s) = source {
+        let m = s.to_string();
+        if message.contains(&m) {
+            break;
+        }
+        message.push_str(": ");
+        message.push_str(&m);
+        source = s.source();
+    }
 
     if class_name == "Error" {
         let s = err.to_string();
