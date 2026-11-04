@@ -316,21 +316,18 @@ impl RbCatalog {
         partition_spec: Option<&RbPartitionSpec>,
         sort_order: Option<&RbSortOrder>,
         properties: HashMap<String, String>,
+        format_version: u8,
     ) -> RbResult<RbTable> {
-        let format_version = if let Some(v) = properties.get("format-version") {
-            match v.as_str() {
-                "1" => FormatVersion::V1,
-                "2" => FormatVersion::V2,
-                "3" => FormatVersion::V3,
-                _ => {
-                    return Err(RbErr::new(
-                        ruby.exception_arg_error(),
-                        "Unsupported format version",
-                    ));
-                }
+        let format_version = match format_version {
+            1 => FormatVersion::V1,
+            2 => FormatVersion::V2,
+            3 => FormatVersion::V3,
+            _ => {
+                return Err(RbErr::new(
+                    ruby.exception_arg_error(),
+                    "Unsupported format version",
+                ));
             }
-        } else {
-            FormatVersion::V2
         };
         let creation = TableCreation::builder()
             .name(name.0.name)

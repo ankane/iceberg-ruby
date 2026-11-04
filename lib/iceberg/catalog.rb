@@ -66,7 +66,12 @@ module Iceberg
         schema = Schema.new
       end
 
-      Table.new(@catalog.create_table(with_namespace(table_name), schema, location, partition_spec, sort_order, properties), @catalog)
+      format_version = (properties["format-version"] || 2).to_i
+      if properties["format-version"] && (is_a?(MemoryCatalog) || is_a?(SqlCatalog))
+        properties = properties.except("format-version")
+      end
+
+      Table.new(@catalog.create_table(with_namespace(table_name), schema, location, partition_spec, sort_order, properties, format_version), @catalog)
     end
 
     def load_table(table_name)

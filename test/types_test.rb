@@ -26,7 +26,7 @@ class TypesTest < Minitest::Test
   end
 
   def test_primitive_v3
-    skip if glue? || memory? || sql?
+    skip "timestamptz not supported" if glue?
 
     schema =
       Iceberg::Schema.new(

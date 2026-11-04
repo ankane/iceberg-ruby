@@ -58,7 +58,7 @@ fn init(ruby: &Ruby) -> RbResult<()> {
     class.define_method("update_namespace", method!(RbCatalog::update_namespace, 2))?;
     class.define_method("drop_namespace", method!(RbCatalog::drop_namespace, 1))?;
     class.define_method("list_tables", method!(RbCatalog::list_tables, 1))?;
-    class.define_method("create_table", method!(RbCatalog::create_table, 6))?;
+    class.define_method("create_table", method!(RbCatalog::create_table, 7))?;
     class.define_method("load_table", method!(RbCatalog::load_table, 1))?;
     class.define_method("drop_table", method!(RbCatalog::drop_table, 1))?;
     class.define_method("purge_table", method!(RbCatalog::purge_table, 1))?;
