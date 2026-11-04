@@ -16,14 +16,24 @@ class TypesTest < Minitest::Test
         Iceberg::NestedField.new(field_id: 8, name: "time", field_type: Iceberg::TimeType.new),
         Iceberg::NestedField.new(field_id: 9, name: "timestamp", field_type: Iceberg::TimestampType.new),
         Iceberg::NestedField.new(field_id: 10, name: "timestamptz", field_type: Iceberg::TimestamptzType.new),
-        Iceberg::NestedField.new(field_id: 11, name: "timestamp_nano", field_type: Iceberg::TimestampNanoType.new),
-        Iceberg::NestedField.new(field_id: 12, name: "timestamptz_nano", field_type: Iceberg::TimestamptzNanoType.new),
-        Iceberg::NestedField.new(field_id: 13, name: "string", field_type: Iceberg::StringType.new),
-        Iceberg::NestedField.new(field_id: 14, name: "uuid", field_type: Iceberg::UUIDType.new),
-        Iceberg::NestedField.new(field_id: 15, name: "fixed", field_type: Iceberg::FixedType.new(3)),
-        Iceberg::NestedField.new(field_id: 16, name: "binary", field_type: Iceberg::BinaryType.new)
+        Iceberg::NestedField.new(field_id: 11, name: "string", field_type: Iceberg::StringType.new),
+        Iceberg::NestedField.new(field_id: 12, name: "uuid", field_type: Iceberg::UUIDType.new),
+        Iceberg::NestedField.new(field_id: 13, name: "fixed", field_type: Iceberg::FixedType.new(3)),
+        Iceberg::NestedField.new(field_id: 14, name: "binary", field_type: Iceberg::BinaryType.new)
       )
-    table = catalog.create_table("events", schema: schema, properties: properties)
+    table = catalog.create_table("events", schema: schema)
+    assert_equal schema, table.schema
+  end
+
+  def test_primitive_v3
+    skip if glue? || memory? || sql?
+
+    schema =
+      Iceberg::Schema.new(
+        Iceberg::NestedField.new(field_id: 1, name: "timestamp_nano", field_type: Iceberg::TimestampNanoType.new),
+        Iceberg::NestedField.new(field_id: 2, name: "timestamptz_nano", field_type: Iceberg::TimestamptzNanoType.new),
+      )
+    table = catalog.create_table("events", schema: schema, properties: {"format-version" => "3"})
     assert_equal schema, table.schema
   end
 
@@ -37,7 +47,7 @@ class TypesTest < Minitest::Test
       Iceberg::Schema.new(
         Iceberg::NestedField.new(field_id: 1, name: "struct", field_type: struct_type)
       )
-    table = catalog.create_table("events", schema: schema, properties: properties)
+    table = catalog.create_table("events", schema: schema)
     assert_equal schema, table.schema
   end
 
@@ -50,7 +60,7 @@ class TypesTest < Minitest::Test
       Iceberg::Schema.new(
         Iceberg::NestedField.new(field_id: 1, name: "list", field_type: list_type)
       )
-    table = catalog.create_table("events", schema: schema, properties: properties)
+    table = catalog.create_table("events", schema: schema)
     assert_equal schema, table.schema
   end
 
@@ -64,13 +74,7 @@ class TypesTest < Minitest::Test
       Iceberg::Schema.new(
         Iceberg::NestedField.new(field_id: 1, name: "map", field_type: map_type)
       )
-    table = catalog.create_table("events", schema: schema, properties: properties)
+    table = catalog.create_table("events", schema: schema)
     assert_equal schema, table.schema
-  end
-
-  private
-
-  def properties
-    rest? ? {"format-version" => "3"} : {}
   end
 end
