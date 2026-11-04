@@ -82,15 +82,15 @@ impl RbTableScan {
 impl RbFileScanTask {
     pub fn file(&self) -> RbDataFile {
         RbDataFile {
-            file_path: self.scan.data_file_path.clone(),
-            record_count: self.scan.record_count,
-            file_size_in_bytes: self.scan.file_size_in_bytes,
+            file_path: self.scan.data_file_path().to_string(),
+            record_count: self.scan.record_count(),
+            file_size_in_bytes: self.scan.file_size_in_bytes(),
             equality_ids: None,
         }
     }
 
     pub fn delete_files(ruby: &Ruby, rb_self: &Self) -> RArray {
-        ruby.ary_from_iter(rb_self.scan.deletes.iter().map(|v| RbDataFile {
+        ruby.ary_from_iter(rb_self.scan.deletes().iter().map(|v| RbDataFile {
             file_path: v.file_path.clone(),
             record_count: None,
             file_size_in_bytes: v.file_size_in_bytes,

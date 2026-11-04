@@ -1,6 +1,6 @@
 ## 0.12.1 (unreleased)
 
-- Updated Iceberg Rust to 0.10.1
+- Updated Iceberg Rust to 0.11.0
 - Added support for TLS to `SqlCatalog`
 - Improved error messages
 

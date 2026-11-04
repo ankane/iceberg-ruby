@@ -10,7 +10,7 @@ use magnus::{
 
 use crate::RbResult;
 use crate::capsule::RbCapsule;
-use crate::error::to_rb_err;
+use crate::error::{to_rb_err, todo_error};
 use crate::utils::{Wrap, default_value, rb_literal};
 
 #[magnus::wrap(class = "Iceberg::Schema")]
@@ -252,6 +252,7 @@ impl RbNestedField {
                 RbNestedField::from(&ty.key_field),
                 RbNestedField::from(&ty.value_field),
             ))?,
+            Type::Variant(_) => return Err(todo_error(field_type)),
         };
         Ok(v)
     }

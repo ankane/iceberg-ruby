@@ -160,6 +160,7 @@ pub fn default_value(ob: Value, field_type: &Type) -> RbResult<Option<Literal>> 
         Type::Struct(_) => return Err(todo_error(field_type)),
         Type::List(_) => return Err(todo_error(field_type)),
         Type::Map(_) => return Err(todo_error(field_type)),
+        Type::Variant(_) => return Err(todo_error(field_type)),
     };
     Ok(Some(lit))
 }
